@@ -59,6 +59,8 @@
   "reportAsLegitimate": "Report as legitimate",
   "reportAsSpam": "Report as SPAM",
   "viewOnPhoneBlockMenu": "View on PhoneBlock",
+  "copyNumber": "Copy number",
+  "numberCopied": "Number copied to clipboard",
   "deleteCall": "Delete",
   "report": "Report",
   "notLoggedIn": "Not logged in. Please log in.",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "Synchronize...",
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
-  "personalizedAddedDate": "Added: {date}",
-  "copyNumber": "Copy number",
-  "numberCopied": "Number copied to clipboard"
+  "personalizedAddedDate": "Added: {date}"
 }

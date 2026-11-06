@@ -5,7 +5,7 @@
 // question, cant_hear_you); the number of keys per phase is the number of
 // clips (1..8). Same plugin/credential as mail/ and ui/.
 plugins {
-    id 'de.haumacher.auto-translate-arb' version '1.1.1'
+    id 'de.haumacher.auto-translate-arb' version '1.1.4'
 }
 translateArb {
     serverId    = 'deepl'

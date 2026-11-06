@@ -59,6 +59,8 @@
   "reportAsLegitimate": "Denunciar como legítimo",
   "reportAsSpam": "Reportar como SPAM",
   "viewOnPhoneBlockMenu": "Ver en PhoneBlock",
+  "copyNumber": "Número de copia",
+  "numberCopied": "Número copiado en el portapapeles",
   "deleteCall": "Borrar",
   "report": "Informe",
   "notLoggedIn": "No está registrado. Por favor, identifíquese.",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "Sincroniza...",
   "blocklistSyncSuccess": "Sincronización correcta de la lista de bloqueo",
   "blocklistSyncFailed": "Error de sincronización de la lista de bloqueo",
-  "personalizedAddedDate": "Añadido: {date}",
-  "copyNumber": "Número de copia",
-  "numberCopied": "Número copiado en el portapapeles"
+  "personalizedAddedDate": "Añadido: {date}"
 }

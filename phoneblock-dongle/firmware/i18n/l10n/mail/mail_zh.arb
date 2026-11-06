@@ -1,15 +1,7 @@
 {
   "@@locale": "zh",
-  "intro": "PhoneBlock 适配器的状态提示。",
-  "subj.error_and_calls": "PhoneBlock 适配器：故障与新来电",
-  "subj.error": "PhoneBlock 适配器：协议错误",
-  "subj.calls": "PhoneBlock 适配器：新来电",
-  "subj.status": "PhoneBlock 适配器：状态提示",
-  "subj.update": "PhoneBlock 适配器：固件已更新",
   "newcalls.one": "自上次通知以来，<b>1</b> 收到了新的来电。",
   "newcalls.many": "自上次通知以来，已收到 <b>{count}</b> 通新来电。",
-  "subj.spam": "PhoneBlock 适配器：有效拦截垃圾电话",
-  "subj.error_and_spam": "PhoneBlock 适配器：错误及拦截的垃圾电话",
   "newspam.one": "自上次报告以来，已拦截<b>1</b>通垃圾电话。",
   "newspam.many": "自上次报告以来，已拦截了 <b>{count}</b> 通垃圾电话。",
   "sum.device": "设备：",
@@ -34,5 +26,13 @@
   "verdict.error": "错误",
   "verdict.unknown": "未知",
   "log.heading": "日志中的新记录",
-  "update.body": "您 {device} 的固件已更新至 {version}。"
+  "update.body": "您 {device} 的固件已更新至 {version}。",
+  "intro": "PhoneBlock Dongle 的状态信息。",
+  "subj.error_and_calls": "PhoneBlock Dongle：错误和新来电",
+  "subj.error": "PhoneBlock Dongle：日志中出现错误",
+  "subj.calls": "PhoneBlock Dongle：新来电",
+  "subj.status": "PhoneBlock Dongle：状态消息",
+  "subj.update": "PhoneBlock Dongle：固件已更新",
+  "subj.spam": "PhoneBlock Dongle：拦截的垃圾电话",
+  "subj.error_and_spam": "PhoneBlock Dongle：错误及拦截的垃圾电话"
 }

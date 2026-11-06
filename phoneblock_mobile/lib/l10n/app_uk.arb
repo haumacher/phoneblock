@@ -59,6 +59,8 @@
   "reportAsLegitimate": "Звітуйте як легітимні",
   "reportAsSpam": "Повідомити про спам",
   "viewOnPhoneBlockMenu": "Переглянути на PhoneBlock",
+  "copyNumber": "Номер копії",
+  "numberCopied": "Номер скопійовано в буфер обміну",
   "deleteCall": "Видалити",
   "report": "Звіт",
   "notLoggedIn": "Ви не зареєстровані. Будь ласка, увійдіть.",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "Синхронізувати...",
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
-  "personalizedAddedDate": "Додано: {date}",
-  "copyNumber": "Номер копії",
-  "numberCopied": "Номер скопійовано в буфер обміну"
+  "personalizedAddedDate": "Додано: {date}"
 }

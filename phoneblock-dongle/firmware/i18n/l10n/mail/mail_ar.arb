@@ -1,15 +1,7 @@
 {
   "@@locale": "ar",
-  "intro": "تقرير الحالة الخاص بجهاز PhoneBlock الخاص بك.",
-  "subj.error_and_calls": "جهاز PhoneBlock: الأخطاء والمكالمات الجديدة",
-  "subj.error": "جهاز PhoneBlock: خطأ في البروتوكول",
-  "subj.calls": "جهاز PhoneBlock: المكالمات الجديدة",
-  "subj.status": "جهاز PhoneBlock: رسالة الحالة",
-  "subj.update": "جهاز PhoneBlock-Dongle: تم تحديث البرنامج الثابت",
   "newcalls.one": "منذ آخر تحديث، وردت مكالمة جديدة <b>1</b>.",
   "newcalls.many": "منذ آخر تحديث، وردت <b>{count}</b> مكالمة جديدة.",
-  "subj.spam": "جهاز PhoneBlock: صد المكالمات غير المرغوب فيها",
-  "subj.error_and_spam": "جهاز PhoneBlock: الأخطاء والمكالمات غير المرغوب فيها التي تم حجبها",
   "newspam.one": "منذ آخر تقرير، تم صد <b>1</b> مكالمة غير مرغوب فيها.",
   "newspam.many": "منذ آخر تقرير، تم صد <b>{count}</b> مكالمة غير مرغوب فيها.",
   "sum.device": "الجهاز:",
@@ -34,5 +26,13 @@
   "verdict.error": "خطأ",
   "verdict.unknown": "غير معروف",
   "log.heading": "أخبار جديدة في المحضر",
-  "update.body": "تم تحديث البرنامج الثابت على جهازك {device} إلى الإصدار {version}."
+  "update.body": "تم تحديث البرنامج الثابت على جهازك {device} إلى الإصدار {version}.",
+  "intro": "رسالة الحالة الخاصة بجهاز PhoneBlock الخاص بك.",
+  "subj.error_and_calls": "جهاز PhoneBlock: الأخطاء والمكالمات الجديدة",
+  "subj.error": "جهاز PhoneBlock: خطأ في السجل",
+  "subj.calls": "جهاز PhoneBlock: المكالمات الجديدة",
+  "subj.status": "جهاز PhoneBlock: رسالة الحالة",
+  "subj.update": "جهاز PhoneBlock: تم تحديث البرنامج الثابت",
+  "subj.spam": "جهاز PhoneBlock: المكالمات غير المرغوب فيها التي تم صدها",
+  "subj.error_and_spam": "جهاز PhoneBlock: الأخطاء والمكالمات غير المرغوب فيها التي تم صدها"
 }

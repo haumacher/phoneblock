@@ -1,15 +1,7 @@
 {
   "@@locale": "uk",
-  "intro": "Повідомлення про стан твого адаптера PhoneBlock.",
-  "subj.error_and_calls": "Донгл PhoneBlock: помилки та нові дзвінки",
-  "subj.error": "Донгл PhoneBlock: помилка в протоколі",
-  "subj.calls": "Донгл PhoneBlock: нові дзвінки",
-  "subj.status": "Донгл PhoneBlock: повідомлення про стан",
-  "subj.update": "Донгл PhoneBlock: оновлено прошивку",
   "newcalls.one": "З моменту останнього повідомлення надійшов <b>1</b> новий дзвінок.",
   "newcalls.many": "З моменту останнього повідомлення надійшло <b>{count}</b> нових дзвінків.",
-  "subj.spam": "Донгл PhoneBlock: блокування спам-дзвінків",
-  "subj.error_and_spam": "Донгл PhoneBlock: помилки та заблоковані спам-дзвінки",
   "newspam.one": "З моменту останнього повідомлення було заблоковано <b>1</b> спам-дзвінок.",
   "newspam.many": "З моменту останнього повідомлення було заблоковано <b>{count}</b> спам-дзвінків.",
   "sum.device": "Пристрій:",
@@ -34,5 +26,13 @@
   "verdict.error": "Помилка",
   "verdict.unknown": "невідомо",
   "log.heading": "Нові записи в протоколі",
-  "update.body": "Прошивка на твоєму {device} була оновлена до версії {version}."
+  "update.body": "Прошивка на твоєму {device} була оновлена до версії {version}.",
+  "intro": "Повідомлення про стан твого донгла PhoneBlock.",
+  "subj.error_and_calls": "Донгл PhoneBlock: помилки та нові дзвінки",
+  "subj.error": "Донгл PhoneBlock: помилка в протоколі",
+  "subj.calls": "Донгл PhoneBlock: нові дзвінки",
+  "subj.status": "Донгл PhoneBlock: повідомлення про стан",
+  "subj.update": "Донгл PhoneBlock: оновлено прошивку",
+  "subj.spam": "PhoneBlock-донгл: відбиті спам-дзвінки",
+  "subj.error_and_spam": "PhoneBlock-донгл: помилки та відбиті спам-дзвінки"
 }

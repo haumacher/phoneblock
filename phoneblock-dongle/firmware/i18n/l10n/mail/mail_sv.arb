@@ -1,15 +1,7 @@
 {
   "@@locale": "sv",
-  "intro": "Statusmeddelande från din PhoneBlock-dongel.",
-  "subj.error_and_calls": "PhoneBlock-dongel: Fel och nya samtal",
-  "subj.error": "PhoneBlock-dongel: Fel i protokollet",
-  "subj.calls": "PhoneBlock-dongel: Nya samtal",
-  "subj.status": "PhoneBlock-dongel: Statusmeddelande",
-  "subj.update": "PhoneBlock-dongel: Firmware uppdaterad",
   "newcalls.one": "Sedan det senaste meddelandet har <b>1</b> nytt samtal kommit in.",
   "newcalls.many": "Sedan det senaste meddelandet har <b>{count}</b> nya samtal kommit in.",
-  "subj.spam": "PhoneBlock-dongel: Avvisade skräpsamtal",
-  "subj.error_and_spam": "PhoneBlock-dongel: Fel och avvisade skräpsamtal",
   "newspam.one": "Sedan det senaste meddelandet har <b>1</b> spam-samtal avvärjts.",
   "newspam.many": "Sedan det senaste meddelandet har <b>{count}</b> spam-samtal avvärjts.",
   "sum.device": "Enhet:",
@@ -34,5 +26,13 @@
   "verdict.error": "Fel",
   "verdict.unknown": "okänt",
   "log.heading": "Nya meddelanden i protokollet",
-  "update.body": "Firmware på din {device} har uppdaterats till version {version}."
+  "update.body": "Firmware på din {device} har uppdaterats till version {version}.",
+  "intro": "Statusmeddelande från din PhoneBlock-dongel.",
+  "subj.error_and_calls": "PhoneBlock-dongel: Fel och nya samtal",
+  "subj.error": "PhoneBlock-dongel: Fel i protokollet",
+  "subj.calls": "PhoneBlock-dongel: Nya samtal",
+  "subj.status": "PhoneBlock-dongel: Statusmeddelande",
+  "subj.update": "PhoneBlock-dongel: Firmware uppdaterad",
+  "subj.spam": "PhoneBlock-dongel: Avvisade spam-samtal",
+  "subj.error_and_spam": "PhoneBlock-dongel: Fel och avvärjda spam-samtal"
 }

@@ -59,6 +59,8 @@
   "reportAsLegitimate": "报告为合法",
   "reportAsSpam": "报告为垃圾邮件",
   "viewOnPhoneBlockMenu": "在 PhoneBlock 上查看",
+  "copyNumber": "副本编号",
+  "numberCopied": "复制到剪贴板的数字",
   "deleteCall": "删除",
   "report": "报告",
   "notLoggedIn": "尚未注册。请登录。",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "同步...",
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
-  "personalizedAddedDate": "已添加：<x1>日期</x1",
-  "copyNumber": "副本编号",
-  "numberCopied": "复制到剪贴板的数字"
+  "personalizedAddedDate": "已添加：<x1>日期</x1"
 }

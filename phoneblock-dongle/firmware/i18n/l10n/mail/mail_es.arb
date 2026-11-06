@@ -1,15 +1,7 @@
 {
   "@@locale": "es",
-  "intro": "Mensaje de estado de tu dongle PhoneBlock.",
-  "subj.error_and_calls": "Dongle PhoneBlock: errores y nuevas llamadas",
-  "subj.error": "Dongle PhoneBlock: error en el protocolo",
-  "subj.calls": "Dongle PhoneBlock: nuevas llamadas",
-  "subj.status": "Dongle PhoneBlock: mensaje de estado",
-  "subj.update": "Dongle PhoneBlock: firmware actualizado",
   "newcalls.one": "Desde el último aviso, se ha recibido una nueva llamada <b>1</b>.",
   "newcalls.many": "Desde el último aviso se han recibido <b>{count}</b> nuevas llamadas.",
-  "subj.spam": "Dongle PhoneBlock: llamadas spam bloqueadas",
-  "subj.error_and_spam": "Dongle PhoneBlock: errores y llamadas de spam bloqueadas",
   "newspam.one": "Desde el último aviso, se ha bloqueado <b>1</b> llamada de spam.",
   "newspam.many": "Desde el último aviso, se han bloqueado <b>{count}</b> llamadas de spam.",
   "sum.device": "Dispositivo:",
@@ -34,5 +26,13 @@
   "verdict.error": "Error",
   "verdict.unknown": "desconocido",
   "log.heading": "Nuevas entradas en el registro",
-  "update.body": "El firmware de tu {device} se ha actualizado a la versión {version}."
+  "update.body": "El firmware de tu {device} se ha actualizado a la versión {version}.",
+  "intro": "Mensaje de estado de tu dongle PhoneBlock.",
+  "subj.error_and_calls": "Dongle PhoneBlock: errores y nuevas llamadas",
+  "subj.error": "Dongle PhoneBlock: error en el registro",
+  "subj.calls": "Dongle PhoneBlock: nuevas llamadas",
+  "subj.status": "Dongle PhoneBlock: mensaje de estado",
+  "subj.update": "Dongle PhoneBlock: firmware actualizado",
+  "subj.spam": "Dongle PhoneBlock: llamadas de spam bloqueadas",
+  "subj.error_and_spam": "Dongle PhoneBlock: errores y llamadas de spam bloqueadas"
 }

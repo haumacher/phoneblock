@@ -59,6 +59,8 @@
   "reportAsLegitimate": "تقرير شرعي",
   "reportAsSpam": "الإبلاغ عن الرسائل الاقتحامية",
   "viewOnPhoneBlockMenu": "عرض على PhoneBlock",
+  "copyNumber": "رقم النسخة",
+  "numberCopied": "الرقم المنسوخ إلى الحافظة",
   "deleteCall": "حذف",
   "report": "تقرير",
   "notLoggedIn": "غير مسجل. يرجى تسجيل الدخول",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "مزامنة...",
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
   "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
-  "personalizedAddedDate": "تمت الإضافة: {date}",
-  "copyNumber": "رقم النسخة",
-  "numberCopied": "الرقم المنسوخ إلى الحافظة"
+  "personalizedAddedDate": "تمت الإضافة: {date}"
 }

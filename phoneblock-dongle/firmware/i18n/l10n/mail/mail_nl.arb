@@ -1,15 +1,7 @@
 {
   "@@locale": "nl",
-  "intro": "Statusmelding van je PhoneBlock-dongle.",
-  "subj.error_and_calls": "PhoneBlock-dongle: fouten en nieuwe oproepen",
-  "subj.error": "PhoneBlock-dongle: fout in het logboek",
-  "subj.calls": "PhoneBlock-dongle: nieuwe oproepen",
-  "subj.status": "PhoneBlock-dongle: statusmelding",
-  "subj.update": "PhoneBlock-dongle: firmware bijgewerkt",
   "newcalls.one": "Sinds het laatste bericht is er <b>1</b> nieuw telefoontje binnengekomen.",
   "newcalls.many": "Sinds het laatste bericht zijn er <b>{count}</b> nieuwe oproepen binnengekomen.",
-  "subj.spam": "PhoneBlock-dongle: tegengehouden spam-telefoontjes",
-  "subj.error_and_spam": "PhoneBlock-dongle: fouten en tegengehouden spam-oproepen",
   "newspam.one": "Sinds het laatste bericht is <b>1</b> spam-oproep tegengehouden.",
   "newspam.many": "Sinds het laatste bericht zijn <b>{count}</b> spam-telefoontjes tegengehouden.",
   "sum.device": "Apparaat:",
@@ -34,5 +26,13 @@
   "verdict.error": "Fout",
   "verdict.unknown": "onbekend",
   "log.heading": "Nieuwe berichten in het logboek",
-  "update.body": "De firmware op je {device} is bijgewerkt naar versie {version}."
+  "update.body": "De firmware op je {device} is bijgewerkt naar versie {version}.",
+  "intro": "Statusmelding van je PhoneBlock-dongle.",
+  "subj.error_and_calls": "PhoneBlock-dongle: fouten en nieuwe oproepen",
+  "subj.error": "PhoneBlock-dongle: fout in het logboek",
+  "subj.calls": "PhoneBlock-dongle: nieuwe oproepen",
+  "subj.status": "PhoneBlock-dongle: statusmelding",
+  "subj.update": "PhoneBlock-dongle: firmware bijgewerkt",
+  "subj.spam": "PhoneBlock-dongle: tegengehouden spam-oproepen",
+  "subj.error_and_spam": "PhoneBlock-dongle: fouten en tegengehouden spam-oproepen"
 }

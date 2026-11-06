@@ -59,6 +59,8 @@
   "reportAsLegitimate": "Rapporter som legitim",
   "reportAsSpam": "Rapporter som SPAM",
   "viewOnPhoneBlockMenu": "Se på PhoneBlock",
+  "copyNumber": "Kopienummer",
+  "numberCopied": "Nummer kopieret til udklipsholder",
   "deleteCall": "Sletning",
   "report": "Rapport",
   "notLoggedIn": "Ikke registreret. Log venligst ind.",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
-  "personalizedAddedDate": "Tilføjet: {date}.",
-  "copyNumber": "Kopienummer",
-  "numberCopied": "Nummer kopieret til udklipsholder"
+  "personalizedAddedDate": "Tilføjet: {date}."
 }
