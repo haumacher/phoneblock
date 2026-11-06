@@ -152,6 +152,9 @@
   "status.fw.checking": "Buscando actualizaciones…",
   "status.fw.check.none": "No hay versión más reciente (actualmente {version}).",
   "status.fw.check.found": "Instalando la nueva versión {version}…",
+  "status.fw.check.older": "En este canal solo está disponible la versión anterior {version} (la instalada es {current}). El dongle seguirá en {current} hasta que salga una versión más reciente.",
+  "status.fw.downgrade": "Instalar {version} de todos modos",
+  "status.fw.downgrade.confirm": "¿De verdad quieres volver a la versión anterior {version}? Al hacerlo, se perderán las funciones de la versión más reciente.",
   "status.fw.check.installed": "Versión {version} instalada — el dongle se reinicia. Espera un momento y luego recarga la página.",
   "status.fw.check.error": "La comprobación falló: {msg}",
   "status.fw.failed": "La última actualización a la versión {version} no superó el arranque — se revirtió automáticamente. La actualización automática omitirá esta versión. Pulsa «Buscar actualizaciones» para volver a intentarlo.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
   "status.rec.failed": "No se ha podido cargar la grabación.",
-  "status.fw.check.older": "En este canal solo está disponible la versión anterior {version} (la instalada es {current}). El dongle seguirá en {current} hasta que salga una versión más reciente.",
-  "status.fw.downgrade": "Instalar {version} de todos modos",
-  "status.fw.downgrade.confirm": "¿De verdad quieres volver a la versión anterior {version}? Al hacerlo, se perderán las funciones de la versión más reciente."
+  "sip.fb.conflict.one": "En el Fritz!Box ya hay un dispositivo PhoneBlock registrado:",
+  "sip.fb.conflict.many": "En el Fritz!Box ya hay varios dongles PhoneBlock registrados:",
+  "sip.fb.conflict.replace": "Sustituir «{entry}», por ejemplo, tras restablecer este dongle",
+  "sip.fb.conflict.add": "Añadir otro dispositivo → «{name}»",
+  "sip.fb.conflict.submit": "Continuar",
+  "sip.fb.conflict.choose": "Selecciona una de las opciones."
 }

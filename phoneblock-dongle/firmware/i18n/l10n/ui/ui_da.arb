@@ -152,6 +152,9 @@
   "status.fw.checking": "Tjek, om der er en opdatering…",
   "status.fw.check.none": "Der er ingen ny version tilgængelig (aktuel {version}).",
   "status.fw.check.found": "Den nye version {version} installeres…",
+  "status.fw.check.older": "På denne kanal findes kun den ældre version {version} (den installerede version er {current}). Donglen forbliver på {current}, indtil der udkommer en nyere version.",
+  "status.fw.downgrade": "Alligevel installere {version}",
+  "status.fw.downgrade.confirm": "Vil du virkelig gå tilbage til den ældre version {version}? Funktioner fra den nyere version går derved tabt.",
   "status.fw.check.installed": "Version {version} er installeret — Donglen genstarter. Vent et øjeblik, og genindlæs derefter siden.",
   "status.fw.check.error": "Kontrollen mislykkedes: {msg}",
   "status.fw.failed": "Den seneste opdatering til version {version} kunne ikke gennemføres under opstarten — systemet blev automatisk rullet tilbage. Den automatiske opdatering springer denne version over. Klik på »Søg efter opdateringer« for at prøve igen.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Slet optagelse",
   "status.rec.delete.confirm": "Skal denne optagelse slettes? Opkaldet forbliver på listen.",
   "status.rec.failed": "Optagelsen kunne ikke indlæses.",
-  "status.fw.check.older": "På denne kanal findes kun den ældre version {version} (den installerede version er {current}). Donglen forbliver på {current}, indtil der udkommer en nyere version.",
-  "status.fw.downgrade": "Alligevel installere {version}",
-  "status.fw.downgrade.confirm": "Vil du virkelig gå tilbage til den ældre version {version}? Funktioner fra den nyere version går derved tabt."
+  "sip.fb.conflict.one": "Der er allerede registreret en PhoneBlock-dongle i Fritz!Box:",
+  "sip.fb.conflict.many": "Der er allerede registreret flere PhoneBlock-dongler i Fritz!Box’en:",
+  "sip.fb.conflict.replace": "Erstat „{entry}“ – f.eks. efter nulstilling af denne dongle",
+  "sip.fb.conflict.add": "Tilføj som endnu en enhed → „{name}“",
+  "sip.fb.conflict.submit": "Fortsæt",
+  "sip.fb.conflict.choose": "Vælg venligst en af mulighederne."
 }

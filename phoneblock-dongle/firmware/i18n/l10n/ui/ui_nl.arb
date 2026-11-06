@@ -152,6 +152,9 @@
   "status.fw.checking": "Controleer of er een update is…",
   "status.fw.check.none": "Er is geen nieuwe versie beschikbaar (huidige {version}).",
   "status.fw.check.found": "Nieuwe versie {version} wordt geïnstalleerd…",
+  "status.fw.check.older": "Op dit kanaal is alleen de oudere versie {version} beschikbaar (er is {current} geïnstalleerd). De dongle blijft op {current} staan totdat er een nieuwere versie verschijnt.",
+  "status.fw.downgrade": "Toch {version} installeren",
+  "status.fw.downgrade.confirm": "Wil je echt teruggaan naar de oudere versie {version}? Daarbij gaan functies van de nieuwere versie verloren.",
   "status.fw.check.installed": "Versie {version} is geïnstalleerd — De dongle wordt opnieuw opgestart. Wacht even en ververs vervolgens de pagina.",
   "status.fw.check.error": "Controle mislukt: {msg}",
   "status.fw.failed": "De laatste update naar versie {version} heeft het opstarten niet doorstaan — er is automatisch teruggedraaid. De automatische update slaat deze versie over. Klik op „Controleren op updates” om het opnieuw te proberen.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
   "status.rec.failed": "Het bestand kon niet worden geladen.",
-  "status.fw.check.older": "Op dit kanaal is alleen de oudere versie {version} beschikbaar (er is {current} geïnstalleerd). De dongle blijft op {current} staan totdat er een nieuwere versie verschijnt.",
-  "status.fw.downgrade": "Toch {version} installeren",
-  "status.fw.downgrade.confirm": "Wil je echt teruggaan naar de oudere versie {version}? Daarbij gaan functies van de nieuwere versie verloren."
+  "sip.fb.conflict.one": "In de Fritz!Box is al een PhoneBlock-dongle geregistreerd:",
+  "sip.fb.conflict.many": "In de Fritz!Box zijn al meerdere PhoneBlock-dongles geregistreerd:",
+  "sip.fb.conflict.replace": "\"{entry}\" vervangen – bijvoorbeeld na het resetten van deze dongle",
+  "sip.fb.conflict.add": "Als extra apparaat toevoegen → „{name}“",
+  "sip.fb.conflict.submit": "Vervolg",
+  "sip.fb.conflict.choose": "Kies alstublieft een van de opties."
 }

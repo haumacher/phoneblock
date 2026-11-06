@@ -152,6 +152,9 @@
   "status.fw.checking": "Sprawdź, czy jest dostępna aktualizacja…",
   "status.fw.check.none": "Brak dostępnej nowej wersji (aktualna wersja {version}).",
   "status.fw.check.found": "Trwa instalacja nowej wersji {version}…",
+  "status.fw.check.older": "Na tym kanale dostępna jest tylko starsza wersja {version} (zainstalowana jest wersja {current}). Klucz sprzętowy pozostanie w wersji {current}, dopóki nie pojawi się nowsza wersja.",
+  "status.fw.downgrade": "Mimo to zainstaluj {version}",
+  "status.fw.downgrade.confirm": "Czy na pewno chcesz powrócić do starszej wersji {version}? Spowoduje to utratę funkcji dostępnych w nowszej wersji.",
   "status.fw.check.installed": "Zainstalowano wersję {version} — klucz sprzętowy uruchamia się ponownie. Proszę chwilę poczekać, a następnie odświeżyć stronę.",
   "status.fw.check.error": "Błąd podczas sprawdzania: {msg}",
   "status.fw.failed": "Ostatnia aktualizacja do wersji {version} nie zakończyła się pomyślnie podczas uruchamiania — system automatycznie przywrócił poprzednią wersję. Funkcja automatycznej aktualizacji pomija tę wersję. Kliknij „Sprawdź dostępność aktualizacji”, aby spróbować ponownie.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
   "status.rec.failed": "Nie udało się załadować nagrania.",
-  "status.fw.check.older": "Na tym kanale dostępna jest tylko starsza wersja {version} (zainstalowana jest wersja {current}). Klucz sprzętowy pozostanie w wersji {current}, dopóki nie pojawi się nowsza wersja.",
-  "status.fw.downgrade": "Mimo to zainstaluj {version}",
-  "status.fw.downgrade.confirm": "Czy na pewno chcesz powrócić do starszej wersji {version}? Spowoduje to utratę funkcji dostępnych w nowszej wersji."
+  "sip.fb.conflict.one": "W routerze Fritz!Box jest już zarejestrowany klucz PhoneBlock:",
+  "sip.fb.conflict.many": "W routerze Fritz!Box zarejestrowanych jest już kilka kluczy PhoneBlock:",
+  "sip.fb.conflict.replace": "Zastąpić „{entry}” – np. po zresetowaniu tego klucza sprzętowego",
+  "sip.fb.conflict.add": "Dodaj kolejne urządzenie → „{name}”",
+  "sip.fb.conflict.submit": "Dalej",
+  "sip.fb.conflict.choose": "Proszę wybrać jedną z opcji."
 }

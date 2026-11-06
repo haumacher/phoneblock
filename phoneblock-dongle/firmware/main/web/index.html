@@ -734,9 +734,11 @@ function applyTz(deviceTz){
   }
 }
 
-async function postForm(url, form){
+// `extra` (optional) adds fields that are not inputs of the form.
+async function postForm(url, form, extra){
   const body = new URLSearchParams();
   for (const [k, v] of new FormData(form).entries()) body.append(k, v);
+  if (extra) for (const [k, v] of Object.entries(extra)) body.append(k, v);
   try {
     const r = await fetch(url, {
       method: 'POST',
@@ -3637,18 +3639,30 @@ function renderSipFritzbox(){
     + '<p class="actions">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.fb.submit')) + '</button>'
     + '<span id="fbMsg" class="muted after"></span>'
-    + '</p></form></section>';
+    + '</p></form>'
+    + '<div id="fbConflict" style="display:none"></div>'
+    + '</section>';
   $('fbForm').addEventListener('submit', onFritzboxSubmit);
 }
 
-async function onFritzboxSubmit(e){
+function onFritzboxSubmit(e){
   e.preventDefault();
+  submitFritzbox(e.target, '');
+}
+
+// `onConflict` is the answer to a conflict question ("add" or
+// "replace:<username>"), '' for the first attempt.
+async function submitFritzbox(form, onConflict){
   const msg = $('fbMsg');
-  const btn = e.target.querySelector('button');
+  const btn = form.querySelector('button');
+  const conflictEl = $('fbConflict');
+  conflictEl.style.display = 'none';
+  conflictEl.innerHTML = '';
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
   msg.style.color = 'var(--muted)';
-  const r = await postForm('api/fritzbox-setup', e.target);
+  const r = await postForm('api/fritzbox-setup', form,
+                           onConflict ? {on_conflict: onConflict} : null);
   if (r.ok){
     const n = r.data.internal_number;
     msg.textContent = n ? t('sip.fb.done.withnum', {n}) : t('sip.fb.done');
@@ -3664,9 +3678,62 @@ async function onFritzboxSubmit(e){
     await poll2FA(msg, btn);
     return;
   }
+  if (r.data && r.data.conflict){
+    // Other dongles are already set up on the box (#708). Nothing was
+    // written; ask whether to take over an entry or add this dongle.
+    msg.textContent = '';
+    btn.disabled = false;
+    renderFritzboxConflict(form, r.data);
+    return;
+  }
   msg.textContent = t('sip.fb.error', {msg: r.data.message || r.statusText});
   msg.style.color = 'var(--err)';
   btn.disabled = false;
+}
+
+// "PhoneBlock (**620)": the name the box shows and how to dial the entry.
+function fbEntryLabel(entry){
+  const name = entry.name || entry.username;
+  if (!entry.number) return name;
+  const dial = entry.number.startsWith('*') ? entry.number : '**' + entry.number;
+  return name + ' (' + dial + ')';
+}
+
+function renderFritzboxConflict(form, d){
+  const el = $('fbConflict');
+  const entries = d.entries || [];
+  const option = (value, text) =>
+      '<p class="opt"><label class="check">'
+    + '<input type="radio" name="fbConflictChoice" value="' + esc(value) + '">'
+    + '<span>' + esc(text) + '</span></label></p>';
+  let html = '<p>' + esc(t(entries.length > 1 ? 'sip.fb.conflict.many'
+                                             : 'sip.fb.conflict.one')) + '</p>'
+    + '<ul>';
+  for (const e of entries) html += '<li>' + esc(fbEntryLabel(e)) + '</li>';
+  html += '</ul>';
+  for (const e of entries){
+    html += option('replace:' + e.username,
+                   t('sip.fb.conflict.replace', {entry: fbEntryLabel(e)}));
+  }
+  if (d.add_as){
+    html += option('add', t('sip.fb.conflict.add', {name: d.add_as.name}));
+  }
+  html += '<p class="actions">'
+    + '<button type="button" id="fbConflictGo" class="btn-primary">'
+    +   esc(t('sip.fb.conflict.submit')) + '</button>'
+    + '<span id="fbConflictMsg" class="after"></span></p>';
+  el.innerHTML = html;
+  el.style.display = '';
+  $('fbConflictGo').onclick = () => {
+    const picked = el.querySelector('input[name=fbConflictChoice]:checked');
+    if (!picked){
+      const m = $('fbConflictMsg');
+      m.textContent = t('sip.fb.conflict.choose');
+      m.style.color = 'var(--err)';
+      return;
+    }
+    submitFritzbox(form, picked.value);
+  };
 }
 
 function render2FAInstructions(methods){

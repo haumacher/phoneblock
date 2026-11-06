@@ -57,7 +57,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c ../main/api_fail.c \
                       ../main/report_queue.c ../main/rtp.c ../main/rtp_rx.c \
                       ../main/sched_time.c ../main/scheduler.c \
                       ../main/sip_auth.c ../main/sip_frame.c \
-                      ../main/selftest.c ../main/sip_register.c ../main/sip_response.c \
+                      ../main/selftest.c ../main/sip_client_pick.c ../main/sip_register.c ../main/sip_response.c \
                       ../main/sip_srv.c ../main/sip_transport.c \
                       ../main/stats.c ../main/storage.c ../main/storage_budget.c \
                       ../main/sync.c ../main/time_sync_linux.c \

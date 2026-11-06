@@ -152,6 +152,9 @@
   "status.fw.checking": "Vérification en cours…",
   "status.fw.check.none": "Aucune nouvelle version disponible (actuellement {version}).",
   "status.fw.check.found": "Nouvelle version {version} en cours d’installation…",
+  "status.fw.check.older": "Sur ce canal, seule la version antérieure {version} est disponible (la version installée est {current}). La clé reste sur {current} jusqu'à ce qu'une version plus récente soit disponible.",
+  "status.fw.downgrade": "Installer quand même la {version}",
+  "status.fw.downgrade.confirm": "Voulez-vous vraiment revenir à l'ancienne version {version} ? Les fonctionnalités de la version plus récente seront alors perdues.",
   "status.fw.check.installed": "Version {version} installée — le dongle redémarre. Veuillez patienter un instant, puis recharger la page.",
   "status.fw.check.error": "Échec de la vérification : {msg}",
   "status.fw.failed": "La dernière mise à jour vers la version {version} n’a pas survécu au démarrage — restauration automatique. La mise à jour automatique ignore cette version. Cliquez sur « Vérifier les mises à jour » pour réessayer.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "status.fw.check.older": "Sur ce canal, seule la version antérieure {version} est disponible (la version installée est {current}). La clé reste sur {current} jusqu'à ce qu'une version plus récente soit disponible.",
-  "status.fw.downgrade": "Installer quand même la {version}",
-  "status.fw.downgrade.confirm": "Voulez-vous vraiment revenir à l'ancienne version {version} ? Les fonctionnalités de la version plus récente seront alors perdues."
+  "sip.fb.conflict.one": "Un dongle PhoneBlock est déjà enregistré dans la Fritz!Box :",
+  "sip.fb.conflict.many": "Plusieurs clés PhoneBlock sont déjà enregistrées dans la Fritz!Box :",
+  "sip.fb.conflict.replace": "Remplacer « {entry} » – par exemple après la réinitialisation de ce dongle",
+  "sip.fb.conflict.add": "Ajouter un autre appareil → « {name} »",
+  "sip.fb.conflict.submit": "Continuer",
+  "sip.fb.conflict.choose": "Veuillez choisir l'une des options suivantes."
 }
