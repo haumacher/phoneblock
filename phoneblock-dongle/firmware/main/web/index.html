@@ -124,6 +124,17 @@ if (!location.pathname.endsWith('/'))
   .rowbtn.spam{border-color:var(--err);color:var(--err)}
   .rowbtn.spam:hover{background:var(--hover-spam)}
   .rowbtn[disabled]{opacity:.5;cursor:default}
+  /* Phone width (#701): four columns plus the row buttons do not fit, and a
+     long international number pushed the verdict and its spam button off the
+     screen. Each call becomes a card instead: time and number on top, name
+     and verdict (each with its button) full-width below. */
+  @media (max-width:600px){
+    #callsSection thead{display:none}
+    #callsSection tr{display:grid;grid-template-columns:auto minmax(0,1fr);
+      column-gap:.6rem;padding:.35rem 0;border-bottom:1px solid var(--line)}
+    #callsSection td{border:0;padding:.1rem .25rem;min-width:0;overflow-wrap:anywhere}
+    #callsSection td:nth-child(n+3),#callsSection td[colspan]{grid-column:1 / -1}
+  }
   .btn-ghost{background:var(--card);color:var(--brand-text);border:1px solid var(--brand-text);
              padding:.55rem 1.2rem;border-radius:4px;font-size:1rem;
              cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
