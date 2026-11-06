@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "at {host} as {user}",
   "status.sip.ext": "Internal number {n}",
   "status.sip.public_ip": "Public IP {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "This channel only contains the older version {version} (the installed version is {current}). The dongle will remain set to {current} until a newer version is released.",
+  "status.fw.downgrade": "Install {version} anyway",
+  "status.fw.downgrade.confirm": "Do you really want to revert to the older version {version}? Doing so will result in the loss of features from the newer version."
 }

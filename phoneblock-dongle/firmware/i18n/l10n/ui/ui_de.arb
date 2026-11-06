@@ -783,6 +783,21 @@
     "description": "Dongle web UI: status.fw.check.found",
     "x-translated": "55679c9f"
   },
+  "status.fw.check.older": "Auf diesem Kanal gibt es nur die ältere Version {version} (installiert ist {current}). Der Dongle bleibt auf {current}, bis eine neuere Version erscheint.",
+  "@status.fw.check.older": {
+    "description": "Dongle web UI: the firmware check found an OLDER version on the selected update channel (e.g. stable after running a beta). Nothing is installed.",
+    "x-translated": "48308cf8"
+  },
+  "status.fw.downgrade": "Trotzdem {version} installieren",
+  "@status.fw.downgrade": {
+    "description": "Dongle web UI: button offering an explicit downgrade to the older version found on the channel.",
+    "x-translated": "5c238855"
+  },
+  "status.fw.downgrade.confirm": "Wirklich auf die ältere Version {version} zurückgehen? Funktionen der neueren Version gehen dabei verloren.",
+  "@status.fw.downgrade.confirm": {
+    "description": "Dongle web UI: confirmation dialog before downgrading the firmware.",
+    "x-translated": "fdfc6050"
+  },
   "status.fw.check.installed": "Version {version} installiert — Dongle startet neu. Bitte einen Moment warten und dann die Seite neu laden.",
   "@status.fw.check.installed": {
     "description": "Dongle web UI: status.fw.check.installed",

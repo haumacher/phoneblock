@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "en {host} como {user}",
   "status.sip.ext": "Número interno {n}",
   "status.sip.public_ip": "IP pública {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
   "status.rec.failed": "No se ha podido cargar la grabación.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "En este canal solo está disponible la versión anterior {version} (la instalada es {current}). El dongle seguirá en {current} hasta que salga una versión más reciente.",
+  "status.fw.downgrade": "Instalar {version} de todos modos",
+  "status.fw.downgrade.confirm": "¿De verdad quieres volver a la versión anterior {version}? Al hacerlo, se perderán las funciones de la versión más reciente."
 }

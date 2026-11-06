@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "su {host} come {user}",
   "status.sip.ext": "Numero interno {n}",
   "status.sip.public_ip": "IP pubblico {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Elimina registrazione",
   "status.rec.delete.confirm": "Elimina questa registrazione? La chiamata rimane nell'elenco.",
   "status.rec.failed": "Non è stato possibile caricare il file.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "Su questo canale è disponibile solo la versione precedente {version} (quella installata è {current}). Il dongle rimane su {current} fino a quando non viene rilasciata una versione più recente.",
+  "status.fw.downgrade": "Installare comunque la {version}",
+  "status.fw.downgrade.confirm": "Vuoi davvero tornare alla versione precedente {version}? In questo caso andranno perse le funzionalità della versione più recente."
 }

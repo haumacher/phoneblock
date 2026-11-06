@@ -2500,16 +2500,20 @@ static web_http_error_t handle_firmware_upload(web_http_request_t *req)
 // the long "Lade Aktualisierung…" wait is no longer the first feedback
 // the user sees after clicking "Auf Aktualisierung prüfen".
 //
-// force=true so the manual flow ignores the last_failed_ota guard the
-// auto-update task uses to break a brick→rollback→retry-same-bits
+// FW_UPDATE_RETRY_FAILED so the manual flow ignores the last_failed_ota
+// guard the auto-update task uses to break a brick→rollback→retry-same-bits
 // loop; the user pressing this button means "yes, try again". The
 // matching marker is left in NVS until /install actually overwrites
 // it, so a check + cancel never silently forgets the prior failure.
+//
+// An older version on the channel (stable after running a beta, #707)
+// comes back as available=false, downgrade=true: the UI asks before it
+// calls /install?downgrade=1.
 static web_http_error_t handle_firmware_check(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     fw_update_outcome_t out;
-    firmware_check_manifest(true, &out);
+    firmware_check_manifest(FW_UPDATE_RETRY_FAILED, &out);
 
     switch (out.result) {
         case FW_UPDATE_ERR_NETWORK:
@@ -2517,7 +2521,7 @@ static web_http_error_t handle_firmware_check(web_http_request_t *req)
         case FW_UPDATE_ERR_SIGNATURE:
             send_fail(req, out.error);
             return WEB_HTTP_OK;
-        // SKIPPED_FAILED is unreachable with force=true, but treat it
+        // SKIPPED_FAILED is unreachable with RETRY_FAILED, but treat it
         // defensively so a future caller change does not silently
         // misreport "ok".
         case FW_UPDATE_SKIPPED_FAILED:
@@ -2530,6 +2534,7 @@ static web_http_error_t handle_firmware_check(web_http_request_t *req)
     cJSON *ok = cJSON_CreateObject();
     cJSON_AddBoolToObject  (ok, "ok", true);
     cJSON_AddBoolToObject  (ok, "available", out.result == FW_UPDATE_NEW_AVAILABLE);
+    cJSON_AddBoolToObject  (ok, "downgrade", out.result == FW_UPDATE_OLDER_AVAILABLE);
     cJSON_AddStringToObject(ok, "current_version", out.current_version);
     cJSON_AddStringToObject(ok, "new_version",     out.new_version);
     send_json(req, ok);
@@ -2541,12 +2546,20 @@ static web_http_error_t handle_firmware_check(web_http_request_t *req)
 // ~30 s download; the frontend shows "Neue Version X wird
 // installiert…" while it waits. Re-fetches the manifest internally —
 // keeps the protocol stateless and tolerates the rare case where the
-// CDN flips between check and install.
+// CDN flips between check and install. An older version is installed
+// only with ?downgrade=1, i.e. after the user confirmed it (#707).
 static web_http_error_t handle_firmware_install(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
+    unsigned flags = FW_UPDATE_RETRY_FAILED;
+    char query[32], value[4];
+    if (web_http_get_query_string(req, query, sizeof(query)) == WEB_HTTP_OK
+            && web_http_query_value(query, "downgrade", value, sizeof(value)) == WEB_HTTP_OK
+            && strcmp(value, "1") == 0) {
+        flags |= FW_UPDATE_ALLOW_DOWNGRADE;
+    }
     fw_update_outcome_t out;
-    firmware_try_update(true, &out);
+    firmware_try_update(flags, &out);
 
     switch (out.result) {
         case FW_UPDATE_ERR_NETWORK:
@@ -2557,6 +2570,11 @@ static web_http_error_t handle_firmware_install(web_http_request_t *req)
             return WEB_HTTP_OK;
         case FW_UPDATE_SKIPPED_FAILED:
             send_fail(req, "Update skipped — previously rolled back.");
+            return WEB_HTTP_OK;
+        case FW_UPDATE_OLDER_AVAILABLE:
+            // Only without ?downgrade=1: the channel went back between
+            // /check and /install. Say so instead of reporting "nothing".
+            send_fail(req, "The channel now has an older version; check again.");
             return WEB_HTTP_OK;
         default:
             break;

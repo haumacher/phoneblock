@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "cJSON.h"
 
 // Locating this chip's build in an OTA manifest. Pure cJSON, no ESP-IDF —
@@ -42,3 +44,22 @@ typedef struct {
 // top-level one).
 ota_pick_result_t ota_manifest_pick(const cJSON *root, const char *chip_family,
                                     ota_build_t *out);
+
+// What to do with a verified manifest, given the running version. Pure, so
+// the rule is host-tested; firmware_update.c only acts on the result.
+typedef enum {
+    OTA_DECIDE_SAME,         // manifest names the running version
+    OTA_DECIDE_OLDER,        // manifest is older: a downgrade (#707), which
+                             // needs the user's explicit consent
+    OTA_DECIDE_SKIP_FAILED,  // this version was installed and rolled back
+    OTA_DECIDE_INSTALL,
+} ota_decision_t;
+
+// `retry_failed`: the user asked to try a rolled-back version again.
+// `allow_downgrade`: the user confirmed installing an older version.
+// Neither implies the other: retrying a failed update is no consent to
+// go back a version.
+ota_decision_t ota_decide(const char *manifest_version,
+                          const char *running_version,
+                          const char *last_failed_version,
+                          bool retry_failed, bool allow_downgrade);

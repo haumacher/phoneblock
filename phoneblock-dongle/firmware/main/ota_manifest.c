@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "version_cmp.h"
+
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
@@ -78,4 +80,23 @@ ota_pick_result_t ota_manifest_pick(const cJSON *root, const char *chip_family,
     out->app_sha256 = hash->valuestring;
     out->signature  = sig->valuestring;
     return OTA_PICK_OK;
+}
+
+ota_decision_t ota_decide(const char *manifest_version,
+                          const char *running_version,
+                          const char *last_failed_version,
+                          bool retry_failed, bool allow_downgrade)
+{
+    int vcmp = version_cmp(manifest_version, running_version);
+    if (vcmp == 0) return OTA_DECIDE_SAME;
+    // Older than what runs: the background update and a plain "check" both
+    // stop here, so neither a CDN rollback nor a switch from beta to stable
+    // ever replaces a newer build without the user saying so.
+    if (vcmp < 0 && !allow_downgrade) return OTA_DECIDE_OLDER;
+    if (last_failed_version && last_failed_version[0] != '\0'
+            && strcmp(last_failed_version, manifest_version) == 0
+            && !retry_failed) {
+        return OTA_DECIDE_SKIP_FAILED;
+    }
+    return OTA_DECIDE_INSTALL;
 }

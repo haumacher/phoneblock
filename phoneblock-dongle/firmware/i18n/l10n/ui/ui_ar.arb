@@ -9,6 +9,7 @@
   "duration.seconds": "{n} ثانية",
   "duration.minutes": "{n} دقيقة",
   "duration.hours": "{n} ساعة",
+  "duration.days": "{n} d",
   "status.sip.at": "على {host} بصفتي {user}",
   "status.sip.ext": "الرقم الداخلي {n}",
   "status.sip.public_ip": "عنوان IP عام {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "حذف التسجيل",
   "status.rec.delete.confirm": "هل تريد حذف هذا التسجيل؟ ستبقى المكالمة في القائمة.",
   "status.rec.failed": "تعذر تحميل المقطع الصوتي.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "لا يتوفر على هذه القناة سوى الإصدار الأقدم {version} (الإصدار المثبت هو {current}). سيظل جهاز الدونجل على الإصدار {current} حتى ظهور إصدار أحدث.",
+  "status.fw.downgrade": "على الرغم من ذلك، قم بتثبيت {version}",
+  "status.fw.downgrade.confirm": "هل تريد حقًا الرجوع إلى الإصدار الأقدم {version}؟ سيؤدي ذلك إلى فقدان وظائف الإصدار الأحدث."
 }

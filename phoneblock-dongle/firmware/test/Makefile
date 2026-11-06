@@ -44,8 +44,8 @@ cjson.o: $(CJSON_DIR)/cJSON.c $(CJSON_DIR)/cJSON.h
 test_api_scan: test_api_scan.c ../main/api_scan.c ../main/api_scan.h cjson.o
 	$(CC) $(CFLAGS) -I$(CJSON_DIR) test_api_scan.c ../main/api_scan.c cjson.o -o $@
 
-test_ota_manifest: test_ota_manifest.c ../main/ota_manifest.c ../main/ota_manifest.h cjson.o
-	$(CC) $(CFLAGS) -I$(CJSON_DIR) test_ota_manifest.c ../main/ota_manifest.c cjson.o -o $@
+test_ota_manifest: test_ota_manifest.c ../main/ota_manifest.c ../main/ota_manifest.h ../main/version_cmp.c cjson.o
+	$(CC) $(CFLAGS) -I$(CJSON_DIR) test_ota_manifest.c ../main/ota_manifest.c ../main/version_cmp.c cjson.o -o $@
 
 # The device-code link's server answers and state machine (#621). With
 # AddressSanitizer: the parsers copy server-chosen strings into fixed fields.
