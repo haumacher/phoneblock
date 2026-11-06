@@ -185,7 +185,7 @@ bool storage_mount(void)
             STORAGE_LOGI(TAG, "storage partition empty (first start): formatting LittleFS");
         } else {
             // Once per partition: the classic ESP32's SPIFFS on the first boot
-            // of 1.7 (partitions.csv), or a board's demo firmware. The one
+            // of 2.0 (partitions.csv), or a board's demo firmware. The one
             // line in the web UI's log panel tells the user what it cost:
             // everything on it is downloaded again — except their own
             // recorded announcement (announcement.c). Settings are in NVS.

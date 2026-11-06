@@ -4,7 +4,7 @@
 // (i18n_sync.c, dialog_store.h) and the user's own recorded announcement
 // (announcement.c). Its filesystem is LittleFS on every board: the classic
 // ESP32 (640 KB, partitions.csv — the partition kept its spiffs subtype,
-// the first boot of 1.7 reformats the old SPIFFS), the ESP32-C3 (640 KB,
+// the first boot of 2.0 reformats the old SPIFFS), the ESP32-C3 (640 KB,
 // partitions-c3.csv) and the ESP32-S3 (~9.6 MB, partitions-16mb.csv); the
 // Linux port (STORAGE_HOSTFS) uses a plain directory instead. Only this
 // module knows which: it mounts the partition (storage_mount()) and reports

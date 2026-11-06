@@ -94,7 +94,7 @@ idf.py build
 
 Die Speicherpartition (Sperrlisten, Sprachpakete, Ansagen, Dialogsätze) ist
 auf allen Boards LittleFS (`main/storage.h`). Ein ESP32, der mit SPIFFS aus
-1.6 oder älter kommt, formatiert sie beim ersten Start von 1.7 neu (eine
+1.6 oder älter kommt, formatiert sie beim ersten Start von 2.0 (bzw. den 1.7.0-Betas) neu (eine
 Warnung im Protokoll); die Partitionstabelle bleibt dabei unverändert.
 
 ESP32-C3 (z.B. "C3 Super Mini") in einem eigenen Build-Verzeichnis, damit

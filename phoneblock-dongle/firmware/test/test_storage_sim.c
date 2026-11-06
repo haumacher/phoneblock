@@ -6,7 +6,7 @@
 //
 //  * Mount. What storage_mount() does with the partition it finds: an erased
 //    one is formatted quietly, a LittleFS is mounted as it is, and anything
-//    else — the classic ESP32's SPIFFS on the first boot of 1.7 — is
+//    else — the classic ESP32's SPIFFS on the first boot of 2.0 — is
 //    reformatted with exactly one WARN, the line the web UI's log panel
 //    shows (STORAGE_REFORMAT_WARNING).
 //

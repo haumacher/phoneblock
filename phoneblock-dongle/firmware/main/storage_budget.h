@@ -10,7 +10,7 @@
 // (blocklist_sync.c).
 //
 // The partition holds LittleFS on every board: 640 KB on the classic ESP32
-// (partitions.csv, whose old SPIFFS the first boot of 1.7 reformats,
+// (partitions.csv, whose old SPIFFS the first boot of 2.0 reformats,
 // storage.c) and on the ESP32-C3 (partitions-c3.csv), ~9.6 MB on the
 // ESP32-S3 (partitions-16mb.csv). The dialog tiers at the end cover those
 // and the plain filesystem of the Linux port.
@@ -129,7 +129,7 @@ bool storage_budget_lfs_asset_fits(const storage_lfs_geometry_t *g,
 // old one), and a pack update must not cost the 128 KB list either. On the
 // 640 KB partition that leaves 81 blocks, 331144 bytes
 // (storage_budget_lfs_dialog_room(); 84 blocks before the call list of
-// 1.7.0, #589); M is that rounded down to 16 KiB, 320 KiB. Next to an M
+// 2.0.0, #589); M is that rounded down to 16 KiB, 320 KiB. Next to an M
 // set the community budget is then ~190 KB, the
 // 128 KB bucket, with a pack update's second copy still fitting beside it
 // (test_storage_budget.c checks all of these numbers; test_storage_sim.c

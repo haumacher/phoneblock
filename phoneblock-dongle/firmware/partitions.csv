@@ -6,8 +6,8 @@
 # Storage partition keeps the "storage" label so announcement.c
 # continues to mount it; size dropped from 1024 KB to 640 KB after
 # realising the user-recorded announcement is capped at 240 KB
-# (see ANNOUNCEMENT_MAX_BYTES in announcement.h). Since 1.7 it holds
-# LittleFS, like the C3's (partitions-c3.csv): the first boot of 1.7
+# (see ANNOUNCEMENT_MAX_BYTES in announcement.h). Since 2.0 it holds
+# LittleFS, like the C3's (partitions-c3.csv): the first boot of 2.0
 # reformats the old SPIFFS (main/storage.c). The subtype stays spiffs —
 # the table cannot change over the air, and a USB-flashed dongle must
 # look like an updated one; storage.c mounts by label, whatever the

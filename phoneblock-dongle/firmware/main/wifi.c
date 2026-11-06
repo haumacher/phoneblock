@@ -828,7 +828,7 @@ esp_err_t wifi_connect(void)
         // after the update. Idempotent: only rewritten when it differs,
         // so a config already on all-channel scan isn't touched. See
         // issue #458. Same for the mesh-roaming flags (#585), which
-        // configs persisted before 1.7.0 lack.
+        // configs persisted before 2.0.0 (the 1.7.0 betas) lack.
         if (stored.sta.scan_method != WIFI_ALL_CHANNEL_SCAN
                 || !stored.sta.rm_enabled || !stored.sta.btm_enabled) {
             stored.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;

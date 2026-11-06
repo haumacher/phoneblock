@@ -85,7 +85,7 @@ The CDN layout (from `release.sh`): base `https://cdn.phoneblock.net/dongle/firm
 then `<version>/` holds the ESP32's `phoneblock_dongle.{bin,elf}`, `bootloader.bin`,
 `partition-table.bin`, `ota_data_initial.bin`, `manifest.json`, and the same
 bin/elf set per further chip under `<version>/esp32c3/` and `<version>/esp32s3/`
-(C3 since 1.7.0, S3 since its first release); the `stable/` and `beta/` dirs
+(C3 since 2.0.0 — the 1.7.0 betas —, S3 since its first release); the `stable/` and `beta/` dirs
 hold the channel `manifest.json` and the per-chip `ota-<target>.json` that flip
 per release.
 
