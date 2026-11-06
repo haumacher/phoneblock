@@ -451,6 +451,14 @@ Java `ResourceBundle` keys used by the web app live in `phoneblock/src/main/java
 
 **All three steps (edit, translate, gen-l10n) MUST be done together. Never commit with only step 1 done.**
 
+**Wrong terminology in a generated language** (e.g. DeepL turning "Dongle" into "network card"):
+fix it in the shared DeepL glossary `glossary/de-<lang>.tsv` (tab-separated German → target
+term), used by the mobile app's and the dongle's `translateArb` (plugin
+`de.haumacher.auto-translate-arb` 1.1.4, `glossaryDir`). Then force a re-translation of the
+affected keys by setting their `x-translated` in the German ARB to a stale value (e.g.
+`"00000000"`). A hand edit in a generated ARB survives only until its German source changes and
+is then silently overwritten.
+
 ### Flutter `use_build_context_synchronously` Warnings
 
 In `State` subclasses, the analyzer cannot link a `context.mounted` check to later `context` uses because each `context` access re-evaluates the `State.context` getter. To fix:

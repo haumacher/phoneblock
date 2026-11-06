@@ -59,6 +59,8 @@
   "reportAsLegitimate": "Rapportera som legitimt",
   "reportAsSpam": "Rapportera som SPAM",
   "viewOnPhoneBlockMenu": "Visa på PhoneBlock",
+  "copyNumber": "Kopia nummer",
+  "numberCopied": "Nummer kopierat till urklipp",
   "deleteCall": "Radera",
   "report": "Rapport",
   "notLoggedIn": "Inte registrerad. Vänligen logga in.",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "Synkronisera...",
   "blocklistSyncSuccess": "Synkroniseringen av blocklistan lyckades",
   "blocklistSyncFailed": "Synkroniseringen av blocklistan misslyckades",
-  "personalizedAddedDate": "Tillagd: {date}",
-  "copyNumber": "Kopia nummer",
-  "numberCopied": "Nummer kopierat till urklipp"
+  "personalizedAddedDate": "Tillagd: {date}"
 }

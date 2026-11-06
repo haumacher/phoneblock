@@ -59,6 +59,8 @@
   "reportAsLegitimate": "Αναφορά ως νόμιμη",
   "reportAsSpam": "Αναφορά ως SPAM",
   "viewOnPhoneBlockMenu": "Προβολή στο PhoneBlock",
+  "copyNumber": "Αριθμός αντιγράφου",
+  "numberCopied": "Αριθμός που αντιγράφεται στο πρόχειρο",
   "deleteCall": "Διαγραφή",
   "report": "Αναφορά",
   "notLoggedIn": "Δεν έχει καταχωρηθεί. Παρακαλώ συνδεθείτε.",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "Συγχρονισμός...",
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
   "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
-  "personalizedAddedDate": "Προστέθηκε: {date}",
-  "copyNumber": "Αριθμός αντιγράφου",
-  "numberCopied": "Αριθμός που αντιγράφεται στο πρόχειρο"
+  "personalizedAddedDate": "Προστέθηκε: {date}"
 }

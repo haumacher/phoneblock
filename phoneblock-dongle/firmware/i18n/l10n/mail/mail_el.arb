@@ -1,15 +1,7 @@
 {
   "@@locale": "el",
-  "intro": "Αναφορά κατάστασης του PhoneBlock-Dongle σου.",
-  "subj.error_and_calls": "PhoneBlock-Dongle: Σφάλματα και νέες κλήσεις",
-  "subj.error": "PhoneBlock-Dongle: Σφάλμα στο πρωτόκολλο",
-  "subj.calls": "PhoneBlock-Dongle: Νέες κλήσεις",
-  "subj.status": "PhoneBlock-Dongle: Μήνυμα κατάστασης",
-  "subj.update": "PhoneBlock-Dongle: Ενημέρωση υλικολογισμικού",
   "newcalls.one": "Από την τελευταία ενημέρωση έχει εισέλθει <b>1</b> νέα κλήση.",
   "newcalls.many": "Από την τελευταία ενημέρωση έχουν ληφθεί <b>{count}</b> νέες κλήσεις.",
-  "subj.spam": "PhoneBlock-Dongle: Αποτροπή ανεπιθύμητων κλήσεων",
-  "subj.error_and_spam": "PhoneBlock-Dongle: Σφάλματα και αποκλεισμένες κλήσεις SPAM",
   "newspam.one": "Από την τελευταία ενημέρωση, αποκρούστηκε <b>1</b> κλήση SPAM.",
   "newspam.many": "Από την τελευταία ενημέρωση, έχουν αποκρουστεί <b>{count}</b> κλήσεις SPAM.",
   "sum.device": "Συσκευή:",
@@ -34,5 +26,13 @@
   "verdict.error": "Σφάλμα",
   "verdict.unknown": "άγνωστο",
   "log.heading": "Νέες καταχωρήσεις στο αρχείο καταγραφής",
-  "update.body": "Το firmware της συσκευής σου {device} ενημερώθηκε στην έκδοση {version}."
+  "update.body": "Το firmware της συσκευής σου {device} ενημερώθηκε στην έκδοση {version}.",
+  "intro": "Μήνυμα κατάστασης του PhoneBlock-Dongle σου.",
+  "subj.error_and_calls": "PhoneBlock-Dongle: Σφάλματα και νέες κλήσεις",
+  "subj.error": "PhoneBlock-Dongle: Σφάλμα στο αρχείο καταγραφής",
+  "subj.calls": "PhoneBlock-Dongle: Νέες κλήσεις",
+  "subj.status": "PhoneBlock-Dongle: Μήνυμα κατάστασης",
+  "subj.update": "PhoneBlock-Dongle: Ενημέρωση υλικολογισμικού",
+  "subj.spam": "PhoneBlock-Dongle: Αποκλεισμένες κλήσεις SPAM",
+  "subj.error_and_spam": "PhoneBlock-Dongle: Σφάλματα και αποκλεισμένες κλήσεις SPAM"
 }

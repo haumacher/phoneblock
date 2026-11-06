@@ -1,15 +1,7 @@
 {
   "@@locale": "pl",
-  "intro": "Komunikat o stanie klucza PhoneBlock.",
-  "subj.error_and_calls": "Klucz PhoneBlock: błędy i nowe połączenia",
-  "subj.error": "Klucz PhoneBlock: błąd w protokole",
-  "subj.calls": "Klucz PhoneBlock: Nowe połączenia",
-  "subj.status": "Klucz PhoneBlock: Komunikat o stanie",
-  "subj.update": "Klucz PhoneBlock: zaktualizowano oprogramowanie układowe",
   "newcalls.one": "Od ostatniej wiadomości wpłynął <b>1</b> nowy połączenie.",
   "newcalls.many": "Od ostatniej aktualizacji otrzymano <b>{count}</b> nowych połączeń.",
-  "subj.spam": "Klucz PhoneBlock: blokowanie połączeń spamowych",
-  "subj.error_and_spam": "Klucz PhoneBlock: błędy i zablokowane połączenia spamowe",
   "newspam.one": "Od ostatniego zgłoszenia zablokowano <b>1</b> połączenie spamowe.",
   "newspam.many": "Od ostatniego zgłoszenia zablokowano <b>{count}</b> połączeń spamowych.",
   "sum.device": "Urządzenie:",
@@ -34,5 +26,13 @@
   "verdict.error": "Błąd",
   "verdict.unknown": "nieznane",
   "log.heading": "Nowe wpisy w protokole",
-  "update.body": "Oprogramowanie sprzętowe na Twoim {device} zostało zaktualizowane do wersji {version}."
+  "update.body": "Oprogramowanie sprzętowe na Twoim {device} zostało zaktualizowane do wersji {version}.",
+  "intro": "Komunikat o stanie dongla PhoneBlock.",
+  "subj.error_and_calls": "Dongle PhoneBlock: błędy i nowe połączenia",
+  "subj.error": "Dongle PhoneBlock: błąd w protokole",
+  "subj.calls": "Dongle PhoneBlock: nowe połączenia",
+  "subj.status": "Dongle PhoneBlock: komunikat o stanie",
+  "subj.update": "Dongle PhoneBlock: oprogramowanie sprzętowe zaktualizowane",
+  "subj.spam": "Dongle PhoneBlock: zablokowane połączenia spamowe",
+  "subj.error_and_spam": "Dongle PhoneBlock: błędy i zablokowane połączenia spamowe"
 }

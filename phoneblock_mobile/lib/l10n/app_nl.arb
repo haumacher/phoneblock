@@ -59,6 +59,8 @@
   "reportAsLegitimate": "Rapporteer als legitiem",
   "reportAsSpam": "Rapporteren als SPAM",
   "viewOnPhoneBlockMenu": "Bekijk op PhoneBlock",
+  "copyNumber": "Kopieernummer",
+  "numberCopied": "Nummer gekopieerd naar klembord",
   "deleteCall": "Verwijder",
   "report": "Rapporteer",
   "notLoggedIn": "Niet geregistreerd. Log in.",
@@ -306,7 +308,5 @@
   "blocklistSyncing": "Synchroniseren...",
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
-  "personalizedAddedDate": "Toegevoegd: {date}",
-  "copyNumber": "Kopieernummer",
-  "numberCopied": "Nummer gekopieerd naar klembord"
+  "personalizedAddedDate": "Toegevoegd: {date}"
 }

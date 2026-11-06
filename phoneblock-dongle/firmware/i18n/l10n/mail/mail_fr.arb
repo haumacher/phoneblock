@@ -1,15 +1,7 @@
 {
   "@@locale": "fr",
-  "intro": "Message d'état de votre dongle PhoneBlock.",
-  "subj.error_and_calls": "Clé PhoneBlock : erreurs et nouveaux appels",
-  "subj.error": "Clé PhoneBlock : erreur dans le protocole",
-  "subj.calls": "Clé PhoneBlock : nouveaux appels",
-  "subj.status": "Clé PhoneBlock : message d'état",
-  "subj.update": "Clé PhoneBlock : mise à jour du micrologiciel",
   "newcalls.one": "Depuis le dernier message, <b>1</b> nouvel appel a été reçu.",
   "newcalls.many": "Depuis le dernier message, <b>{count}</b> nouveaux appels ont été reçus.",
-  "subj.spam": "Clé PhoneBlock : appels indésirables bloqués",
-  "subj.error_and_spam": "Clé PhoneBlock : erreurs et appels indésirables bloqués",
   "newspam.one": "Depuis le dernier message, <b>1</b> appel indésirable a été bloqué.",
   "newspam.many": "Depuis le dernier rapport, <b>{count}</b> appels indésirables ont été bloqués.",
   "sum.device": "Appareil :",
@@ -34,5 +26,13 @@
   "verdict.error": "Erreur",
   "verdict.unknown": "inconnu",
   "log.heading": "Nouvelles entrées dans le journal",
-  "update.body": "Le micrologiciel de ton {device} a été mis à jour vers la version {version}."
+  "update.body": "Le micrologiciel de ton {device} a été mis à jour vers la version {version}.",
+  "intro": "Message d'état de votre dongle PhoneBlock.",
+  "subj.error_and_calls": "Dongle PhoneBlock : erreurs et nouveaux appels",
+  "subj.error": "Dongle PhoneBlock : erreur dans le journal",
+  "subj.calls": "Dongle PhoneBlock : nouveaux appels",
+  "subj.status": "Dongle PhoneBlock : message d'état",
+  "subj.update": "Dongle PhoneBlock : mise à jour du micrologiciel",
+  "subj.spam": "Dongle PhoneBlock : appels indésirables bloqués",
+  "subj.error_and_spam": "Dongle PhoneBlock : erreurs et appels indésirables bloqués"
 }
