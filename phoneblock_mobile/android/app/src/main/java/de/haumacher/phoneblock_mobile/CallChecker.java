@@ -86,7 +86,6 @@ public class CallChecker extends CallScreeningService {
         int minVotes = prefs.getInt("min_votes", 4);
         boolean blockRanges = prefs.getBoolean("block_ranges", true);
         int minRangeVotes = prefs.getInt("min_range_votes", 10);
-        String wildcardPrefixesJson = prefs.getString("wildcard_prefixes", "[]");
 
         if (authToken == null) {
             Log.d(CallChecker.class.getName(), "onScreenCall: No PhoneBlock authorization, cannot screen call.");
@@ -147,10 +146,11 @@ public class CallChecker extends CallScreeningService {
                 if (timeoutFuture[0] != null) {
                     timeoutFuture[0].cancel(false);
                 }
+                final java.util.List<String> wildcardPrefixes = loadLocalWildcardPrefixes();
                 Handler.createAsync(Looper.getMainLooper()).post(() ->
                     decideAndRespond(callDetails, rawNumber, number,
                         fVotes, fVotesWildcard, fArchived, fRating, fLabel, fLocation, fBlackListed,
-                        minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixes));
             }
         }, 0, TimeUnit.MILLISECONDS);
 
@@ -159,11 +159,12 @@ public class CallChecker extends CallScreeningService {
             if (responded.compareAndSet(false, true)) {
                 queryFuture.cancel(true);
                 int localVotes = Math.max(0, lookupLocalBlocklist(number));
+                final java.util.List<String> wildcardPrefixes = loadLocalWildcardPrefixes();
 
                 Handler.createAsync(Looper.getMainLooper()).post(() ->
                     decideAndRespond(callDetails, rawNumber, number,
                         localVotes, 0, false, null, null, null, false,
-                        minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixes));
             }
         }, 4500, TimeUnit.MILLISECONDS);
     }
@@ -174,7 +175,7 @@ public class CallChecker extends CallScreeningService {
      */
     private void decideAndRespond(@NonNull Call.Details callDetails, String rawNumber, String number,
             int votes, int votesWildcard, boolean archived, String rating, String label, String location, boolean blackListed,
-            int minVotes, boolean blockRanges, int minRangeVotes, String wildcardPrefixesJson) {
+            int minVotes, boolean blockRanges, int minRangeVotes, java.util.List<String> wildcardPrefixes) {
 
         boolean block = false;
         String matchedPrefix = null;
@@ -186,7 +187,7 @@ public class CallChecker extends CallScreeningService {
         } else if (blockRanges && votesWildcard >= minRangeVotes) {
             block = true;
         } else {
-            matchedPrefix = findWildcardMatch(number, wildcardPrefixesJson);
+            matchedPrefix = findWildcardMatch(number, wildcardPrefixes);
             if (matchedPrefix != null) {
                 block = true;
             }
@@ -221,17 +222,11 @@ public class CallChecker extends CallScreeningService {
     }
 
     /** Finds the first wildcard prefix that matches the given number, or null. */
-    private static String findWildcardMatch(String number, String wildcardPrefixesJson) {
-        try {
-            org.json.JSONArray prefixes = new org.json.JSONArray(wildcardPrefixesJson);
-            for (int i = 0; i < prefixes.length(); i++) {
-                String prefix = prefixes.getString(i);
-                if (number.startsWith(prefix)) {
-                    return prefix;
-                }
+    private static String findWildcardMatch(String number, java.util.List<String> wildcardPrefixes) {
+        for (String prefix : wildcardPrefixes) {
+            if (number.startsWith(prefix)) {
+                return prefix;
             }
-        } catch (org.json.JSONException e) {
-            Log.w(CallChecker.class.getName(), "Failed to parse wildcard prefixes", e);
         }
         return null;
     }
@@ -324,6 +319,43 @@ public class CallChecker extends CallScreeningService {
             Log.w(CallChecker.class.getName(), "Error looking up local blocklist", e);
             return -1;
         }
+    }
+
+    /**
+     * Loads the user's personal wildcard prefixes from the local SQLite store.
+     *
+     * <p>Read directly from the {@code wildcard_blocks} table (the same database the Flutter side
+     * reconciles with the server) rather than from SharedPreferences, so that prefixes synced by
+     * the background worker take effect without a foreground round-trip through the MethodChannel.</p>
+     *
+     * @return The list of international-format prefixes, empty if none are stored or on error.
+     */
+    private java.util.List<String> loadLocalWildcardPrefixes() {
+        java.util.List<String> prefixes = new java.util.ArrayList<>();
+        try {
+            java.io.File dbFile = getDatabasePath("screened_calls.db");
+            if (!dbFile.exists()) {
+                return prefixes;
+            }
+
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                dbFile.getPath(), null, SQLiteDatabase.OPEN_READONLY);
+            try {
+                Cursor cursor = db.rawQuery("SELECT prefix FROM wildcard_blocks", null);
+                try {
+                    while (cursor.moveToNext()) {
+                        prefixes.add(cursor.getString(0));
+                    }
+                } finally {
+                    cursor.close();
+                }
+            } finally {
+                db.close();
+            }
+        } catch (Exception e) {
+            Log.w(CallChecker.class.getName(), "Error loading local wildcard prefixes", e);
+        }
+        return prefixes;
     }
 
 }

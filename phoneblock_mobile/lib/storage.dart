@@ -663,13 +663,6 @@ class ScreenedCallsDatabase {
     return maps.map((m) => WildcardBlock.fromMap(m)).toList();
   }
 
-  /// Returns all wildcard prefixes as a list of strings.
-  Future<List<String>> getWildcardPrefixes() async {
-    final db = await database;
-    final maps = await db.query('wildcard_blocks', columns: ['prefix'], orderBy: 'prefix ASC');
-    return maps.map((m) => m['prefix'] as String).toList();
-  }
-
   /// Updates the comment for a wildcard blocking rule.
   Future<int> updateWildcardBlockComment(int id, String comment) async {
     final db = await database;
