@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "på {host} som {user}",
   "status.sip.ext": "Internt nummer {n}",
   "status.sip.public_ip": "offentlig IP {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Radera inspelning",
   "status.rec.delete.confirm": "Vill du radera den här inspelningen? Samtalet finns kvar i listan.",
   "status.rec.failed": "Det gick inte att ladda bilden.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "På den här kanalen finns endast den äldre versionen {version} (den installerade versionen är {current}). Dongeln förblir på {current} tills en nyare version släpps.",
+  "status.fw.downgrade": "Installera ändå {version}",
+  "status.fw.downgrade.confirm": "Vill du verkligen återgå till den äldre versionen {version}? Då går funktioner i den nyare versionen förlorade."
 }

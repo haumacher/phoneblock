@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "sur {host} en tant que {user}",
   "status.sip.ext": "Numéro interne {n}",
   "status.sip.public_ip": "IP publique {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "Sur ce canal, seule la version antérieure {version} est disponible (la version installée est {current}). La clé reste sur {current} jusqu'à ce qu'une version plus récente soit disponible.",
+  "status.fw.downgrade": "Installer quand même la {version}",
+  "status.fw.downgrade.confirm": "Voulez-vous vraiment revenir à l'ancienne version {version} ? Les fonctionnalités de la version plus récente seront alors perdues."
 }

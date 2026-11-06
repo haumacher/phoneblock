@@ -9,6 +9,7 @@
   "duration.seconds": "{n} с",
   "duration.minutes": "{n} хв",
   "duration.hours": "{n} год",
+  "duration.days": "{n} d",
   "status.sip.at": "на {host} як {user}",
   "status.sip.ext": "Внутрішній номер {n}",
   "status.sip.public_ip": "публічна IP-адреса {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Видалити запис",
   "status.rec.delete.confirm": "Видалити цей запис? Дзвінок залишиться у списку.",
   "status.rec.failed": "Не вдалося завантажити запис.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "На цьому каналі доступна лише старіша версія {version} (встановлено {current}). Ключ залишається на {current}, доки не з’явиться новіша версія.",
+  "status.fw.downgrade": "Все одно встановити {version}",
+  "status.fw.downgrade.confirm": "Чи справді потрібно повернутися до попередньої версії {version}? У цьому випадку функції нової версії будуть втрачені."
 }

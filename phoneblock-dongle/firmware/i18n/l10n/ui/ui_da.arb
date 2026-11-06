@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "på {host} som {user}",
   "status.sip.ext": "Internt nummer {n}",
   "status.sip.public_ip": "offentlig IP {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Slet optagelse",
   "status.rec.delete.confirm": "Skal denne optagelse slettes? Opkaldet forbliver på listen.",
   "status.rec.failed": "Optagelsen kunne ikke indlæses.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "På denne kanal findes kun den ældre version {version} (den installerede version er {current}). Donglen forbliver på {current}, indtil der udkommer en nyere version.",
+  "status.fw.downgrade": "Alligevel installere {version}",
+  "status.fw.downgrade.confirm": "Vil du virkelig gå tilbage til den ældre version {version}? Funktioner fra den nyere version går derved tabt."
 }

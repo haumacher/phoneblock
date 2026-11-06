@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "na serwerze {host} jako użytkownik {user}",
   "status.sip.ext": "Numer wewnętrzny {n}",
   "status.sip.public_ip": "publiczny adres IP {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
   "status.rec.failed": "Nie udało się załadować nagrania.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "Na tym kanale dostępna jest tylko starsza wersja {version} (zainstalowana jest wersja {current}). Klucz sprzętowy pozostanie w wersji {current}, dopóki nie pojawi się nowsza wersja.",
+  "status.fw.downgrade": "Mimo to zainstaluj {version}",
+  "status.fw.downgrade.confirm": "Czy na pewno chcesz powrócić do starszej wersji {version}? Spowoduje to utratę funkcji dostępnych w nowszej wersji."
 }

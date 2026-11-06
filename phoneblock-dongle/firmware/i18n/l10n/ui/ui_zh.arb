@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} 分钟",
   "duration.hours": "{n} 小时",
+  "duration.days": "{n} d",
   "status.sip.at": "在 {host} 上以 {user} 身份",
   "status.sip.ext": "内部编号 {n}",
   "status.sip.public_ip": "公共IP {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "删除录音",
   "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
   "status.rec.failed": "无法加载该照片。",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "该频道仅提供旧版本 {version}（当前已安装的是 {current}）。在发布新版本之前，加密狗将保持在 {current} 状态。",
+  "status.fw.downgrade": "尽管如此，还是安装 {version}",
+  "status.fw.downgrade.confirm": "真的要降级到旧版本 {version} 吗？这样会导致新版本的功能丢失。"
 }

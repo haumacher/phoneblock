@@ -9,6 +9,7 @@
   "duration.seconds": "{n} s",
   "duration.minutes": "{n} min",
   "duration.hours": "{n} h",
+  "duration.days": "{n} d",
   "status.sip.at": "op {host} als {user}",
   "status.sip.ext": "Intern nummer {n}",
   "status.sip.public_ip": "openbaar IP-adres {ip}",
@@ -483,5 +484,7 @@
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
   "status.rec.failed": "Het bestand kon niet worden geladen.",
-  "duration.days": "{n} d"
+  "status.fw.check.older": "Op dit kanaal is alleen de oudere versie {version} beschikbaar (er is {current} geïnstalleerd). De dongle blijft op {current} staan totdat er een nieuwere versie verschijnt.",
+  "status.fw.downgrade": "Toch {version} installeren",
+  "status.fw.downgrade.confirm": "Wil je echt teruggaan naar de oudere versie {version}? Daarbij gaan functies van de nieuwere versie verloren."
 }

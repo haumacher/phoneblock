@@ -29,7 +29,6 @@
 #include "manifest_sig.h"
 #include "ota_manifest.h"
 #include "platform.h"
-#include "version_cmp.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -213,7 +212,7 @@ typedef struct {
     char    error[64];
 } manifest_decision_t;
 
-static void resolve_manifest(bool force, const char *current_version,
+static void resolve_manifest(unsigned flags, const char *current_version,
                              manifest_decision_t *d)
 {
     memset(d, 0, sizeof(*d));
@@ -321,33 +320,30 @@ static void resolve_manifest(bool force, const char *current_version,
     copy_str(d->new_version, sizeof(d->new_version), new_version);
     copy_str(d->app_url,     sizeof(d->app_url),     new_url);
 
-    int vcmp = version_cmp(new_version, current_version);
-    if (vcmp == 0) {
-        cJSON_Delete(root);
-        d->result = FW_UPDATE_NO_NEW;
-        return;
-    }
-    if (vcmp < 0 && !force) {
-        // Manifest is older than what we're running. The unforced path
-        // (auto-update background task, "Auf Aktualisierung prüfen"
-        // without manual override) treats this as "nothing newer" so
-        // a CDN downgrade — accidental or otherwise — never silently
-        // overwrites a newer locally-flashed build. The forced manual
-        // path still allows downgrades on explicit user request.
-        ESP_LOGI(TAG, "manifest version %s is older than running %s; skipping",
-                 new_version, current_version);
-        cJSON_Delete(root);
-        d->result = FW_UPDATE_NO_NEW;
-        return;
-    }
-
-    const char *failed = config_last_failed_ota();
-    if (failed[0] != '\0' && strcmp(failed, new_version) == 0 && !force) {
-        ESP_LOGW(TAG, "skipping update to %s — same version previously "
-                      "rolled back; clear via web UI to retry", new_version);
-        cJSON_Delete(root);
-        d->result = FW_UPDATE_SKIPPED_FAILED;
-        return;
+    const bool retry_failed    = (flags & FW_UPDATE_RETRY_FAILED) != 0;
+    const bool allow_downgrade = (flags & FW_UPDATE_ALLOW_DOWNGRADE) != 0;
+    switch (ota_decide(new_version, current_version, config_last_failed_ota(),
+                       retry_failed, allow_downgrade)) {
+        case OTA_DECIDE_SAME:
+            cJSON_Delete(root);
+            d->result = FW_UPDATE_NO_NEW;
+            return;
+        case OTA_DECIDE_OLDER:
+            // Reported, not installed: the web UI asks the user first.
+            ESP_LOGI(TAG, "manifest version %s is older than running %s; "
+                          "not installing without confirmation",
+                     new_version, current_version);
+            cJSON_Delete(root);
+            d->result = FW_UPDATE_OLDER_AVAILABLE;
+            return;
+        case OTA_DECIDE_SKIP_FAILED:
+            ESP_LOGW(TAG, "skipping update to %s — same version previously "
+                          "rolled back; clear via web UI to retry", new_version);
+            cJSON_Delete(root);
+            d->result = FW_UPDATE_SKIPPED_FAILED;
+            return;
+        case OTA_DECIDE_INSTALL:
+            break;
     }
 
     cJSON_Delete(root);
@@ -365,7 +361,7 @@ static void install_resolved(const manifest_decision_t *d,
     // Pessimistic marker: write *before* the OTA so a brick + rollback
     // can be detected on the next boot. Cleared in main.c once the
     // running image equals this version (i.e. it survived). Overwrites
-    // any prior marker — the manual force=true path comes through here
+    // any prior marker — the manual RETRY_FAILED path comes through here
     // even when an old failure named the same version.
     config_set_last_failed_ota(d->new_version);
 
@@ -513,25 +509,25 @@ static void copy_decision_into_outcome(const manifest_decision_t *d,
     copy_str(out->error,       sizeof(out->error),       d->error);
 }
 
-void firmware_check_manifest(bool force, fw_update_outcome_t *out)
+void firmware_check_manifest(unsigned flags, fw_update_outcome_t *out)
 {
     fw_update_outcome_t scratch;
     if (!out) out = &scratch;
     prime_outcome(out);
 
     manifest_decision_t d;
-    resolve_manifest(force, out->current_version, &d);
+    resolve_manifest(flags, out->current_version, &d);
     copy_decision_into_outcome(&d, out);
 }
 
-void firmware_try_update(bool force, fw_update_outcome_t *out)
+void firmware_try_update(unsigned flags, fw_update_outcome_t *out)
 {
     fw_update_outcome_t scratch;
     if (!out) out = &scratch;
     prime_outcome(out);
 
     manifest_decision_t d;
-    resolve_manifest(force, out->current_version, &d);
+    resolve_manifest(flags, out->current_version, &d);
     if (d.result != FW_UPDATE_NEW_AVAILABLE) {
         copy_decision_into_outcome(&d, out);
         return;
@@ -560,7 +556,7 @@ void firmware_update_run(void)
         return;
     }
     ESP_LOGI(TAG, "scheduled firmware update check");
-    firmware_try_update(false, NULL);
+    firmware_try_update(0, NULL);
 }
 
 #else
@@ -570,9 +566,9 @@ void firmware_update_run(void)
 
 #include "platform.h"
 
-void firmware_check_manifest(bool force, fw_update_outcome_t *out)
+void firmware_check_manifest(unsigned flags, fw_update_outcome_t *out)
 {
-    (void)force;
+    (void)flags;
     if (!out) return;
     memset(out, 0, sizeof(*out));
     out->result = FW_UPDATE_NO_NEW;
@@ -580,9 +576,9 @@ void firmware_check_manifest(bool force, fw_update_outcome_t *out)
              pb_firmware_version());
 }
 
-void firmware_try_update(bool force, fw_update_outcome_t *out)
+void firmware_try_update(unsigned flags, fw_update_outcome_t *out)
 {
-    firmware_check_manifest(force, out);
+    firmware_check_manifest(flags, out);
 }
 
 void firmware_update_run(void)

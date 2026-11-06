@@ -169,6 +169,33 @@ int main(void)
     assert(pick(per_chip_s3, "ESP32", &b) == OTA_PICK_ERR_PARSE);
     assert(pick(per_chip_s3, "ESP32-C3", &b) == OTA_PICK_ERR_PARSE);
 
+    // --- ota_decide: what a verified manifest leads to (#707) ---------
+
+    // The report: running 1.7.0-beta8, switched to stable, which has
+    // 1.6.0. Neither the background update (no flags) nor the button
+    // (RETRY_FAILED) may install it; only a confirmed downgrade does.
+    assert(ota_decide("1.6.0", "1.7.0-beta8", "", false, false) == OTA_DECIDE_OLDER);
+    assert(ota_decide("1.6.0", "1.7.0-beta8", "", true,  false) == OTA_DECIDE_OLDER);
+    assert(ota_decide("1.6.0", "1.7.0-beta8", "", true,  true)  == OTA_DECIDE_INSTALL);
+
+    // The stable release of the beta's line is an upgrade, not a downgrade.
+    assert(ota_decide("1.7.0", "1.7.0-beta8", "", false, false) == OTA_DECIDE_INSTALL);
+    // A later beta is an upgrade too; the same version is nothing to do.
+    assert(ota_decide("1.7.0-beta9", "1.7.0-beta8", "", false, false) == OTA_DECIDE_INSTALL);
+    assert(ota_decide("1.7.0-beta8", "1.7.0-beta8", "", true, true) == OTA_DECIDE_SAME);
+    // Older without the downgrade flag is reported, even across a beta.
+    assert(ota_decide("1.7.0-beta7", "1.7.0-beta8", "", false, false) == OTA_DECIDE_OLDER);
+
+    // The rolled-back guard: skipped in the background, retried on request.
+    assert(ota_decide("1.7.1", "1.7.0", "1.7.1", false, false) == OTA_DECIDE_SKIP_FAILED);
+    assert(ota_decide("1.7.1", "1.7.0", "1.7.1", true,  false) == OTA_DECIDE_INSTALL);
+    // Consent to downgrade is no consent to retry a rolled-back version,
+    // and a failure marker for another version does not block this one.
+    assert(ota_decide("1.6.0", "1.7.0", "1.6.0", false, true) == OTA_DECIDE_SKIP_FAILED);
+    assert(ota_decide("1.6.0", "1.7.0", "1.6.0", true,  true) == OTA_DECIDE_INSTALL);
+    assert(ota_decide("1.7.1", "1.7.0", "1.7.2", false, false) == OTA_DECIDE_INSTALL);
+    assert(ota_decide("1.7.1", "1.7.0", NULL,    false, false) == OTA_DECIDE_INSTALL);
+
     printf("test_ota_manifest: all tests passed\n");
     return 0;
 }

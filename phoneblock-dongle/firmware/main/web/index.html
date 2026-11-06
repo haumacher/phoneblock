@@ -1660,6 +1660,7 @@ function renderStatus(){
     + '  <button id="fwCheck" class="btn-ghost btn-sm">'
     +   esc(t('status.fw.check')) + '</button>'
     + '  <span id="fwMsg" class="muted after"></span>'
+    + '  <button id="fwDowngrade" class="btn-ghost btn-sm" style="display:none"></button>'
     + '</p>'
     + '<p class="opt">'
     + '  <label title="' + esc(t('status.fw.auto_update.help')) + '" '
@@ -3480,18 +3481,23 @@ async function refreshAll(){
       };
       xhr.send(f);
     };
-    fwCheck.onclick = async () => {
+    const fwDowngrade = $('fwDowngrade');
+    // Runs one manual update. Phase 1 (unless `downgradeTo` is set) is
+    // the read-only manifest check; phase 2 downloads and flashes. An
+    // older version on the channel (stable after a beta, #707) is never
+    // installed from the check: it is offered behind fwDowngrade, and
+    // only that button's confirmed click installs it (?downgrade=1).
+    const fwRun = async (downgradeTo) => {
       fwCheck.disabled  = true;
       fwUpload.disabled = true;
       fwPick.disabled   = true;
+      fwDowngrade.style.display = 'none';
       fwUpdateInFlight  = true;
       // Hide any leftover rollback banner from a *previous* failed
       // attempt — the click forces a retry, so the old "boot did
       // not survive" line is no longer applicable from this moment.
       const fwFailedEl = $('fwFailed');
       if (fwFailedEl) fwFailedEl.style.display = 'none';
-      fwMsg.textContent = t('status.fw.checking');
-      fwMsg.style.color = 'var(--info)';
       // Tracks whether install reached the reboot-imminent state.
       // When set, finally{} keeps fwUpdateInFlight true so a late
       // /api/status reply (still showing last_failed_ota = the
@@ -3499,31 +3505,47 @@ async function refreshAll(){
       // banner between stopPolling() and the user's reload.
       let rebooting = false;
       try {
-        // Phase 1: read-only manifest check (~1-2 s). The user gets
-        // immediate feedback ("none" / "version X gefunden") before
-        // we commit to the long download.
-        const rc = await fetch('api/firmware/check', {method: 'POST'});
-        const dc = await rc.json().catch(() => ({}));
-        if (!rc.ok || !dc.ok){
-          fwMsg.textContent = t('status.fw.check.error',
-            {msg: dc.message || rc.statusText});
-          fwMsg.style.color = 'var(--err)';
-          return;
-        }
-        if (!dc.available){
-          fwMsg.textContent = t('status.fw.check.none',
-            {version: dc.current_version || s.firmware_version});
-          fwMsg.style.color = 'var(--muted)';
-          return;
+        let version = downgradeTo;
+        if (!downgradeTo){
+          fwMsg.textContent = t('status.fw.checking');
+          fwMsg.style.color = 'var(--info)';
+          // Phase 1: read-only manifest check (~1-2 s). The user gets
+          // immediate feedback ("none" / "version X gefunden") before
+          // we commit to the long download.
+          const rc = await fetch('api/firmware/check', {method: 'POST'});
+          const dc = await rc.json().catch(() => ({}));
+          if (!rc.ok || !dc.ok){
+            fwMsg.textContent = t('status.fw.check.error',
+              {msg: dc.message || rc.statusText});
+            fwMsg.style.color = 'var(--err)';
+            return;
+          }
+          if (dc.downgrade){
+            fwMsg.textContent = t('status.fw.check.older',
+              {current: dc.current_version, version: dc.new_version});
+            fwMsg.style.color = 'var(--muted)';
+            fwDowngrade.textContent = t('status.fw.downgrade',
+              {version: dc.new_version});
+            fwDowngrade.dataset.version = dc.new_version;
+            fwDowngrade.style.display = '';
+            return;
+          }
+          if (!dc.available){
+            fwMsg.textContent = t('status.fw.check.none',
+              {version: dc.current_version || s.firmware_version});
+            fwMsg.style.color = 'var(--muted)';
+            return;
+          }
+          version = dc.new_version;
         }
 
         // Phase 2: install. Show the "wird installiert" line during
         // the ~30 s download so the message reflects what is actually
         // happening, instead of "Prüfe…" freezing for half a minute.
-        fwMsg.textContent = t('status.fw.check.found',
-          {version: dc.new_version});
+        fwMsg.textContent = t('status.fw.check.found', {version: version});
         fwMsg.style.color = 'var(--info)';
-        const ri = await fetch('api/firmware/install', {method: 'POST'});
+        const ri = await fetch('api/firmware/install'
+            + (downgradeTo ? '?downgrade=1' : ''), {method: 'POST'});
         const di = await ri.json().catch(() => ({}));
         if (ri.ok && di.ok && di.installed){
           fwMsg.textContent = t('status.fw.check.installed',
@@ -3552,6 +3574,12 @@ async function refreshAll(){
           fwUpload.disabled = !fwFile.files[0];
         }
       }
+    };
+    fwCheck.onclick = () => fwRun(null);
+    fwDowngrade.onclick = () => {
+      const version = fwDowngrade.dataset.version;
+      if (!confirm(t('status.fw.downgrade.confirm', {version: version}))) return;
+      fwRun(version);
     };
   }
 }
