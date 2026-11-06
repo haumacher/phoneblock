@@ -25,6 +25,7 @@ WORKDIR /src
 COPY firmware/core firmware/core
 COPY firmware/main firmware/main
 COPY firmware/linux firmware/linux
+COPY firmware/scripts/strip-js-comments.py firmware/scripts/strip-js-comments.py
 COPY firmware/i18n/l10n/ui/ui_en.arb firmware/i18n/l10n/ui/ui_en.arb
 RUN make -C firmware/linux -j"$(nproc)" phoneblock_linux \
       CFLAGS="-O2 -g -Wall" PHONEBLOCK_VERSION="${PHONEBLOCK_VERSION}"

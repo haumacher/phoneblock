@@ -114,13 +114,18 @@ $(LINUX_BUILD_DIR)/phoneblock-dongle: ../main/main_linux.c \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LDFLAGS) $(LINUX_NET_LIBS) -o $@
 
-$(LINUX_WEB_DIR)/index.html.gz: ../main/web/index.html
+# The web UI without its whole-line // comments, like the ESP build (#676).
+$(LINUX_WEB_DIR)/index.html.gz: ../main/web/index.html ../scripts/strip-js-comments.py
 	mkdir -p $(@D)
-	gzip -9 -n -c $< > $@
+	python3 ../scripts/strip-js-comments.py $< $@.stripped
+	gzip -9 -n -c $@.stripped > $@
+	rm -f $@.stripped
 
-$(LINUX_WEB_DIR)/rec.js.gz: ../main/web/rec.js
+$(LINUX_WEB_DIR)/rec.js.gz: ../main/web/rec.js ../scripts/strip-js-comments.py
 	mkdir -p $(@D)
-	gzip -9 -n -c $< > $@
+	python3 ../scripts/strip-js-comments.py $< $@.stripped
+	gzip -9 -n -c $@.stripped > $@
+	rm -f $@.stripped
 
 $(LINUX_WEB_DIR)/ab-logo-bot.svg: ../main/web/ab-logo-bot.svg
 	mkdir -p $(@D)
