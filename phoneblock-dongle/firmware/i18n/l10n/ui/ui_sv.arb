@@ -6,6 +6,9 @@
   "status.sip.connecting": "Koppla ihop…",
   "status.sip.not_configured": "Ej inrett",
   "status.sip.since": "sedan {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "på {host} som {user}",
   "status.sip.ext": "Internt nummer {n}",
   "status.sip.public_ip": "offentlig IP {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam blockerat",
   "status.counters.legit": "Legitim",
   "status.counters.errors": "Fel",
+  "status.counters.reset": "Nollställ alla räknare",
   "status.info": "Firmware {fw} · IP {ip} · Driftstid {uptime} · API-fördröjning {api}",
   "status.api.failed": "Den senaste anropet till PhoneBlock-servern ({when}) misslyckades: {reason}.",
   "status.api.fail.dns": "Servernamnet kan inte lösas upp (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Radera inspelning",
   "status.rec.delete.confirm": "Vill du radera den här inspelningen? Samtalet finns kvar i listan.",
   "status.rec.failed": "Det gick inte att ladda bilden.",
-  "status.counters.reset": "Nollställ alla räknare"
+  "duration.days": "{n} d"
 }

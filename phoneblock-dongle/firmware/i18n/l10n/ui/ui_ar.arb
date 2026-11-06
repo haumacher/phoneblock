@@ -6,6 +6,9 @@
   "status.sip.connecting": "اربط…",
   "status.sip.not_configured": "غير مجهز",
   "status.sip.since": "منذ {duration}",
+  "duration.seconds": "{n} ثانية",
+  "duration.minutes": "{n} دقيقة",
+  "duration.hours": "{n} ساعة",
   "status.sip.at": "على {host} بصفتي {user}",
   "status.sip.ext": "الرقم الداخلي {n}",
   "status.sip.public_ip": "عنوان IP عام {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "تم حظر الرسائل غير المرغوب فيها",
   "status.counters.legit": "شرعي",
   "status.counters.errors": "خطأ",
+  "status.counters.reset": "إعادة ضبط جميع العدادات",
   "status.info": "البرمجيات الثابتة {fw} · عنوان IP {ip} · مدة التشغيل {uptime} · زمن انتقال واجهة برمجة التطبيقات {api}",
   "status.api.failed": "فشل آخر استدعاء لخادم PhoneBlock ({when}): {reason}.",
   "status.api.fail.dns": "يتعذر تحديد اسم الخادم (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "حذف التسجيل",
   "status.rec.delete.confirm": "هل تريد حذف هذا التسجيل؟ ستبقى المكالمة في القائمة.",
   "status.rec.failed": "تعذر تحميل المقطع الصوتي.",
-  "status.counters.reset": "إعادة ضبط جميع العدادات"
+  "duration.days": "{n} d"
 }

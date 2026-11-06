@@ -26,6 +26,11 @@ static void mark_done(void *arg)
 
 static void test_time(void)
 {
+    // Counts from process start like the ESP32's esp_timer, not from the
+    // host's boot (#700: "Uptime 4 d" right after a service restart). This
+    // runs first in main(), so far less than a minute has passed.
+    REQUIRE(pb_monotonic_us() < 60u * 1000000u);
+
     uint64_t before = pb_monotonic_us();
     pb_task_sleep_ms(2);
     uint64_t after = pb_monotonic_us();

@@ -6,6 +6,9 @@
   "status.sip.connecting": "Συνδέσου…",
   "status.sip.not_configured": "Δεν έχει διαμορφωθεί",
   "status.sip.since": "από {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} λεπτά",
+  "duration.hours": "{n} ώρες",
   "status.sip.at": "στο {host} ως {user}",
   "status.sip.ext": "Εσωτερικός αριθμός {n}",
   "status.sip.public_ip": "δημόσια IP {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Αποκλεισμός ανεπιθύμητων μηνυμάτων",
   "status.counters.legit": "Νόμιμο",
   "status.counters.errors": "Σφάλμα",
+  "status.counters.reset": "Επαναφορά όλων των μετρητών",
   "status.info": "Firmware {fw} · IP {ip} · Χρόνος λειτουργίας {uptime} · Καθυστέρηση API {api}",
   "status.api.failed": "Η τελευταία πρόσβαση στον διακομιστή PhoneBlock ({when}) απέτυχε: {reason}.",
   "status.api.fail.dns": "Δεν είναι δυνατή η ανάλυση του ονόματος διακομιστή (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Διαγραφή εγγραφής",
   "status.rec.delete.confirm": "Να διαγραφεί αυτή η εγγραφή; Η κλήση θα παραμείνει στη λίστα.",
   "status.rec.failed": "Δεν ήταν δυνατή η φόρτωση της εικόνας.",
-  "status.counters.reset": "Επαναφορά όλων των μετρητών"
+  "duration.days": "{n} d"
 }

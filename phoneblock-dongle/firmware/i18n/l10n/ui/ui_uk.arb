@@ -6,6 +6,9 @@
   "status.sip.connecting": "З'єднай…",
   "status.sip.not_configured": "Не облаштовано",
   "status.sip.since": "протягом {duration}",
+  "duration.seconds": "{n} с",
+  "duration.minutes": "{n} хв",
+  "duration.hours": "{n} год",
   "status.sip.at": "на {host} як {user}",
   "status.sip.ext": "Внутрішній номер {n}",
   "status.sip.public_ip": "публічна IP-адреса {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Спам заблоковано",
   "status.counters.legit": "Законний",
   "status.counters.errors": "Помилка",
+  "status.counters.reset": "Скинути всі лічильники",
   "status.info": "Прошивка {fw} · IP {ip} · Час безвідмовної роботи {uptime} · Затримка API {api}",
   "status.api.failed": "Останній запит до сервера PhoneBlock ({when}) завершився невдало: {reason}.",
   "status.api.fail.dns": "Неможливо визначити ім'я сервера (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Видалити запис",
   "status.rec.delete.confirm": "Видалити цей запис? Дзвінок залишиться у списку.",
   "status.rec.failed": "Не вдалося завантажити запис.",
-  "status.counters.reset": "Скинути всі лічильники"
+  "duration.days": "{n} d"
 }

@@ -30,6 +30,26 @@
     "description": "Dongle web UI: status.sip.since",
     "x-translated": "6fcea261"
   },
+  "duration.seconds": "{n} s",
+  "@duration.seconds": {
+    "description": "Dongle web UI: a duration in seconds, abbreviated unit (e.g. \"45 s\"). Used for uptime and \"since ...\" values.",
+    "x-translated": "937859d4"
+  },
+  "duration.minutes": "{n} min",
+  "@duration.minutes": {
+    "description": "Dongle web UI: a duration in minutes, abbreviated unit (e.g. \"12 min\").",
+    "x-translated": "beb77a07"
+  },
+  "duration.hours": "{n} h",
+  "@duration.hours": {
+    "description": "Dongle web UI: a duration in hours, abbreviated unit (e.g. \"5 h\").",
+    "x-translated": "191d9038"
+  },
+  "duration.days": "{n} d",
+  "@duration.days": {
+    "description": "Dongle web UI: a duration in days, abbreviated unit (e.g. \"4 d\" in English).",
+    "x-translated": "10abdc13"
+  },
   "status.sip.at": "bei {host} als {user}",
   "@status.sip.at": {
     "description": "Dongle web UI: status.sip.at",

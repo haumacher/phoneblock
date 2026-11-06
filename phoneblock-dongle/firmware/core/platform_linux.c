@@ -125,11 +125,29 @@ void pb_log_err(const char *tag, const char *fmt, ...)
     va_end(args);
 }
 
-uint64_t pb_monotonic_us(void)
+static uint64_t raw_monotonic_us(void)
 {
     struct timespec now;
     if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) return 0;
     return (uint64_t)now.tv_sec * 1000000u + (uint64_t)now.tv_nsec / 1000u;
+}
+
+// CLOCK_MONOTONIC counts from the host's boot, not from our start. The
+// ESP32's esp_timer restarts with the firmware, and everything built on
+// pb_monotonic_us() assumes that: the reported uptime_s and the log
+// timestamps. Captured before main() so no thread can race the first read.
+static uint64_t s_start_us;
+
+__attribute__((constructor))
+static void capture_start_time(void)
+{
+    s_start_us = raw_monotonic_us();
+}
+
+uint64_t pb_monotonic_us(void)
+{
+    uint64_t now = raw_monotonic_us();
+    return now > s_start_us ? now - s_start_us : 0;
 }
 
 const char *pb_firmware_version(void)

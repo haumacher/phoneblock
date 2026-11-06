@@ -6,6 +6,9 @@
   "status.sip.connecting": "Connexion…",
   "status.sip.not_configured": "Non configuré",
   "status.sip.since": "depuis {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "sur {host} en tant que {user}",
   "status.sip.ext": "Numéro interne {n}",
   "status.sip.public_ip": "IP publique {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam bloqué",
   "status.counters.legit": "Légitime",
   "status.counters.errors": "Erreurs",
+  "status.counters.reset": "Réinitialiser tous les compteurs",
   "status.info": "Firmware {fw} · IP {ip} · Uptime {uptime} · Latence API {api}",
   "status.api.failed": "La dernière requête adressée au serveur PhoneBlock ({when}) a échoué : {reason}.",
   "status.api.fail.dns": "Impossible de résoudre le nom du serveur (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "status.counters.reset": "Réinitialiser tous les compteurs"
+  "duration.days": "{n} d"
 }
