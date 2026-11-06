@@ -6,6 +6,9 @@
   "status.sip.connecting": "Koble til…",
   "status.sip.not_configured": "Ikke innredet",
   "status.sip.since": "siden {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "på {host} som {user}",
   "status.sip.ext": "Internt nummer {n}",
   "status.sip.public_ip": "offentlig IP {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam blokkert",
   "status.counters.legit": "Legitim",
   "status.counters.errors": "Feil",
+  "status.counters.reset": "Tilbakestill alle tellere",
   "status.info": "Firmware {fw} · IP {ip} · Oppetid {uptime} · API-forsinkelse {api}",
   "status.api.failed": "Den siste forespørselen til PhoneBlock-serveren ({when}) mislyktes: {reason}.",
   "status.api.fail.dns": "Servernavnet kan ikke løses opp (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
   "status.rec.failed": "Opptaket kunne ikke lastes inn.",
-  "status.counters.reset": "Tilbakestill alle tellere"
+  "duration.days": "{n} d"
 }

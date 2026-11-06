@@ -593,10 +593,10 @@ function fwLink(v){
 
 function fmtSec(s){
   s = Math.max(0, Math.round(s));
-  if (s < 60) return s + ' s';
-  if (s < 3600) return Math.round(s/60) + ' min';
-  if (s < 86400) return Math.round(s/3600) + ' h';
-  return Math.round(s/86400) + ' T';
+  if (s < 60) return t('duration.seconds', {n: s});
+  if (s < 3600) return t('duration.minutes', {n: Math.round(s/60)});
+  if (s < 86400) return t('duration.hours', {n: Math.round(s/3600)});
+  return t('duration.days', {n: Math.round(s/86400)});
 }
 
 // Absolute point in time for an event the dongle reported as `ageS`

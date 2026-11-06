@@ -6,6 +6,9 @@
   "status.sip.connecting": "Conectando…",
   "status.sip.not_configured": "Sin configurar",
   "status.sip.since": "desde hace {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "en {host} como {user}",
   "status.sip.ext": "Número interno {n}",
   "status.sip.public_ip": "IP pública {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam bloqueado",
   "status.counters.legit": "Legítimas",
   "status.counters.errors": "Errores",
+  "status.counters.reset": "Poner a cero todos los contadores",
   "status.info": "Firmware {fw} · IP {ip} · Uptime {uptime} · Latencia API {api}",
   "status.api.failed": "La última llamada al servidor PhoneBlock ({when}) ha fallado: {reason}.",
   "status.api.fail.dns": "No se puede resolver el nombre del servidor (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
   "status.rec.failed": "No se ha podido cargar la grabación.",
-  "status.counters.reset": "Poner a cero todos los contadores"
+  "duration.days": "{n} d"
 }

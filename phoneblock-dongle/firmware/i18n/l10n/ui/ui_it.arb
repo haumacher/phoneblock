@@ -6,6 +6,9 @@
   "status.sip.connecting": "Collega…",
   "status.sip.not_configured": "Non arredato",
   "status.sip.since": "da {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "su {host} come {user}",
   "status.sip.ext": "Numero interno {n}",
   "status.sip.public_ip": "IP pubblico {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam bloccato",
   "status.counters.legit": "Legittimo",
   "status.counters.errors": "Errore",
+  "status.counters.reset": "Azzerare tutti i contatori",
   "status.info": "Firmware {fw} · IP {ip} · Tempo di attività {uptime} · Latenza API {api}",
   "status.api.failed": "L'ultima richiesta al server PhoneBlock ({when}) non è andata a buon fine: {reason}.",
   "status.api.fail.dns": "Impossibile risolvere il nome del server (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Elimina registrazione",
   "status.rec.delete.confirm": "Elimina questa registrazione? La chiamata rimane nell'elenco.",
   "status.rec.failed": "Non è stato possibile caricare il file.",
-  "status.counters.reset": "Azzerare tutti i contatori"
+  "duration.days": "{n} d"
 }

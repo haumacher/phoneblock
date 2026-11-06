@@ -6,6 +6,9 @@
   "status.sip.connecting": "Połącz…",
   "status.sip.not_configured": "Nieurządzone",
   "status.sip.since": "od {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "na serwerze {host} jako użytkownik {user}",
   "status.sip.ext": "Numer wewnętrzny {n}",
   "status.sip.public_ip": "publiczny adres IP {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam zablokowany",
   "status.counters.legit": "Zgodne z prawem",
   "status.counters.errors": "Błąd",
+  "status.counters.reset": "Zresetuj wszystkie liczniki",
   "status.info": "Oprogramowanie układowe {fw} · Adres IP {ip} · Czas działania {uptime} · Opóźnienie API {api}",
   "status.api.failed": "Ostatnie wywołanie serwera PhoneBlock ({when}) zakończyło się niepowodzeniem: {reason}.",
   "status.api.fail.dns": "Nie można rozpoznać nazwy serwera (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
   "status.rec.failed": "Nie udało się załadować nagrania.",
-  "status.counters.reset": "Zresetuj wszystkie liczniki"
+  "duration.days": "{n} d"
 }

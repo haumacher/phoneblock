@@ -6,6 +6,9 @@
   "status.sip.connecting": "Verbind…",
   "status.sip.not_configured": "Niet ingericht",
   "status.sip.since": "sinds {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "op {host} als {user}",
   "status.sip.ext": "Intern nummer {n}",
   "status.sip.public_ip": "openbaar IP-adres {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam geblokkeerd",
   "status.counters.legit": "Legitiem",
   "status.counters.errors": "Fout",
+  "status.counters.reset": "Alle tellers resetten",
   "status.info": "Firmware {fw} · IP {ip} · Uptime {uptime} · API-latentie {api}",
   "status.api.failed": "De laatste aanroep van de PhoneBlock-server ({when}) is mislukt: {reason}.",
   "status.api.fail.dns": "Servernaam kan niet worden omgezet (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
   "status.rec.failed": "Het bestand kon niet worden geladen.",
-  "status.counters.reset": "Alle tellers resetten"
+  "duration.days": "{n} d"
 }

@@ -6,6 +6,9 @@
   "status.sip.connecting": "连接……",
   "status.sip.not_configured": "未设置",
   "status.sip.since": "自 {duration} 以来",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} 分钟",
+  "duration.hours": "{n} 小时",
   "status.sip.at": "在 {host} 上以 {user} 身份",
   "status.sip.ext": "内部编号 {n}",
   "status.sip.public_ip": "公共IP {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "已拦截垃圾邮件",
   "status.counters.legit": "合法的",
   "status.counters.errors": "错误",
+  "status.counters.reset": "重置所有计数器",
   "status.info": "固件 {fw} · IP {ip} · 运行时间 {uptime} · API 延迟 {api}",
   "status.api.failed": "PhoneBlock 服务器的最后一次调用 ({when}) 失败：{reason}。",
   "status.api.fail.dns": "无法解析服务器名称（DNS）",
@@ -479,5 +483,5 @@
   "status.rec.delete": "删除录音",
   "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
   "status.rec.failed": "无法加载该照片。",
-  "status.counters.reset": "重置所有计数器"
+  "duration.days": "{n} d"
 }

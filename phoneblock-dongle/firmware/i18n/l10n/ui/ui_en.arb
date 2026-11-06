@@ -6,6 +6,9 @@
   "status.sip.connecting": "Connecting…",
   "status.sip.not_configured": "Not configured",
   "status.sip.since": "since {duration}",
+  "duration.seconds": "{n} s",
+  "duration.minutes": "{n} min",
+  "duration.hours": "{n} h",
   "status.sip.at": "at {host} as {user}",
   "status.sip.ext": "Internal number {n}",
   "status.sip.public_ip": "Public IP {ip}",
@@ -28,6 +31,7 @@
   "status.counters.spam": "Spam blocked",
   "status.counters.legit": "Legitimate",
   "status.counters.errors": "Errors",
+  "status.counters.reset": "Reset All Counters",
   "status.info": "Firmware {fw} · IP {ip} · Uptime {uptime} · API latency {api}",
   "status.api.failed": "The last request to the PhoneBlock server ({when}) failed: {reason}.",
   "status.api.fail.dns": "Server name cannot be resolved (DNS)",
@@ -479,5 +483,5 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "status.counters.reset": "Reset All Counters"
+  "duration.days": "{n} d"
 }
