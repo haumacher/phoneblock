@@ -261,7 +261,7 @@ DevKit direkt in den Fritz!Box-Port passt. Kosten: ca. 1–2 €.
 - Sobald man eine eigene Serie baut, ist ein Custom-PCB mit C3 billiger
 - Als **Referenzdesign** für spätere Eigen-PCB trotzdem interessant
 
-**Stand 1.7.0:** Die Firmware läuft auf dem T-Dongle-S3 (#602) — für alle,
+**Stand 2.0.0:** Die Firmware läuft auf dem T-Dongle-S3 (#602) — für alle,
 die ein fertiges USB-A-Board ohne Basteln wollen. Status-LED ist die
 APA102-RGB-LED (GPIO 40 Daten, GPIO 39 Takt, BGR). Das 0,96″-Display
 (ST7735, 160×80) zeigt das PhoneBlock-Logo (#606; `firmware/main/display.c`,
