@@ -47,6 +47,7 @@
 #include "display.h"
 #endif
 #include "heap_guard.h"
+#include "hostname.h"
 #include "firmware_update.h"
 #include "log_capture.h"
 #include "mail.h"
@@ -706,6 +707,12 @@ static web_http_error_t handle_status(web_http_request_t *req)
     // activation adopts the account's value or the user picks one.
     cJSON_AddStringToObject(root, "dial_prefix", config_dial_prefix());
     cJSON_AddBoolToObject(root, "dial_prefix_set", config_dial_prefix_is_set());
+#ifdef ESP_PLATFORM
+    // The host name on the LAN (#714, DHCP + mDNS). Only the stick has one
+    // of its own: its absence tells the UI to hide the setting (the Linux
+    // service runs under the host's name).
+    cJSON_AddStringToObject(root, "hostname", config_hostname());
+#endif
 
     cJSON *cnt = cJSON_AddObjectToObject(root, "counters");
     cJSON_AddNumberToObject(cnt,  "total",        c.total_calls);
@@ -1072,6 +1079,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char tz_s[64]         = "";
     char ui_lang_s[12]    = "";
     char dial_prefix_s[8] = "";
+    // Wider than HOSTNAME_CAP: an over-long name must arrive whole to be
+    // refused, not be clipped by form_get() to something that passes.
+    char hostname_s[64]   = "";
     char fb_pb_id_s[8]    = "";
     char fb_pb_name_s[64] = "";
     char ab_mode_s[16]    = "";
@@ -1132,6 +1142,12 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
     bool have_ui_lang    = form_get(body, "ui_lang",       ui_lang_s,   sizeof(ui_lang_s));
     bool have_dial_pfx   = form_get(body, "dial_prefix",   dial_prefix_s, sizeof(dial_prefix_s));
+#ifdef ESP_PLATFORM
+    // The Linux service runs under the host's name; there is none of its own.
+    bool have_hostname   = form_get(body, "hostname",      hostname_s,  sizeof(hostname_s));
+#else
+    bool have_hostname   = false;
+#endif
     bool have_fb_pb      = form_get(body, "fb_phonebook", fb_pb_id_s, sizeof(fb_pb_id_s));
     bool have_fb_pb_name = form_get(body, "fb_phonebook_name", fb_pb_name_s, sizeof(fb_pb_name_s));
     bool have_ab_mode    = form_get(body, "ab_mode",            ab_mode_s,  sizeof(ab_mode_s));
@@ -1296,6 +1312,16 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         else sb_appendf(&rej, "%scomfort_noise_level (%d..%d)", rej.len ? ", " : "",
                         CONFIG_COMFORT_NOISE_DB_MIN, CONFIG_COMFORT_NOISE_DB_MAX);
     }
+    // Host name (#714): trimmed and lower-cased; "" goes back to the default.
+    char hostname_val[HOSTNAME_CAP];
+    const char *hostname = NULL;
+    if (have_hostname) {
+        if (hostname_normalize(hostname_s, hostname_val, sizeof(hostname_val)))
+            hostname = hostname_val;
+        else sb_appendf(&rej, "%shostname (a-z, 0-9 and -, 1..%d characters, "
+                        "no - at the start or end)", rej.len ? ", " : "",
+                        HOSTNAME_MAX_LEN);
+    }
     if (rej.len) {
         // Clamped (sb.truncated) is fine: the first field names the problem.
         char msg[200];
@@ -1387,6 +1413,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .timezone      = timezone,
         .ui_lang       = ui_lang,
         .dial_prefix   = dial_prefix,
+        .hostname      = hostname,
         .ab_mode            = ab_mode,
         .vad_silence_db     = vad_db,
         .vad_min_silence_ms = vad_ms,
@@ -1410,6 +1437,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     strncpy(old_lang, config_ui_lang(), sizeof(old_lang) - 1);
     old_lang[sizeof(old_lang) - 1] = '\0';
 
+    char old_hostname[HOSTNAME_CAP];
+    snprintf(old_hostname, sizeof(old_hostname), "%s", config_hostname());
+
     uint64_t old_sip = sip_config_digest();
     bool old_dialog = config_ab_dialog();
     char old_speaker[DIALOG_SPEAKER_CAP];
@@ -1425,6 +1455,16 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     // Apply a changed timezone to the running clock immediately so daily
     // jobs and the dashboard reflect it without a reboot.
     if (timezone) time_sync_set_timezone(config_timezone());
+
+#ifdef ESP_PLATFORM
+    // A new host name: mDNS switches now, DHCP carries it from the next
+    // request on. Nothing is restarted for it (#714).
+    if (hostname && strcmp(old_hostname, config_hostname()) != 0) {
+        wifi_apply_hostname();
+    }
+#else
+    (void)old_hostname;
+#endif
 
 #if CONFIG_IDF_TARGET_ESP32S3
     // Turn the display right away, so the user sees the effect of the

@@ -28,6 +28,12 @@
 // esp_event_loop_create_default.
 esp_err_t wifi_connect(void);
 
+// Switch to the host name config_hostname() returns now (#714), after the
+// user changed it: mDNS announces `<name>.local` at once, and the station
+// netif carries the name into its next DHCP request. Restarts nothing.
+// Call only after mDNS is up (setup_mdns() in main.c).
+void wifi_apply_hostname(void);
+
 // True while WPS-PBC is active (either the initial run on a
 // credential-less first boot or an auto-restart after timeout).
 // Used by the status LED to show the "press the router button"

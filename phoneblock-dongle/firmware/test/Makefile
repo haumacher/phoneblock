@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_sip_client_pick test_sip_client_pick_probe test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_stats_small test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_sip_client_pick test_sip_client_pick_probe test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_stats_small test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe test_hostname test_hostname_probe
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -24,6 +24,13 @@ test_sip_srv: test_sip_srv.c ../main/sip_srv.c ../main/sip_srv.h
 
 test_sip_auth: test_sip_auth.c ../main/sip_auth.c ../main/sip_auth.h
 	$(CC) $(CFLAGS) test_sip_auth.c ../main/sip_auth.c -o $@
+
+# The host name setting's validator (#714).
+test_hostname: test_hostname.c ../main/hostname.c ../main/hostname.h
+	$(CC) $(CFLAGS) -fsanitize=address test_hostname.c ../main/hostname.c -o $@
+
+test_hostname_probe: test_hostname_probe.c ../main/hostname.c ../main/hostname.h
+	$(CC) $(CFLAGS) -fsanitize=address test_hostname_probe.c ../main/hostname.c -o $@
 
 test_tr064_parse: test_tr064_parse.c ../core/tr064_parse.c ../core/tr064_parse.h
 	$(CC) $(CFLAGS) -I../core test_tr064_parse.c ../core/tr064_parse.c -o $@
@@ -246,9 +253,10 @@ test_display_probe: test_display_probe.c ../main/display_model.c ../main/display
 test_platform_linux: test_platform_linux.c linux_test_util.h \
                      ../core/platform_linux.c ../core/platform.h \
                      ../main/config.c ../main/config.h ../main/dialog.c ../main/dialog.h \
+                     ../main/hostname.c ../main/hostname.h \
                      ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c \
-	  ../main/dialog.c ../main/log_capture.c -o $@
+	  ../main/dialog.c ../main/hostname.c ../main/log_capture.c -o $@
 
 test_time_sync_tz: test_time_sync_tz.c linux_test_util.h ../main/time_sync_tz.c \
                    ../main/time_sync.h ../core/platform_linux.c ../core/platform.h
@@ -259,9 +267,10 @@ test_log_capture_linux: test_log_capture_linux.c linux_test_util.h \
                         ../main/log_capture_linux.c ../main/log_capture.c \
                         ../main/log_capture.h ../main/stats.c ../main/stats.h \
                         ../main/config.c ../main/config.h ../main/dialog.c \
+                        ../main/hostname.c ../main/hostname.h \
                         ../core/platform_linux.c ../core/platform.h
 	$(CC) $(CFLAGS) -pthread test_log_capture_linux.c ../main/log_capture_linux.c \
-	  ../main/log_capture.c ../main/stats.c ../main/config.c ../main/dialog.c \
+	  ../main/log_capture.c ../main/stats.c ../main/config.c ../main/dialog.c ../main/hostname.c \
 	  ../core/platform_linux.c -o $@
 
 # The hostfs backend of storage.c. The data dir is a fresh mkdtemp()

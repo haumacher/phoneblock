@@ -54,17 +54,16 @@
 
 static const char *TAG = "phoneblock";
 
-// Announce the dongle on the LAN as "answerbot" via mDNS. The matching
-// DHCP host-name (option 12) is set earlier in wifi_connect(), before
-// the first DHCPREQUEST goes out — otherwise the Fritz!Box pins the
-// Heimnetz name to the lwIP default "espressif".
-// Reachable as http://answerbot/, http://answerbot.local/, or by IP.
+// Announce the dongle on the LAN via mDNS under its host name
+// (config_hostname(), default "answerbot", #714). The matching DHCP
+// host-name (option 12) is set earlier in wifi_connect(), before the
+// first DHCPREQUEST goes out — otherwise the Fritz!Box lists the dongle
+// under the lwIP default "espressif".
+// Reachable as http://<name>/, http://<name>.local/, or by IP.
 static void setup_mdns(void)
 {
-    static const char *HOSTNAME = "answerbot";
-
     ESP_ERROR_CHECK(mdns_init());
-    ESP_ERROR_CHECK(mdns_hostname_set(HOSTNAME));
+    ESP_ERROR_CHECK(mdns_hostname_set(config_hostname()));
     ESP_ERROR_CHECK(mdns_instance_name_set("PhoneBlock Dongle"));
     mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
 }

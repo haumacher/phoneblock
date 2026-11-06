@@ -513,6 +513,41 @@
     "description": "Dongle web UI: status.system.lcd_flip.hint",
     "x-translated": "a61035a8"
   },
+  "status.system.hostname": "Hostname im Heimnetz",
+  "@status.system.hostname": {
+    "description": "Dongle web UI: label of the host name field in the System section (the name the dongle announces via DHCP and mDNS)",
+    "x-translated": "e7c3b62c"
+  },
+  "status.system.hostname.help": "Unter diesem Namen ist der Dongle im Heimnetz erreichbar. Mit mehreren Dongles braucht jeder einen eigenen Namen. Erlaubt sind a–z, 0–9 und -, höchstens 32 Zeichen. Leer lassen für „answerbot“.",
+  "@status.system.hostname.help": {
+    "description": "Dongle web UI: help text below the host name field; 'answerbot' is the default name and must stay unchanged",
+    "x-translated": "c64beece"
+  },
+  "status.system.hostname.save": "Speichern",
+  "@status.system.hostname.save": {
+    "description": "Dongle web UI: button that saves the host name",
+    "x-translated": "2eec49cc"
+  },
+  "status.system.hostname.saved": "Gespeichert. {name}.local ist ab sofort erreichbar. In der Fritz!Box (Geräteliste und http://{name}/) erscheint der neue Name nach einem Neustart des Dongles.",
+  "@status.system.hostname.saved": {
+    "description": "Dongle web UI: note after saving a new host name; {name} is the host name, keep 'http://{name}/' and '{name}.local' unchanged",
+    "x-translated": "62748d33"
+  },
+  "status.system.hostname.unchanged": "Der Name ist unverändert.",
+  "@status.system.hostname.unchanged": {
+    "description": "Dongle web UI: shown when the saved host name equals the current one",
+    "x-translated": "edb6cbc9"
+  },
+  "status.system.hostname.err": "Ungültiger Name: nur a–z, 0–9 und -, 1 bis 32 Zeichen, kein - am Anfang oder Ende. Nichts wurde gespeichert.",
+  "@status.system.hostname.err": {
+    "description": "Dongle web UI: error when the entered host name is not a valid DNS label",
+    "x-translated": "bc3665ab"
+  },
+  "status.system.hostname.failed": "Speichern fehlgeschlagen.",
+  "@status.system.hostname.failed": {
+    "description": "Dongle web UI: error when saving the host name failed for another reason (network, storage)",
+    "x-translated": "9a6e70be"
+  },
   "status.clock.now": "Uhrzeit: {time}",
   "@status.clock.now": {
     "description": "Dongle web UI: status.clock.now",
