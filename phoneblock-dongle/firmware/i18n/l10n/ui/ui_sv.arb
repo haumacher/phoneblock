@@ -152,6 +152,9 @@
   "status.fw.checking": "Kontrollera om det finns en uppdatering…",
   "status.fw.check.none": "Ingen ny version tillgänglig (aktuell {version}).",
   "status.fw.check.found": "Den nya versionen {version} installeras…",
+  "status.fw.check.older": "På den här kanalen finns endast den äldre versionen {version} (den installerade versionen är {current}). Dongeln förblir på {current} tills en nyare version släpps.",
+  "status.fw.downgrade": "Installera ändå {version}",
+  "status.fw.downgrade.confirm": "Vill du verkligen återgå till den äldre versionen {version}? Då går funktioner i den nyare versionen förlorade.",
   "status.fw.check.installed": "Version {version} har installerats — Donglen startar om. Vänta ett ögonblick och ladda sedan om sidan.",
   "status.fw.check.error": "Kontrollen misslyckades: {msg}",
   "status.fw.failed": "Den senaste uppdateringen till version {version} klarade inte uppstarten — systemet återställdes automatiskt till tidigare version. Den automatiska uppdateringen hoppar över den här versionen. Klicka på ”Sök efter uppdateringar” för att försöka igen.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Radera inspelning",
   "status.rec.delete.confirm": "Vill du radera den här inspelningen? Samtalet finns kvar i listan.",
   "status.rec.failed": "Det gick inte att ladda bilden.",
-  "status.fw.check.older": "På den här kanalen finns endast den äldre versionen {version} (den installerade versionen är {current}). Dongeln förblir på {current} tills en nyare version släpps.",
-  "status.fw.downgrade": "Installera ändå {version}",
-  "status.fw.downgrade.confirm": "Vill du verkligen återgå till den äldre versionen {version}? Då går funktioner i den nyare versionen förlorade."
+  "sip.fb.conflict.one": "I Fritz!Box finns redan en PhoneBlock-dongel registrerad:",
+  "sip.fb.conflict.many": "I Fritz!Box finns redan flera PhoneBlock-donglar registrerade:",
+  "sip.fb.conflict.replace": "Ersätt ”{entry}” – t.ex. efter att denna dongel har återställts",
+  "sip.fb.conflict.add": "Lägg till som ytterligare en enhet → ”{name}”",
+  "sip.fb.conflict.submit": "Fortsätt",
+  "sip.fb.conflict.choose": "Välj ett av alternativen."
 }

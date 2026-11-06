@@ -152,6 +152,9 @@
   "status.fw.checking": "检查是否有更新……",
   "status.fw.check.none": "没有新版本（当前版本为{version}）。",
   "status.fw.check.found": "正在安装新版本 {version}……",
+  "status.fw.check.older": "该频道仅提供旧版本 {version}（当前已安装的是 {current}）。在发布新版本之前，加密狗将保持在 {current} 状态。",
+  "status.fw.downgrade": "尽管如此，还是安装 {version}",
+  "status.fw.downgrade.confirm": "真的要降级到旧版本 {version} 吗？这样会导致新版本的功能丢失。",
   "status.fw.check.installed": "已安装版本 {version} — 加密狗正在重启。请稍等片刻，然后刷新页面。",
   "status.fw.check.error": "验证失败：{msg}",
   "status.fw.failed": "上次更新至版本 {version} 时系统未能成功启动——已自动回滚。自动更新将跳过此版本。请点击“检查更新”再次尝试。",
@@ -484,7 +487,10 @@
   "status.rec.delete": "删除录音",
   "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
   "status.rec.failed": "无法加载该照片。",
-  "status.fw.check.older": "该频道仅提供旧版本 {version}（当前已安装的是 {current}）。在发布新版本之前，加密狗将保持在 {current} 状态。",
-  "status.fw.downgrade": "尽管如此，还是安装 {version}",
-  "status.fw.downgrade.confirm": "真的要降级到旧版本 {version} 吗？这样会导致新版本的功能丢失。"
+  "sip.fb.conflict.one": "Fritz!Box 中已经注册了一个 PhoneBlock 适配器：",
+  "sip.fb.conflict.many": "Fritz!Box 中已经注册了多个 PhoneBlock 适配器：",
+  "sip.fb.conflict.replace": "替换“{entry}”——例如在重置该加密狗后",
+  "sip.fb.conflict.add": "添加另一个设备 → “{name}”",
+  "sip.fb.conflict.submit": "继续",
+  "sip.fb.conflict.choose": "请选择其中一种方式。"
 }

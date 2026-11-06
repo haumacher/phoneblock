@@ -152,6 +152,9 @@
   "status.fw.checking": "Sjekk om det er oppdateringer…",
   "status.fw.check.none": "Ingen ny versjon tilgjengelig (nåværende {version}).",
   "status.fw.check.found": "Ny versjon {version} blir installert…",
+  "status.fw.check.older": "På denne kanalen finnes bare den eldre versjonen {version} (den installerte versjonen er {current}). Dongelen forblir på {current} inntil en nyere versjon blir tilgjengelig.",
+  "status.fw.downgrade": "Installer likevel {version}",
+  "status.fw.downgrade.confirm": "Vil du virkelig gå tilbake til den eldre versjonen {version}? Da går funksjonene i den nyere versjonen tapt.",
   "status.fw.check.installed": "Versjon {version} er installert — Dongle starter på nytt. Vennligst vent et øyeblikk, og last deretter siden på nytt.",
   "status.fw.check.error": "Feil ved kontroll: {msg}",
   "status.fw.failed": "Den siste oppdateringen til versjon {version} klarte ikke oppstarten — systemet ble automatisk rullet tilbake. Automatisk oppdatering hopper over denne versjonen. Klikk på «Sjekk etter oppdateringer» for å prøve på nytt.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
   "status.rec.failed": "Opptaket kunne ikke lastes inn.",
-  "status.fw.check.older": "På denne kanalen finnes bare den eldre versjonen {version} (den installerte versjonen er {current}). Dongelen forblir på {current} inntil en nyere versjon blir tilgjengelig.",
-  "status.fw.downgrade": "Installer likevel {version}",
-  "status.fw.downgrade.confirm": "Vil du virkelig gå tilbake til den eldre versjonen {version}? Da går funksjonene i den nyere versjonen tapt."
+  "sip.fb.conflict.one": "Det er allerede registrert en PhoneBlock-dongle i Fritz!Box:",
+  "sip.fb.conflict.many": "Det er allerede registrert flere PhoneBlock-dongler i Fritz!Box:",
+  "sip.fb.conflict.replace": "Erstatt «{entry}» – f.eks. etter at denne dongelen er tilbakestilt",
+  "sip.fb.conflict.add": "Legg til som et nytt apparat → «{name}»",
+  "sip.fb.conflict.submit": "Videre",
+  "sip.fb.conflict.choose": "Vennligst velg ett av alternativene."
 }

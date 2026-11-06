@@ -152,6 +152,9 @@
   "status.fw.checking": "تحقق من وجود تحديثات…",
   "status.fw.check.none": "لا توجد نسخة جديدة متاحة (النسخة الحالية هي {version}).",
   "status.fw.check.found": "يتم تثبيت الإصدار الجديد {version}…",
+  "status.fw.check.older": "لا يتوفر على هذه القناة سوى الإصدار الأقدم {version} (الإصدار المثبت هو {current}). سيظل جهاز الدونجل على الإصدار {current} حتى ظهور إصدار أحدث.",
+  "status.fw.downgrade": "على الرغم من ذلك، قم بتثبيت {version}",
+  "status.fw.downgrade.confirm": "هل تريد حقًا الرجوع إلى الإصدار الأقدم {version}؟ سيؤدي ذلك إلى فقدان وظائف الإصدار الأحدث.",
   "status.fw.check.installed": "تم تثبيت الإصدار {version} — يتم إعادة تشغيل جهاز الدونجل. يرجى الانتظار قليلاً ثم إعادة تحميل الصفحة.",
   "status.fw.check.error": "فشل الاختبار: {msg}",
   "status.fw.failed": "لم ينجح التحديث الأخير إلى الإصدار {version} في إكمال عملية التشغيل — تم الرجوع تلقائيًا إلى الإصدار السابق. سيتخطى التحديث التلقائي هذا الإصدار. انقر على «التحقق من وجود تحديثات» لمحاولة إعادة المحاولة.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "حذف التسجيل",
   "status.rec.delete.confirm": "هل تريد حذف هذا التسجيل؟ ستبقى المكالمة في القائمة.",
   "status.rec.failed": "تعذر تحميل المقطع الصوتي.",
-  "status.fw.check.older": "لا يتوفر على هذه القناة سوى الإصدار الأقدم {version} (الإصدار المثبت هو {current}). سيظل جهاز الدونجل على الإصدار {current} حتى ظهور إصدار أحدث.",
-  "status.fw.downgrade": "على الرغم من ذلك، قم بتثبيت {version}",
-  "status.fw.downgrade.confirm": "هل تريد حقًا الرجوع إلى الإصدار الأقدم {version}؟ سيؤدي ذلك إلى فقدان وظائف الإصدار الأحدث."
+  "sip.fb.conflict.one": "يوجد بالفعل جهاز PhoneBlock مسجل في جهاز Fritz!Box:",
+  "sip.fb.conflict.many": "يوجد بالفعل عدد من أجهزة PhoneBlock المسجلة في جهاز Fritz!Box:",
+  "sip.fb.conflict.replace": "استبدال «{entry}» – على سبيل المثال، بعد إعادة ضبط هذا الدونجل",
+  "sip.fb.conflict.add": "إضافة جهاز آخر → «{name}»",
+  "sip.fb.conflict.submit": "تابع",
+  "sip.fb.conflict.choose": "يرجى اختيار أحد الخيارات."
 }

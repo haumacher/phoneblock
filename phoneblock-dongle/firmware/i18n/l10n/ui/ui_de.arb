@@ -1773,6 +1773,36 @@
     "description": "Dongle web UI: sip.fb.2fa.timeout",
     "x-translated": "7150b2c"
   },
+  "sip.fb.conflict.one": "In der Fritz!Box ist bereits ein PhoneBlock-Dongle eingetragen:",
+  "@sip.fb.conflict.one": {
+    "description": "Dongle web UI, Fritz!Box setup wizard: another PhoneBlock dongle is already registered as an IP phone on the Fritz!Box. Followed by the entry (name and internal number) and the choice what to do.",
+    "x-translated": "bd9e928c"
+  },
+  "sip.fb.conflict.many": "In der Fritz!Box sind bereits mehrere PhoneBlock-Dongles eingetragen:",
+  "@sip.fb.conflict.many": {
+    "description": "Dongle web UI, Fritz!Box setup wizard: several PhoneBlock dongles are already registered as IP phones on the Fritz!Box. Followed by the list of entries and the choice what to do.",
+    "x-translated": "2727a738"
+  },
+  "sip.fb.conflict.replace": "„{entry}“ ersetzen – z. B. nach dem Zurücksetzen dieses Dongles",
+  "@sip.fb.conflict.replace": {
+    "description": "Dongle web UI, Fritz!Box setup wizard: radio option to take over an existing PhoneBlock entry on the Fritz!Box (e.g. when this dongle was reset and the entry belonged to it). {entry} is the entry's name and internal number, e.g. 'PhoneBlock (**620)'.",
+    "x-translated": "9ad4f8b2"
+  },
+  "sip.fb.conflict.add": "Als weiteres Gerät hinzufügen → „{name}“",
+  "@sip.fb.conflict.add": {
+    "description": "Dongle web UI, Fritz!Box setup wizard: radio option to register this dongle as an additional device next to the existing ones. {name} is the new entry's display name, e.g. 'PhoneBlock 2'.",
+    "x-translated": "c7269832"
+  },
+  "sip.fb.conflict.submit": "Weiter",
+  "@sip.fb.conflict.submit": {
+    "description": "Dongle web UI, Fritz!Box setup wizard: button that continues the setup with the chosen option (replace an entry or add a further device).",
+    "x-translated": "42cc9626"
+  },
+  "sip.fb.conflict.choose": "Bitte eine der Möglichkeiten auswählen.",
+  "@sip.fb.conflict.choose": {
+    "description": "Dongle web UI, Fritz!Box setup wizard: shown when 'Weiter' is pressed without choosing between replacing an entry and adding a further device.",
+    "x-translated": "842dc431"
+  },
   "sip.prov.title": "Anbieter wählen",
   "@sip.prov.title": {
     "description": "Dongle web UI: sip.prov.title",

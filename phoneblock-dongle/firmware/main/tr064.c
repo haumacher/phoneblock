@@ -7,6 +7,7 @@
 #include "config.h"
 #include "http_util.h"
 #include "platform.h"
+#include "sip_client_pick.h"
 #include "strbuf.h"
 #include "tr064_parse.h"
 
@@ -91,7 +92,7 @@ static int post_soap(const char *url, const char *soap_action,
     int status = 0;
 
     // Provisioning issues one SOAP call per existing telephony client
-    // (find_client_slot loops X_AVM-DE_GetClient3), all synchronously on
+    // (scan_clients loops X_AVM-DE_GetClient3), all synchronously on
     // the httpd worker. A slow Fritz!Box can stretch that chain past the
     // task-watchdog window, and the httpd WDT feeder (web.c) can't run
     // while the worker is busy here — so the worker would trip the
@@ -366,27 +367,40 @@ static int get_num_clients(const char *url,
     return PB_OK;
 }
 
-// Look for an existing SIP client with the given username. Returns
-// its index in *out_index if found; otherwise returns the next free
-// slot (== num_clients) so SetClient4 creates a new entry. Lets the
-// dongle re-run setup idempotently: the second attempt overwrites
-// the entry it created before instead of colliding with it (which
-// the Fritz!Box reports as UPnPError 820).
-static int find_client_slot(const char *url,
-                                  const char *admin_user, const char *admin_pass,
-                                  const char *username,
-                                  int *out_index,
-                                  int *out_err_code,
-                                  char *out_err_msg, size_t err_msg_cap)
+// Read every SIP client of the box (X_AVM-DE_GetNumberOfClients, then
+// X_AVM-DE_GetClient3 per index) into `clients`, for sip_pick_decide().
+// GetClient3 answers with the client's username, its display name
+// (NewX_AVM-DE_PhoneName) and its internal number
+// (NewX_AVM-DE_InternalNumber, "620".."629"); see AVM's TR-064 X_VoIP
+// spec, action X_AVM-DE_GetClient3. Read-only: needs no 2FA, so a
+// conflict is found before SetClient4 can demand the second factor.
+static int scan_clients(const char *url,
+                        const char *admin_user, const char *admin_pass,
+                        sip_client_t *clients, int *out_count,
+                        int *out_err_code,
+                        char *out_err_msg, size_t err_msg_cap)
 {
     int num = 0;
     int err = get_num_clients(url, admin_user, admin_pass, &num,
-                                    out_err_code, out_err_msg, err_msg_cap);
+                              out_err_code, out_err_msg, err_msg_cap);
     if (err != PB_OK) return err;
+    if (num < 0 || num > SIP_PICK_MAX_CLIENTS) {
+        // Deciding on a truncated list could overwrite or duplicate an
+        // entry we never saw, so refuse instead.
+        pb_log_err(TAG, "GetNumberOfClients: %d clients, more than %d",
+                   num, SIP_PICK_MAX_CLIENTS);
+        if (out_err_code) *out_err_code = TR064_ERR_REFUSED;
+        if (out_err_msg && err_msg_cap) {
+            snprintf(out_err_msg, err_msg_cap,
+                     "The Fritz!Box reports %d IP phones, more than the "
+                     "dongle can check (%d).", num, SIP_PICK_MAX_CLIENTS);
+        }
+        return PB_FAIL;
+    }
 
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return PB_ERR_NO_MEM;
     for (int i = 0; i < num; i++) {
-        char *resp = malloc(SOAP_RESPONSE_CAP);
-        if (!resp) return PB_ERR_NO_MEM;
         char args[64];
         snprintf(args, sizeof(args),
                  "<NewX_AVM-DE_ClientIndex>%d</NewX_AVM-DE_ClientIndex>", i);
@@ -396,19 +410,28 @@ static int find_client_slot(const char *url,
                           resp, SOAP_RESPONSE_CAP,
                           out_err_code, out_err_msg, err_msg_cap);
         if (err != PB_OK) { free(resp); return err; }
-        char found[64] = "";
-        xml_find_text(resp, "NewX_AVM-DE_ClientUsername", found, sizeof(found));
-        free(resp);
-        if (strcmp(found, username) == 0) {
-            pb_log_info(TAG, "found existing SIP client '%s' at index %d — will overwrite",
-                     username, i);
-            *out_index = i;
-            return PB_OK;
+
+        sip_client_t *c = &clients[i];
+        memset(c, 0, sizeof(*c));
+        // Read the username wider than it is kept: one that does not fit
+        // SIP_PICK_USER_CAP is not one of ours and must not be truncated
+        // into something that matches.
+        char user[64] = "";
+        xml_find_text(resp, "NewX_AVM-DE_ClientUsername", user, sizeof(user));
+        xml_unescape_inplace(user);
+        if (strlen(user) < sizeof(c->username)) {
+            memcpy(c->username, user, strlen(user) + 1);
         }
+        xml_find_text(resp, "NewX_AVM-DE_PhoneName", c->name, sizeof(c->name));
+        xml_unescape_inplace(c->name);
+        xml_find_text(resp, "NewX_AVM-DE_InternalNumber",
+                      c->number, sizeof(c->number));
+        xml_unescape_inplace(c->number);
+        pb_log_info(TAG, "SIP client %d: user='%s' number='%s'",
+                    i, c->username, c->number);
     }
-    pb_log_info(TAG, "no existing SIP client '%s', using next free slot %d",
-             username, num);
-    *out_index = num;
+    free(resp);
+    *out_count = num;
     return PB_OK;
 }
 
@@ -424,17 +447,6 @@ static void gen_random_password(char *out, size_t len)
         out[i] = alpha[pb_random_u32() % n];
     }
     out[len - 1] = '\0';
-}
-
-static void gen_sip_username(char *out, size_t cap)
-{
-    // Delegated to config_dongle_username: on first call it derives
-    // the suffix from the base MAC (or esp_random when eFuse is
-    // zeroed, e.g. in QEMU) and persists the result in NVS. All
-    // later setups reuse that exact name so find_client_slot finds
-    // and overwrites the Fritz!Box entry instead of piling up new
-    // ones.
-    config_dongle_username(out, cap);
 }
 
 // ---------------------------------------------------------------------------
@@ -930,10 +942,12 @@ int tr064_auth_get_state(const char *host, int port,
 int tr064_provision_sip_client(const char *host, int port,
                                      const char *admin_user, const char *admin_pass,
                                      const char *phone_name,
+                                     const char *on_conflict,
                                      const char *token_2fa,
-                                     tr064_sip_result_t *out)
+                                     tr064_sip_result_t *out,
+                                     sip_pick_t *pick)
 {
-    if (!host || !admin_user || !admin_pass || !out) return PB_ERR_INVALID_ARG;
+    if (!host || !admin_user || !admin_pass || !out || !pick) return PB_ERR_INVALID_ARG;
     out->error_code = 0;
     out->error_message[0] = '\0';
 
@@ -941,43 +955,76 @@ int tr064_provision_sip_client(const char *host, int port,
     snprintf(url, sizeof(url), "http://%s:%d" X_VOIP_CONTROL, host, port);
     pb_log_info(TAG, "provisioning SIP client on %s (user=%s)", url, admin_user);
 
-    // 1) Generate credentials. Username is MAC-derived and stable across
-    //    re-runs — that is what lets us find and reuse an existing slot
-    //    on a second setup attempt.
-    char user_buf[32];
-    char pass_buf[24];   // 23 chars + NUL
-    gen_sip_username(user_buf, sizeof(user_buf));
-    gen_random_password(pass_buf, sizeof(pass_buf));
-
-    // 2) Pick a client slot: existing index if our username is already
-    //    registered, else the next free slot. Avoids UPnPError 820 on a
-    //    re-run.
-    int client_index = 0;
-    int err = find_client_slot(url, admin_user, admin_pass, user_buf,
-                                     &client_index,
-                                     &out->error_code,
-                                     out->error_message,
-                                     sizeof(out->error_message));
+    // 1) Read the box's SIP clients (read-only, no 2FA needed).
+    sip_client_t *clients = calloc(SIP_PICK_MAX_CLIENTS, sizeof(*clients));
+    if (!clients) return PB_ERR_NO_MEM;
+    int count = 0;
+    int err = scan_clients(url, admin_user, admin_pass, clients, &count,
+                           &out->error_code,
+                           out->error_message, sizeof(out->error_message));
     if (err != PB_OK) {
-        pb_log_err(TAG, "find_client_slot failed");
+        pb_log_err(TAG, "reading the SIP clients failed");
+        free(clients);
         return err;
     }
 
-    // 3) SetClient4 at the chosen index (creates or overwrites). All
-    //    string-shaped values get XML-escaped on the way in; user_buf
-    //    and pass_buf are currently alphanumeric so this is defensive,
-    //    but phone_name may come from user input.
-    char phone_name_esc[96];
-    char user_esc[64];
-    char pass_esc[96];
-    xml_escape(user_buf,  user_esc,       sizeof(user_esc));
-    xml_escape(pass_buf,  pass_esc,       sizeof(pass_esc));
-    xml_escape(phone_name ? phone_name : "PhoneBlock",
-               phone_name_esc, sizeof(phone_name_esc));
+    // 2) Decide which entry to write (sip_client_pick.c): our own entry
+    //    from an earlier setup, a new "phoneblock-dongle", or — when other
+    //    PhoneBlock entries exist — what the user chose. A conflict or a
+    //    refused choice writes nothing.
+    sip_pick_decide(clients, count, config_sip_user(), config_sip_host(),
+                    host, on_conflict,
+                    phone_name && phone_name[0] ? phone_name : "PhoneBlock",
+                    pick);
+    free(clients);
+    switch (pick->action) {
+        case SIP_PICK_CONFLICT:
+            pb_log_info(TAG, "%d PhoneBlock entries on the box, asking the user",
+                        pick->entry_count);
+            out->error_code = TR064_ERR_CONFLICT;
+            snprintf(out->error_message, sizeof(out->error_message),
+                     "A PhoneBlock device is already set up on this Fritz!Box.");
+            return PB_FAIL;
+        case SIP_PICK_REFUSE:
+            pb_log_warn(TAG, "on_conflict '%s' refused: %s",
+                        on_conflict ? on_conflict : "", pick->reason);
+            out->error_code = TR064_ERR_REFUSED;
+            snprintf(out->error_message, sizeof(out->error_message), "%s",
+                     pick->reason);
+            return PB_FAIL;
+        case SIP_PICK_OVERWRITE:
+            pb_log_info(TAG, "overwriting SIP client '%s' at index %d",
+                        pick->username, pick->index);
+            break;
+        case SIP_PICK_CREATE:
+            pb_log_info(TAG, "creating SIP client '%s' at free slot %d",
+                        pick->username, pick->index);
+            break;
+    }
 
-    char *args = malloc(768);
+    // 3) SetClient4 at the chosen index (creates or overwrites) with a
+    //    fresh random password. All string-shaped values get XML-escaped
+    //    on the way in; username and password are alphanumeric plus '-',
+    //    so this is defensive there, but the display name may come from
+    //    the box or from user input. The name buffer holds the worst case
+    //    (every character an entity of up to 6 bytes), so the escape
+    //    never cuts an entity in half.
+    char pass_buf[24];   // 23 chars + NUL
+    gen_random_password(pass_buf, sizeof(pass_buf));
+    char phone_name_esc[SIP_PICK_NAME_CAP * 6];
+    char user_esc[SIP_PICK_USER_CAP * 6];
+    char pass_esc[96];
+    xml_escape(pick->username, user_esc,       sizeof(user_esc));
+    xml_escape(pass_buf,       pass_esc,       sizeof(pass_esc));
+    xml_escape(pick->name,     phone_name_esc, sizeof(phone_name_esc));
+
+    // Sized for the worst case of the escaped fields (~1.1 KB); checked
+    // anyway, since a cut-off argument list would be malformed XML.
+    enum { ARGS_CAP = 1280 };
+    char *args = malloc(ARGS_CAP);
     if (!args) return PB_ERR_NO_MEM;
-    snprintf(args, 768,
+    strbuf_t sb = sb_init(args, ARGS_CAP);
+    sb_appendf(&sb,
         "<NewX_AVM-DE_ClientIndex>%d</NewX_AVM-DE_ClientIndex>"
         "<NewX_AVM-DE_ClientPassword>%s</NewX_AVM-DE_ClientPassword>"
         "<NewX_AVM-DE_ClientUsername>%s</NewX_AVM-DE_ClientUsername>"
@@ -985,7 +1032,15 @@ int tr064_provision_sip_client(const char *host, int port,
         "<NewX_AVM-DE_ClientId></NewX_AVM-DE_ClientId>"
         "<NewX_AVM-DE_OutGoingNumber></NewX_AVM-DE_OutGoingNumber>"
         "<NewX_AVM-DE_InComingNumbers></NewX_AVM-DE_InComingNumbers>",
-        client_index, pass_esc, user_esc, phone_name_esc);
+        pick->index, pass_esc, user_esc, phone_name_esc);
+    if (sb.truncated) {
+        pb_log_err(TAG, "SetClient4 arguments do not fit %d bytes", ARGS_CAP);
+        free(args);
+        out->error_code = TR064_ERR_REFUSED;
+        snprintf(out->error_message, sizeof(out->error_message),
+                 "The device name is too long for the Fritz!Box request.");
+        return PB_FAIL;
+    }
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
     if (!resp) { free(args); return PB_ERR_NO_MEM; }
@@ -1004,7 +1059,7 @@ int tr064_provision_sip_client(const char *host, int port,
                   internal_num, sizeof(internal_num));
     free(resp);
 
-    strncpy(out->sip_user, user_buf,     sizeof(out->sip_user) - 1);
+    strncpy(out->sip_user, pick->username, sizeof(out->sip_user) - 1);
     out->sip_user[sizeof(out->sip_user) - 1] = '\0';
     strncpy(out->sip_pass, pass_buf,     sizeof(out->sip_pass) - 1);
     out->sip_pass[sizeof(out->sip_pass) - 1] = '\0';

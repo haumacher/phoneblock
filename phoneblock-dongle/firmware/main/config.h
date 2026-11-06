@@ -537,16 +537,6 @@ int config_update(const config_update_t *u);
 // guarantees a clean state.
 int config_erase(void);
 
-// Fixed SIP-client username used when provisioning the dongle on a
-// Fritz!Box. Same value on every device and every boot: the box's
-// tr064_provision_sip_client path finds an existing entry with this
-// name via find_client_slot and overwrites it, so re-running setup
-// does not pile up new "phoneblock-<hex>" clients. The only case
-// this collides is two dongles on the same box — so unusual that
-// we'd add an explicit "device name" UI field before trying to
-// derive one automatically again.
-void config_dongle_username(char *out, size_t cap);
-
 // Stable per-device id (UUIDv4 string, 36 chars), minted on first boot
 // and persisted in NVS. Survives OTA updates; cleared only by a factory
 // reset. Returns a pointer to a static buffer valid for the process

@@ -145,6 +145,7 @@ static struct {
     char  fritz_user[32];
     char  fritz_pass[64];
     char  phone_name[48];
+    char  on_conflict[48];   // the user's conflict decision, re-applied (#708)
     char  token[64];
     char  state[32];
     char  methods[64];
@@ -1602,8 +1603,43 @@ static const char FRITZ_APP_ACCESS_OFF[] =
     "Enable \"Allow access for apps\" under Home Network → Network → "
     "Network Settings and try again.";
 
+// Answer to a setup that found other dongles' PhoneBlock entries on the box
+// (#708): nothing was written, the wizard asks whether to replace one of
+// them or to add this dongle as a further device, and re-posts the form
+// with on_conflict=replace:<username> or on_conflict=add. `name` and
+// `number` of an entry are left out when the box did not report them.
+static void send_fritzbox_conflict(web_http_request_t *req, const sip_pick_t *pick)
+{
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", false);
+    cJSON_AddBoolToObject(root, "conflict", true);
+    cJSON *entries = cJSON_AddArrayToObject(root, "entries");
+    for (int i = 0; entries && i < pick->entry_count; i++) {
+        const sip_client_t *c = &pick->entries[i];
+        cJSON *e = cJSON_CreateObject();
+        if (!e) break;
+        cJSON_AddStringToObject(e, "username", c->username);
+        if (c->name[0])   cJSON_AddStringToObject(e, "name",   c->name);
+        if (c->number[0]) cJSON_AddStringToObject(e, "number", c->number);
+        cJSON_AddItemToArray(entries, e);
+    }
+    cJSON *add_as = cJSON_AddObjectToObject(root, "add_as");
+    if (add_as) {
+        cJSON_AddStringToObject(add_as, "username", pick->add_username);
+        cJSON_AddStringToObject(add_as, "name",     pick->add_name);
+    }
+    // English fallback for direct API consumers; the UI renders the
+    // localised question from the fields above.
+    cJSON_AddStringToObject(root, "message",
+        "A PhoneBlock device is already set up on this Fritz!Box. Repeat the "
+        "request with on_conflict=replace:<username> to take over its entry, "
+        "or on_conflict=add to add this dongle as a further device.");
+    send_json(req, root);
+}
+
 // POST /api/fritzbox-setup
 // Body (URL-encoded): fritz_host=…&fritz_user=…&fritz_pass=…&phone_name=…
+//                     [&on_conflict=add|replace:<username>]
 // Runs tr064_provision_sip_client; on success, stores the generated
 // SIP credentials (plus the registrar host) via config_update() and
 // triggers sip_register_request_reload() so the dongle registers
@@ -1621,10 +1657,12 @@ static web_http_error_t handle_fritzbox_setup(web_http_request_t *req)
     char fritz_user[32]  = "";
     char fritz_pass[64]  = "";
     char phone_name[48]  = "";
+    char on_conflict[48] = "";
     form_get(body, "fritz_host", fritz_host, sizeof(fritz_host));
     form_get(body, "fritz_user", fritz_user, sizeof(fritz_user));
     form_get(body, "fritz_pass", fritz_pass, sizeof(fritz_pass));
     form_get(body, "phone_name", phone_name, sizeof(phone_name));
+    form_get(body, "on_conflict", on_conflict, sizeof(on_conflict));
 
     if (!fritz_host[0]) strncpy(fritz_host, "fritz.box", sizeof(fritz_host) - 1);
     if (!phone_name[0]) strncpy(phone_name, "PhoneBlock", sizeof(phone_name) - 1);
@@ -1662,8 +1700,22 @@ static web_http_error_t handle_fritzbox_setup(web_http_request_t *req)
 
     tr064_sip_result_t res;
     memset(&res, 0, sizeof(res));
+    sip_pick_t *pick = malloc(sizeof(*pick));
+    if (!pick) {
+        send_fail(req, "Out of memory.");
+        return WEB_HTTP_OK;
+    }
     int err = tr064_provision_sip_client(
-        fritz_host, 49000, fritz_user, fritz_pass, phone_name, NULL, &res);
+        fritz_host, 49000, fritz_user, fritz_pass, phone_name, on_conflict,
+        NULL, &res, pick);
+    if (err != PB_OK && res.error_code == TR064_ERR_CONFLICT) {
+        // Other dongles' entries on the box — ask before writing anything.
+        // Comes before any 2FA: the conflict check only reads.
+        send_fritzbox_conflict(req, pick);
+        free(pick);
+        return WEB_HTTP_OK;
+    }
+    free(pick);
     if (err != PB_OK && res.error_code == 866) {
         // Fritz!Box requires 2FA — start the handshake, stash the
         // credentials + phone name for the retry, and tell the web UI
@@ -1684,6 +1736,7 @@ static web_http_error_t handle_fritzbox_setup(web_http_request_t *req)
         strncpy(s_2fa.fritz_user, fritz_user, sizeof(s_2fa.fritz_user) - 1);
         strncpy(s_2fa.fritz_pass, fritz_pass, sizeof(s_2fa.fritz_pass) - 1);
         strncpy(s_2fa.phone_name, phone_name, sizeof(s_2fa.phone_name) - 1);
+        strncpy(s_2fa.on_conflict, on_conflict, sizeof(s_2fa.on_conflict) - 1);
 
         cJSON *root = cJSON_CreateObject();
         cJSON_AddBoolToObject  (root, "ok", false);
@@ -1728,6 +1781,9 @@ static web_http_error_t handle_fritzbox_setup(web_http_request_t *req)
                 break;
             case TR064_ERR_APP_ACCESS:
                 snprintf(msg, sizeof(msg), "%s", FRITZ_APP_ACCESS_OFF);
+                break;
+            case TR064_ERR_REFUSED:
+                snprintf(msg, sizeof(msg), "%s", res.error_message);
                 break;
             case 820:
             case 402:
@@ -1999,12 +2055,21 @@ static web_http_error_t handle_fritzbox_2fa_status(web_http_request_t *req)
         return WEB_HTTP_OK;
     }
 
-    // 2FA done → retry SetClient4 with the token.
+    // 2FA done → retry SetClient4 with the token. The client list is read
+    // again and the stashed decision re-applied to it, so the retry writes
+    // the entry the first attempt picked.
     tr064_sip_result_t res;
     memset(&res, 0, sizeof(res));
-    err = tr064_provision_sip_client(s_2fa.fritz_host, 49000,
-        s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.phone_name,
-        s_2fa.token, &res);
+    sip_pick_t *pick = malloc(sizeof(*pick));
+    if (pick) {
+        err = tr064_provision_sip_client(s_2fa.fritz_host, 49000,
+            s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.phone_name,
+            s_2fa.on_conflict, s_2fa.token, &res, pick);
+        free(pick);
+    } else {
+        err = PB_ERR_NO_MEM;
+        snprintf(res.error_message, sizeof(res.error_message), "Out of memory");
+    }
 
     if (err != PB_OK) {
         // Wipe the cached admin password before bailing — the round-trip
@@ -2012,10 +2077,20 @@ static web_http_error_t handle_fritzbox_2fa_status(web_http_request_t *req)
         memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
         s_2fa.active = false;
         char msg[200];
-        snprintf(msg, sizeof(msg),
-            "Still failing after 2FA — error %d: %s",
-            res.error_code,
-            res.error_message[0] ? res.error_message : "(no details)");
+        if (res.error_code == TR064_ERR_CONFLICT) {
+            // Another dongle registered on the box while the user was
+            // confirming: nothing written, the question has to be asked.
+            snprintf(msg, sizeof(msg),
+                "Another PhoneBlock device was set up on the Fritz!Box in "
+                "the meantime. Nothing was changed; please start the setup again.");
+        } else if (res.error_code == TR064_ERR_REFUSED) {
+            snprintf(msg, sizeof(msg), "%s", res.error_message);
+        } else {
+            snprintf(msg, sizeof(msg),
+                "Still failing after 2FA — error %d: %s",
+                res.error_code,
+                res.error_message[0] ? res.error_message : "(no details)");
+        }
         send_fail(req, msg);
         return WEB_HTTP_OK;
     }

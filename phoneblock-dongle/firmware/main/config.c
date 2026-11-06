@@ -962,13 +962,6 @@ int config_erase(void)
     return err;
 }
 
-void config_dongle_username(char *out, size_t cap)
-{
-    if (!out || cap == 0) return;
-    strncpy(out, "phoneblock-dongle", cap - 1);
-    out[cap - 1] = '\0';
-}
-
 int config_update(const config_update_t *u)
 {
     pb_kv_t *h;

@@ -152,6 +152,9 @@
   "status.fw.checking": "Checking for update…",
   "status.fw.check.none": "No newer version available (currently {version}).",
   "status.fw.check.found": "New version {version} is being installed…",
+  "status.fw.check.older": "This channel only contains the older version {version} (the installed version is {current}). The dongle will remain set to {current} until a newer version is released.",
+  "status.fw.downgrade": "Install {version} anyway",
+  "status.fw.downgrade.confirm": "Do you really want to revert to the older version {version}? Doing so will result in the loss of features from the newer version.",
   "status.fw.check.installed": "Version {version} installed — dongle is rebooting. Please wait a moment, then reload this page.",
   "status.fw.check.error": "Check failed: {msg}",
   "status.fw.failed": "Last update to version {version} did not survive the boot — automatically rolled back. Auto-update will skip this version. Click \"Check for update\" to retry.",
@@ -484,7 +487,10 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "status.fw.check.older": "This channel only contains the older version {version} (the installed version is {current}). The dongle will remain set to {current} until a newer version is released.",
-  "status.fw.downgrade": "Install {version} anyway",
-  "status.fw.downgrade.confirm": "Do you really want to revert to the older version {version}? Doing so will result in the loss of features from the newer version."
+  "sip.fb.conflict.one": "A PhoneBlock dongle is already registered in the Fritz!Box:",
+  "sip.fb.conflict.many": "Several PhoneBlock dongles are already registered in the Fritz!Box:",
+  "sip.fb.conflict.replace": "Replace “{entry}”—for example, after resetting this dongle",
+  "sip.fb.conflict.add": "Add as another device → “{name}”",
+  "sip.fb.conflict.submit": "Continue",
+  "sip.fb.conflict.choose": "Please select one of the options."
 }

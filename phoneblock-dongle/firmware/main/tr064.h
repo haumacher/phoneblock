@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "sip_client_pick.h"
+
 // TR-064 auto-provisioning: the dongle uses the Fritz!Box's SOAP API
 // on port 49000 (plain HTTP, LAN-only) to create a fresh IP-phone
 // entry for itself. This replaces the manual "Telefoniegeräte → Neues
@@ -19,6 +21,8 @@
 #define TR064_ERR_AUTH       (-3)   // HTTP 503 + faultstring "Unauthenticated"
 #define TR064_ERR_PARSE      (-4)   // unexpected/malformed response body
 #define TR064_ERR_APP_ACCESS (-5)   // TR-064 "Zugriff für Apps" is off
+#define TR064_ERR_CONFLICT   (-6)   // other PhoneBlock entries, user must choose (#708)
+#define TR064_ERR_REFUSED    (-7)   // on_conflict refused / client list unusable
 
 typedef struct {
     char sip_user[32];
@@ -32,37 +36,52 @@ typedef struct {
     char error_message[128];
 } tr064_sip_result_t;
 
-// Create a new SIP client on the Fritz!Box and return the generated
-// credentials. The caller typically hands these to config_update() so
-// the SIP REGISTER loop picks them up.
+// Create or overwrite the dongle's SIP client on the Fritz!Box and return
+// the generated credentials. The caller typically hands these to
+// config_update() so the SIP REGISTER loop picks them up.
 //
 // Flow internally:
 //   1. InitChallenge on X_VoIP → receive nonce + realm from a 503 fault.
 //   2. Compute MD5(MD5(user:realm:pass):nonce).
-//   3. ClientAuth + X_AVM-DE_GetNumberOfClients → learn next free index.
-//   4. ClientAuth + X_AVM-DE_SetClient4 with a generated username
-//      ("phoneblock-<mac-suffix>") and random password → returns the
-//      internal extension number assigned by the box.
+//   3. ClientAuth + X_AVM-DE_GetNumberOfClients and X_AVM-DE_GetClient3
+//      per index → the box's SIP clients (username, name, internal number).
+//   4. sip_pick_decide() (sip_client_pick.h) picks the entry: the dongle's
+//      own one from an earlier setup (stored SIP user + same host), a new
+//      "phoneblock-dongle", or — when other PhoneBlock entries exist —
+//      what `on_conflict` says ("add" / "replace:<username>").
+//   5. ClientAuth + X_AVM-DE_SetClient4 at that index with the picked
+//      username and a random password → returns the internal extension
+//      number assigned by the box.
 //
 // `host` may be an IP or hostname ("fritz.box", "192.168.178.1").
 // `port` is 49000 for all current Fritz!Boxen.
-// `phone_name` is the human-readable label shown in the Fritz!Box UI.
+// `phone_name` is the display name of a new first device (further ones
+// get " <n>"); an overwritten entry keeps the name the box shows.
+// `on_conflict` is the user's answer to a conflict, NULL/"" before one.
 // `token_2fa` is an optional <avm:token>-header value obtained from
 // tr064_auth_start + tr064_auth_poll once the user completed the
 // second factor. Pass NULL for the initial attempt; on 2FA-enforced
 // boxes this fails with out->error_code == 866 and the caller then
-// drives the 2FA handshake and retries with the received token.
+// drives the 2FA handshake and retries with the received token (and
+// the same on_conflict). Steps 3–4 only read, so a conflict is reported
+// before the box asks for the second factor.
+// `pick` (caller-owned, ~2.6 KB — keep it off small stacks) receives the
+// decision; with out->error_code == TR064_ERR_CONFLICT it lists the
+// PhoneBlock entries and the "add" identity to offer the user.
 //
 // Returns 0 on success and fills `out`. On failure out->error_code
-// and out->error_message carry the Fritz!Box's UPnPError details.
+// and out->error_message carry the Fritz!Box's UPnPError details, or
+// TR064_ERR_CONFLICT / TR064_ERR_REFUSED (nothing was written).
 int tr064_provision_sip_client(
     const char *host,
     int         port,
     const char *admin_user,
     const char *admin_pass,
     const char *phone_name,
+    const char *on_conflict,
     const char *token_2fa,
-    tr064_sip_result_t *out);
+    tr064_sip_result_t *out,
+    sip_pick_t *pick);
 
 // Return the Fritz!Box's default login username — the account whose
 // password the web login form would accept by itself (matches the
