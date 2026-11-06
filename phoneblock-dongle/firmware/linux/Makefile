@@ -47,6 +47,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c ../main/api_fail.c \
                       ../main/dialog.c ../main/dialog_manifest.c ../main/audio_manifest.c \
                       ../main/dialog_store.c \
                       ../main/firmware_update.c ../main/heap_guard_linux.c \
+                      ../main/hostname.c \
                       ../main/heap_guard_scan.c \
                       ../main/http_util.c ../main/i18n_sync.c \
                       ../main/link.c ../main/link_proto.c ../main/log_capture.c \

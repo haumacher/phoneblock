@@ -18,7 +18,9 @@
 #include "esp_wnm.h"
 #endif
 
+#include "config.h"
 #include "link_watchdog.h"
+#include "mdns.h"
 #include "rtp.h"
 #include "sip_register.h"
 #include "ticks_util.h"
@@ -757,6 +759,26 @@ static void link_watchdog_task(void *arg)
     }
 }
 
+void wifi_apply_hostname(void)
+{
+    const char *name = config_hostname();
+    // mDNS answers for the new name right away.
+    esp_err_t err = mdns_hostname_set(name);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "mdns_hostname_set: %s", esp_err_to_name(err));
+    }
+    // DHCP: the netif's hostname goes into option 12 of the next DHCP
+    // request (lease renewal, reconnect, restart). Nothing is renewed here.
+    esp_netif_t *netif = s_sta_netif ? s_sta_netif : esp_netif_get_default_netif();
+    if (netif) {
+        err = esp_netif_set_hostname(netif, name);
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "esp_netif_set_hostname: %s", esp_err_to_name(err));
+        }
+    }
+    ESP_LOGI(TAG, "host name now \"%s\" (mDNS now, DHCP with the next request)", name);
+}
+
 esp_err_t wifi_connect(void)
 {
     s_events = xEventGroupCreate();
@@ -766,12 +788,14 @@ esp_err_t wifi_connect(void)
 
     // DHCP option 12 (host-name) is built from the netif's hostname at
     // the time DHCPDISCOVER/REQUEST is sent. Setting it later (e.g.
-    // after GOT_IP) is too late: the Fritz!Box has already cached the
-    // lease under the lwIP default "espressif" and pins the Heimnetz
-    // name to that first value. Set it before esp_wifi_start() so the
-    // very first DHCP exchange announces "answerbot".
+    // after GOT_IP) is too late for this boot: the Fritz!Box lists the
+    // lease under the lwIP default "espressif" until the next exchange.
+    // Set it before esp_wifi_start() so the very first DHCP exchange
+    // announces the configured name (default "answerbot", #714). A name
+    // changed at runtime reaches the box's device list and DNS on the
+    // next boot (verified on a Fritz!Box, 2026-11-06).
     if (sta_netif) {
-        esp_err_t err = esp_netif_set_hostname(sta_netif, "answerbot");
+        esp_err_t err = esp_netif_set_hostname(sta_netif, config_hostname());
         if (err != ESP_OK) {
             ESP_LOGW(TAG, "esp_netif_set_hostname: %s", esp_err_to_name(err));
         }

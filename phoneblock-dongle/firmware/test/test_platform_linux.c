@@ -12,6 +12,7 @@
 
 #include "log_capture.h"
 #include "config.h"
+#include "hostname.h"
 #include "linux_test_util.h"
 #include "platform.h"
 
@@ -559,6 +560,49 @@ static void test_kv_namespaces_and_whitespace(void)
     unsetenv("PHONEBLOCK_CONFIG_FILE");
 }
 
+// The host name (#714): the default on a fresh store, write -> read back (also
+// after a reload from the store), "" back to the default, and the clamp of a
+// malformed stored value.
+static void test_config_hostname(void)
+{
+    char path[256];
+    use_temp_config(path, sizeof(path));
+    config_load();
+    REQUIRE(strcmp(config_hostname(), HOSTNAME_DEFAULT) == 0);
+
+    char name[HOSTNAME_CAP];
+    REQUIRE(hostname_normalize("Answerbot-S3", name, sizeof(name)));
+    config_update_t set = { .hostname = name };
+    REQUIRE(config_update(&set) == PB_KV_OK);
+    REQUIRE(strcmp(config_hostname(), "answerbot-s3") == 0);
+    config_load();
+    REQUIRE(strcmp(config_hostname(), "answerbot-s3") == 0);
+
+    // Unrelated updates leave it alone.
+    config_update_t other = { .sip_host = "fritz.box" };
+    REQUIRE(config_update(&other) == PB_KV_OK);
+    REQUIRE(strcmp(config_hostname(), "answerbot-s3") == 0);
+
+    config_update_t reset = { .hostname = "" };
+    REQUIRE(config_update(&reset) == PB_KV_OK);
+    REQUIRE(strcmp(config_hostname(), HOSTNAME_DEFAULT) == 0);
+    config_load();
+    REQUIRE(strcmp(config_hostname(), HOSTNAME_DEFAULT) == 0);
+
+    // A malformed value in the store never reaches DHCP or mDNS.
+    pb_kv_t *h;
+    REQUIRE(pb_kv_open("phoneblock", true, &h) == PB_KV_OK);
+    REQUIRE(pb_kv_set_string(h, "hostname", "bad_name") == PB_KV_OK);
+    REQUIRE(pb_kv_commit(h) == PB_KV_OK);
+    pb_kv_close(h);
+    config_load();
+    REQUIRE(strcmp(config_hostname(), HOSTNAME_DEFAULT) == 0);
+
+    REQUIRE(config_erase() == PB_KV_OK);
+    unlink(path);
+    unsetenv("PHONEBLOCK_CONFIG_FILE");
+}
+
 int main(void)
 {
     test_time();
@@ -568,6 +612,7 @@ int main(void)
     test_config_store();
     test_config_dialog();
     test_config_dialog_speaker();
+    test_config_hostname();
     test_config_ab_mode_settle();
     test_task();
     test_task_stack_floor();

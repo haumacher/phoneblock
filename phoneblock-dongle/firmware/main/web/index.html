@@ -1401,6 +1401,22 @@ function renderStatus(){
     + '<p class="hint">'
     +   esc(t('status.system.lcd_flip.hint')) + '</p>'
     + '</div>'
+    // Host name (#714): only on the stick — the status JSON carries
+    // "hostname" there, the Linux service has none of its own.
+    + '<div id="hostnameRow" style="display:none">'
+    + '<div class="form">'
+    + '  <label>' + esc(t('status.system.hostname'))
+    +     '<input id="hostnameInput" type="text" autocomplete="off" '
+    +       'autocapitalize="none" spellcheck="false" placeholder="answerbot"></label>'
+    + '</div>'
+    + '<p class="help">'
+    +   esc(t('status.system.hostname.help')) + '</p>'
+    + '<p class="actions">'
+    + '  <button id="hostnameSave" class="btn-primary btn-sm">'
+    +   esc(t('status.system.hostname.save')) + '</button>'
+    + '  <span id="hostnameMsg" class="muted after"></span>'
+    + '</p>'
+    + '</div>'
     + '</details>'
     + '<details id="thresholdsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.thresholds.title')) + '</summary>'
@@ -1776,6 +1792,8 @@ let tokenLink = false;
 let mailPrefilled = false;
 let namesPrefilled = false;
 let webhookPrefilled = false;
+// The host name the device runs under, from the last status poll.
+let hostnameCurrent = '';
 let dialogPrefilled = false;
 
 // IDs of sections that the dashboard shows or hides on each poll, so
@@ -3073,6 +3091,66 @@ async function refreshAll(){
       } catch (_){ /* next poll reconciles */ }
       refreshAll();
     };
+  }
+
+  // Host name on the LAN (#714). Shown only where the status JSON carries
+  // "hostname" (the stick, not the Linux service); prefilled once per
+  // rendered field (a flag on the element, so a re-render after leaving
+  // the page fills it again), so a poll does not overwrite what the user
+  // is typing.
+  const hnRow   = $('hostnameRow');
+  const hnInput = $('hostnameInput');
+  const hnSave  = $('hostnameSave');
+  if (hnRow && hnInput && hnSave){
+    const hasHostname = typeof s.hostname === 'string';
+    hnRow.style.display = hasHostname ? '' : 'none';
+    if (hasHostname) hostnameCurrent = s.hostname;
+    if (hasHostname && !hnInput.dataset.filled){
+      hnInput.value = s.hostname;
+      hnInput.dataset.filled = '1';
+    }
+    if (!hnSave.onclick){
+      // Keep in step with hostname_normalize() in main/hostname.c, which
+      // the firmware applies when storing (a refused name is not stored).
+      const HOSTNAME_RE = /^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$/;
+      hnSave.onclick = async () => {
+        const m = $('hostnameMsg');
+        const name = hnInput.value.trim().toLowerCase();
+        const fail = (key) => {
+          m.textContent = t(key);
+          m.style.color = 'var(--err)';
+          hnInput.focus();
+        };
+        // Empty is valid: that is how the default name comes back.
+        if (name && !HOSTNAME_RE.test(name)) return fail('status.system.hostname.err');
+        const before = hostnameCurrent;
+        hnSave.disabled = true;
+        m.textContent = '';
+        const body = new URLSearchParams();
+        body.append('hostname', name);
+        let r = null, d = {};
+        try {
+          r = await fetch('api/config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body.toString(),
+          });
+          d = await r.json().catch(() => ({}));
+        } catch (_){}
+        hnSave.disabled = false;
+        if (!r || !r.ok){
+          return fail(r && d.code === 'invalid'
+              ? 'status.system.hostname.err' : 'status.system.hostname.failed');
+        }
+        const now = name || 'answerbot';
+        hostnameCurrent = now;
+        hnInput.value = now;
+        m.textContent = now === before
+            ? t('status.system.hostname.unchanged')
+            : t('status.system.hostname.saved', {name: now});
+        m.style.color = 'var(--ok)';
+      };
+    }
   }
 
   // Access protection ("Login mit PhoneBlock"). Counter buttons:

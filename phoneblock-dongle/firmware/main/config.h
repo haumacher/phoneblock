@@ -113,6 +113,12 @@ bool        config_log_info(void);
 // living-room installs where a permanently-lit LED is a nuisance.
 bool        config_led_quiet(void);
 
+// The dongle's host name on the LAN (#714): sent as the DHCP host name
+// (option 12) and announced via mDNS as `<name>.local`. The NVS value if the
+// user set one in the web UI, else HOSTNAME_DEFAULT ("answerbot"). Always
+// satisfies hostname_valid(), so both users can take it as is.
+const char *config_hostname(void);
+
 // Whether the T-Dongle-S3 display is rotated by 180°. Depending on how the
 // Fritz!Box's USB port is oriented, the stick sits upside down; this turns
 // the logo the right way up. Default off; only meaningful on the S3 build
@@ -512,6 +518,10 @@ typedef struct {
     // caller must pass only a config_dial_prefix_valid() string (web.c
     // guards the POST); the getter clamps defensively on read.
     const char *dial_prefix;
+    // Host name on the LAN (#714), "" = back to HOSTNAME_DEFAULT. NULL =
+    // leave unchanged. The caller passes only a hostname_normalize() result
+    // (web.c); the getter clamps defensively on read.
+    const char *hostname;
     // Answer-bot mode: "announcement" | "dialog". NULL = leave unchanged.
     // The caller passes only a config_ab_mode_valid() value (web.c).
     const char *ab_mode;

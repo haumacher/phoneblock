@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "dialog.h"      // DIALOG_SPEAKER_CAP, dialog_speaker_valid()
+#include "hostname.h"    // HOSTNAME_CAP, hostname_valid()
 #include "mail_rcpt.h"   // MAIL_RCPT_SPEC_CAP sizes the recipient field
 #include "name_filter.h" // NAME_FILTER_SPEC_CAP sizes the spam-name field
 #ifdef ESP_PLATFORM
@@ -98,6 +99,7 @@ static const char *NS   = "phoneblock";
 #define K_TIMEZONE      "timezone"
 #define K_UI_LANG       "ui_lang"
 #define K_DIAL_PREFIX   "dial_prefix"
+#define K_HOSTNAME      "hostname"
 #define K_AB_MODE       "ab_mode"
 #define K_VAD_SIL_DB    "vad_sil_db"
 #define K_VAD_MIN_SIL   "vad_min_sil_ms"
@@ -217,6 +219,8 @@ typedef struct {
     char dial_prefix[8];     // "+49", "+44", … Country of the line, used to
                              // expand national caller IDs to E.164. Empty or
                              // malformed reads back as DEFAULT_DIAL_PREFIX.
+    char hostname[HOSTNAME_CAP];   // DHCP + mDNS name (#714); empty or
+                                   // malformed reads back as HOSTNAME_DEFAULT
     char ab_mode[16];        // "announcement" (default, also empty) | "dialog"
     int  vad_silence_db;     // 0 = default; clamped on read
     int  vad_min_silence_ms; // 0 = default; clamped on read
@@ -431,6 +435,7 @@ static void load_values(void)
         copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
         s_config.ui_lang[0] = '\0';   // empty → default "en" (see getter)
         s_config.dial_prefix[0] = '\0';   // empty → DEFAULT_DIAL_PREFIX (see getter)
+        s_config.hostname[0] = '\0';      // empty → HOSTNAME_DEFAULT (see getter)
         s_config.ab_mode[0] = '\0';       // empty → "announcement"
         s_config.vad_silence_db     = 0;  // 0 → defaults (see getters)
         s_config.vad_min_silence_ms = 0;
@@ -548,6 +553,8 @@ static void load_values(void)
              s_config.ui_lang, sizeof(s_config.ui_lang));
     load_str(h, K_DIAL_PREFIX, "",
              s_config.dial_prefix, sizeof(s_config.dial_prefix));
+    load_str(h, K_HOSTNAME, "",
+             s_config.hostname, sizeof(s_config.hostname));
     load_str(h, K_AB_MODE, "",
              s_config.ab_mode, sizeof(s_config.ab_mode));
     s_config.vad_silence_db     = load_int(h, K_VAD_SIL_DB,  0);
@@ -697,6 +704,13 @@ const char *config_dial_prefix(void)
 bool config_dial_prefix_is_set(void)
 {
     return config_dial_prefix_valid(s_config.dial_prefix);
+}
+const char *config_hostname(void)
+{
+    // Clamp on read like config_dial_prefix(): the value goes into DHCP
+    // option 12 and the mDNS announcement, so an empty or corrupt NVS read
+    // degrades to the name every dongle had before the setting existed.
+    return hostname_valid(s_config.hostname) ? s_config.hostname : HOSTNAME_DEFAULT;
 }
 bool        config_auto_update_enabled(void)
 {
@@ -1081,6 +1095,8 @@ int config_update(const config_update_t *u)
                                         s_config.ui_lang, sizeof(s_config.ui_lang));
     if (err == PB_KV_OK) err = set_str_if(h, K_DIAL_PREFIX, u->dial_prefix,
                                         s_config.dial_prefix, sizeof(s_config.dial_prefix));
+    if (err == PB_KV_OK) err = set_str_if(h, K_HOSTNAME, u->hostname,
+                                        s_config.hostname, sizeof(s_config.hostname));
     if (err == PB_KV_OK) err = set_str_if(h, K_AB_MODE, u->ab_mode,
                                         s_config.ab_mode, sizeof(s_config.ab_mode));
     if (err == PB_KV_OK) err = set_int_if(h, K_VAD_SIL_DB, u->vad_silence_db,

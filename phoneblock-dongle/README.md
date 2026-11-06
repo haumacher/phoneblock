@@ -88,8 +88,10 @@ echten Telefone klingeln. Inbetriebnahme im Browser, keine Konfigurationsdatei.
 ## Inbetriebnahme
 
 1. Dongle einstecken (USB-Port der Fritz!Box liefert die 5 V).
-2. Im Browser `http://<dongle-ip>/` (oder `http://answerbot/` wenn
-   mDNS-Hostname gesetzt — noch offen, siehe [PROGRESS.md](PROGRESS.md)).
+2. Im Browser `http://answerbot/`, `http://answerbot.local/` oder
+   `http://<dongle-ip>/`. Der Name `answerbot` ist die Voreinstellung; mit
+   mehreren Dongles im Heimnetz bekommt jeder unter „System" einen eigenen
+   (#714).
 3. Auf der Landingpage:
    - **„Telefonie einrichten"** → „Fritz!Box (empfohlen)" → Admin-
      Passwort eingeben → (2FA durchklicken falls aktiv) → Fertig.
