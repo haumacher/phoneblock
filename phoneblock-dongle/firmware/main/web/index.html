@@ -3749,7 +3749,7 @@ async function submitFritzbox(form, onConflict){
     return;
   }
   if (r.data && r.data.two_factor){
-    e.target.querySelector('input[name=fritz_pass]').value = '';
+    form.querySelector('input[name=fritz_pass]').value = '';
     msg.innerHTML = esc(t('sip.fb.2fa.instructions', {hints: ''}))
                   + render2FAInstructions(r.data.methods || '');
     msg.style.color = 'var(--warn)';
