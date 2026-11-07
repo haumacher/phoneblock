@@ -40,7 +40,7 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * {@link HttpServlet} serving the CardDAV address book(s).
  */
-@WebServlet(urlPatterns = {CardDavServlet.DIR_NAME, CardDavServlet.URL_PATTERN})
+@WebServlet(urlPatterns = {CardDavServlet.DIR_NAME, CardDavServlet.URL_PATTERN, CardDavServlet.WELL_KNOWN_PATH})
 public class CardDavServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CardDavServlet.class);
@@ -48,6 +48,17 @@ public class CardDavServlet extends HttpServlet {
 	public static final String DIR_NAME = "/contacts";
 
 	private static final String BASE_PATH = DIR_NAME + "/";
+
+	/**
+	 * The CardDAV service discovery path (RFC 6764, section 5).
+	 *
+	 * <p>
+	 * Clients like macOS/iOS Contacts, DAVx5 and Thunderbird probe this path to find the
+	 * address book root. It is served at the context root and below {@link #DIR_NAME}, since
+	 * clients differ in what they resolve the discovery URL against (#524).
+	 * </p>
+	 */
+	public static final String WELL_KNOWN_PATH = "/.well-known/carddav";
 
 	private static final String METHOD_REPORT = "REPORT";
 
@@ -78,6 +89,13 @@ public class CardDavServlet extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (req.getPathInfo() == null && req.getServletPath().equals(DIR_NAME)) {
 			resp.sendRedirect(req.getContextPath() + BASE_PATH);
+			return;
+		}
+
+		if (isWellKnown(req)) {
+			// RFC 6764 allows only 301, 303 or 307 here; sendRedirect() would answer 302.
+			resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+			resp.setHeader("Location", req.getContextPath() + BASE_PATH);
 			return;
 		}
 
@@ -295,6 +313,21 @@ public class CardDavServlet extends HttpServlet {
 		resp.setStatus(SC_MULTI_STATUS);
 		resp.setCharacterEncoding("utf-8");
 		resp.setContentType("application/xml");
+	}
+
+	/**
+	 * Whether the request addresses the {@link #WELL_KNOWN_PATH}, either at the context root or
+	 * below {@link #DIR_NAME}.
+	 */
+	private static boolean isWellKnown(HttpServletRequest req) {
+		String servletPath = req.getServletPath();
+		if (WELL_KNOWN_PATH.equals(servletPath)) {
+			return true;
+		}
+
+		String pathInfo = req.getPathInfo();
+		return DIR_NAME.equals(servletPath)
+			&& (WELL_KNOWN_PATH.equals(pathInfo) || (WELL_KNOWN_PATH + "/").equals(pathInfo));
 	}
 
 	private void handleNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException {
