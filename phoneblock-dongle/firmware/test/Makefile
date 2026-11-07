@@ -372,6 +372,9 @@ test: $(BINS)
 	@# Only comments are stripped from the embedded web UI (#676, needs node).
 	@if command -v node >/dev/null; then echo "→ strip_web_comments_js_check.js"; node strip_web_comments_js_check.js; \
 	 else echo "→ strip_web_comments_js_check.js skipped (no node)"; fi
+	@# The Fritz!Box wizard polls the 2FA state after the box asks for it (#722, needs node).
+	@if command -v node >/dev/null; then echo "→ fritzbox_2fa_js_check.js"; node fritzbox_2fa_js_check.js; \
+	 else echo "→ fritzbox_2fa_js_check.js skipped (no node)"; fi
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
