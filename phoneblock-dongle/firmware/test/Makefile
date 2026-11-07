@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_sip_client_pick test_sip_client_pick_probe test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_stats_small test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe test_hostname test_hostname_probe
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_sip_client_pick test_sip_client_pick_probe test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_version_marker test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_stats_small test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe test_hostname test_hostname_probe
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -180,6 +180,9 @@ test_name_filter: test_name_filter.c ../main/name_filter.c ../main/name_filter.h
 test_version_cmp: test_version_cmp.c ../main/version_cmp.c ../main/version_cmp.h
 	$(CC) $(CFLAGS) test_version_cmp.c ../main/version_cmp.c -o $@
 
+test_version_marker: test_version_marker.c linux_test_util.h ../main/version_marker.c ../main/version_marker.h
+	$(CC) $(CFLAGS) test_version_marker.c ../main/version_marker.c -o $@
+
 test_http_util: test_http_util.c linux_test_util.h ../main/http_util.c \
                 ../main/http_util.h ../main/strbuf.h
 	$(CC) $(CFLAGS) -fsanitize=address test_http_util.c ../main/http_util.c -o $@
@@ -292,7 +295,7 @@ test_platform_linux_net: test_platform_linux_net.c linux_test_util.h \
 # The library of the firmware modules that the Linux tests link, and the
 # service itself, come from ../linux/Makefile, shared with debian/rules
 # (#624). Its dependency check applies to these goals.
-LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux
+LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
 include ../linux/Makefile
 
 test_api_linux: test_api_linux.c linux_test_util.h \
@@ -319,6 +322,14 @@ test_web_calls_linux: test_web_calls_linux.c linux_test_util.h \
 # installed web assets (rec.js) of the same build.
 test_web_rec_linux: test_web_rec_linux.c linux_test_util.h \
                     $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a phoneblock_linux
+	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
+
+# The English fallback pack (#721) through the real web server; needs the
+# installed web assets (ui_en.json) of the same build.
+test_web_i18n_linux: test_web_i18n_linux.c linux_test_util.h \
+                     $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a phoneblock_linux
 	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
@@ -375,10 +386,13 @@ test: $(BINS)
 	@# The Fritz!Box wizard polls the 2FA state after the box asks for it (#722, needs node).
 	@if command -v node >/dev/null; then echo "→ fritzbox_2fa_js_check.js"; node fritzbox_2fa_js_check.js; \
 	 else echo "→ fritzbox_2fa_js_check.js skipped (no node)"; fi
+	@# English text instead of raw keys when the served pack lacks a key (#721, needs node).
+	@if command -v node >/dev/null; then echo "→ i18n_fallback_js_check.js"; node i18n_fallback_js_check.js; \
+	 else echo "→ i18n_fallback_js_check.js skipped (no node)"; fi
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
-LINUX_BINS = test_platform_linux_net test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux
+LINUX_BINS = test_platform_linux_net test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
 
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done

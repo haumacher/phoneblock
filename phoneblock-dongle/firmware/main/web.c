@@ -2309,13 +2309,21 @@ extern const char ui_en_json_end[]   asm("_binary_ui_en_json_end");
 // configured dongle needs no CDN at runtime); otherwise serve the baked-in
 // English fallback. Never 404s — the browser always gets a usable dict. No
 // auth: the page needs this to render, possibly before login.
+//
+// ?fallback=1 always serves the baked-in English pack: the page keeps it as
+// the last fallback for keys a downloaded pack lacks, e.g. the previous
+// version's pack served right after an update (#721).
 static web_http_error_t handle_i18n_ui(web_http_request_t *req)
 {
     web_http_set_type(req, "application/json");
     web_http_set_header(req, "Cache-Control", "no-store");
 
+    char query[24], value[4];
+    bool fallback = web_http_get_query_string(req, query, sizeof(query)) == WEB_HTTP_OK
+        && web_http_query_value(query, "fallback", value, sizeof(value)) == WEB_HTTP_OK;
+
     char path[PB_DATA_PATH_CAP];
-    FILE *f = i18n_sync_ui_path(path, sizeof(path), config_ui_lang())
+    FILE *f = !fallback && i18n_sync_ui_path(path, sizeof(path), config_ui_lang())
         ? fopen(path, "rb") : NULL;
     if (f) {
         char buf[1024];
@@ -2330,8 +2338,8 @@ static web_http_error_t handle_i18n_ui(web_http_request_t *req)
         web_http_send_chunk(req, NULL, 0);
         return WEB_HTTP_OK;
     }
-    // No downloaded pack (a locale still downloading, or offline) → the
-    // baked-in English fallback.
+    // No downloaded pack (a locale still downloading, or offline), or the
+    // fallback was asked for → the baked-in English pack.
 #ifdef ESP_PLATFORM
     web_http_send(req, ui_en_json_start,
                     (size_t)(ui_en_json_end - ui_en_json_start - 1));
