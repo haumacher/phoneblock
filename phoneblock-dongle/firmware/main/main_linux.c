@@ -12,6 +12,7 @@
 #include "sip_transport.h"
 #include "stats.h"
 #include "time_sync.h"
+#include "version_marker.h"
 #include "web.h"
 #include "webhook.h"
 
@@ -219,7 +220,31 @@ int main(int argc, char **argv)
         pb_log_info("linux", "SIP not configured yet");
     }
 
-    scheduler_start(false);
+    // The first start of a new version (after a package update, or a fresh
+    // install) fetches that version's language packs within seconds, like
+    // the ESP32 after an OTA update, instead of serving the previous
+    // version's packs for the first 3 minutes (#721).
+    bool version_changed = false;
+    {
+        char marker[PB_DATA_PATH_CAP];
+        int n = snprintf(marker, sizeof(marker), "%s/%s",
+                         PHONEBLOCK_DATA_DIR, VERSION_MARKER_FILE);
+        if (n > 0 && (size_t)n < sizeof(marker)) {
+            bool stored = false;
+            version_changed = version_marker_changed(marker, pb_firmware_version(),
+                                                     &stored);
+            if (version_changed) {
+                pb_log_info("linux", "first start of %s, language packs follow soon",
+                            pb_firmware_version());
+            }
+            if (version_changed && !stored) {
+                pb_log_warn("linux", "could not save the version marker %s", marker);
+            }
+        } else {
+            pb_log_err("linux", "data directory path too long for the version marker");
+        }
+    }
+    scheduler_start(version_changed);
     web_configure_listener(web_port, web_bind);
     web_start();
     // Without its web UI the service cannot be set up or watched; fail, so

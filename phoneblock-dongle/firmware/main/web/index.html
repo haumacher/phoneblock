@@ -277,16 +277,23 @@ if (!location.pathname.endsWith('/'))
 // --- i18n -----------------------------------------------------------
 
 const I18N = {};
+// The firmware's own English strings (/api/i18n/ui?fallback=1), the last
+// fallback before the raw key. A downloaded pack can lack keys: after an
+// update the device serves the previous version's pack until its refresh
+// arrives, and the new version's keys are missing from it (#721).
+let I18N_BASE = null;
 
 // The UI language is the device's ui_lang. All strings are loaded at runtime
 // from the dongle (/api/i18n/ui); nothing is baked into this page. The device
 // serves the active locale's pack, or the embedded English pack as a fallback,
-// so t() falls back to the English pack (always present) then to the key.
+// so t() falls back to the English pack, then to the firmware's own English
+// strings, then to the key.
 let LANG = 'en';   // the device's ui_lang, filled in from /api/status on boot
 const t = (k, p) => {
   // (… || {}) so a locale still loading can't throw.
   let s = (I18N[LANG] || {})[k];
   if (s === undefined) s = (I18N.en || {})[k];
+  if (s === undefined) s = (I18N_BASE || {})[k];
   if (s === undefined) return k;
   if (p) for (const [name, val] of Object.entries(p))
     s = s.replaceAll('{' + name + '}', val);
@@ -354,10 +361,24 @@ function applyLangStatus(){
 }
 function loadUiPack(lang){
   if (!lang) return Promise.resolve();
-  return fetch('api/i18n/ui')
+  return Promise.all([
+    fetch('api/i18n/ui')
+      .then(r => r.ok ? r.json() : null)
+      .then(dict => { storePack(lang, dict); })
+      .catch(() => { /* device unreachable → keys via t(); page is from it */ }),
+    loadBasePack(),
+  ]);
+}
+// Once per page: the firmware's own English strings for t() (#721). Fetched
+// even when the served pack is English, because that can be a downloaded
+// pack from an older version too. A firmware without the query parameter
+// answers with its regular pack, which is still a usable fallback.
+function loadBasePack(){
+  if (I18N_BASE) return Promise.resolve();
+  return fetch('api/i18n/ui?fallback=1')
     .then(r => r.ok ? r.json() : null)
-    .then(dict => { storePack(lang, dict); })
-    .catch(() => { /* device unreachable → keys via t(); page is from it */ });
+    .then(dict => { if (dict && typeof dict === 'object') I18N_BASE = dict; })
+    .catch(() => { /* t() falls back to the key */ });
 }
 // The locales the device can serve = the selector's options (single source,
 // no duplicated list).

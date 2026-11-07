@@ -63,7 +63,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c ../main/api_fail.c \
                       ../main/stats.c ../main/storage.c ../main/storage_budget.c \
                       ../main/sync.c ../main/time_sync_linux.c \
                       ../main/time_sync_tz.c ../main/tr064.c \
-                      ../main/vad.c ../main/version_cmp.c \
+                      ../main/vad.c ../main/version_cmp.c ../main/version_marker.c \
                       ../main/web_access.c ../main/web_auth.c ../main/web.c \
                       ../main/webhook.c \
                       ../main/web_http_linux.c
