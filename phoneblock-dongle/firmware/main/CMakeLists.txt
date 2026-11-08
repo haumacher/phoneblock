@@ -1,7 +1,7 @@
-# Board extras that only the ESP32-S3 build carries: the logo, spam badge and
-# caller screen on the LilyGO T-Dongle-S3's TFT (switched on per board by
-# the "display" setting, board.h). Kept out of the other
-# targets' source list, so their images do not change (display.h turns the
+# Board extras: the logo, spam badge and caller screen on the TFT of the
+# LilyGO T-Dongle-S3 (ESP32-S3) and the T-Display V1.1 (classic ESP32),
+# each switched on by the "display" setting (board.h). Kept out of the C3's
+# source list, so its image does not change (display.h turns the
 # notifications into empty inline functions there).
 set(_board_srcs)
 set(_board_requires)
@@ -12,6 +12,13 @@ if(_target STREQUAL "esp32s3")
     list(APPEND _board_srcs "display.c" "display_model.c" "lcd_font.c" "lcd_logo.c")
     list(APPEND _board_srcs "call_rec.c" "call_rec_mix.c")
     list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc efuse)
+endif()
+# The classic ESP32 drives the LilyGO T-Display V1.1 when the user switches
+# the display on (#708): the same display code, with the backlight switched by GPIO, so no
+# LEDC driver in its full app slot.
+if(_target STREQUAL "esp32")
+    list(APPEND _board_srcs "display.c" "display_model.c" "lcd_font.c" "lcd_logo.c")
+    list(APPEND _board_requires esp_lcd esp_driver_spi)
 endif()
 
 idf_component_register(

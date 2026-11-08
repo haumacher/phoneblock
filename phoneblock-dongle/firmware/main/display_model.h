@@ -7,21 +7,49 @@
 #include "lcd_font.h"
 #include "stats.h"
 
-// What the T-Dongle-S3 display shows, as pure functions over the call list
-// (stats.h) and the bitmap fonts (lcd_font.h): the spam badge on the idle
-// screen and the caller screen during a call. No drawing, no ESP-IDF —
-// display.c renders the result, test/test_display_model.c checks it on
-// the host.
+// What the display shows, as pure functions over the call list (stats.h)
+// and the bitmap fonts (lcd_font.h): the spam badge on the idle screen and
+// the caller screen during a call, laid out for the panel's size. No
+// drawing, no ESP-IDF — display.c renders the result,
+// test/test_display_model.c checks it on the host.
 //
 // Language neutral (issue #460, the firmware carries no per-language text):
 // the screens use names, numbers, colours and the tokens "SPAM", "SPAM?" and
 // "TEST" only.
 
-#define DM_WIDTH        160
-#define DM_HEIGHT       80
+// Panel sizes in landscape: the T-Dongle-S3 (ESP32-S3) and the T-Display
+// V1.1 (classic ESP32, #708). DM_MAX_WIDTH sizes the line buffers.
+#define DM_TDONGLE_W    160
+#define DM_TDONGLE_H    80
+#define DM_TDISPLAY_W   240
+#define DM_TDISPLAY_H   135
+#define DM_MAX_WIDTH    DM_TDISPLAY_W
 // Pixels kept free at either side of a text line.
 #define DM_MARGIN       3
-#define DM_TEXT_MAX_PX  (DM_WIDTH - 2 * DM_MARGIN)
+#define DM_TEXT_MAX_PX(width) ((width) - 2 * DM_MARGIN)
+
+// --- layout ---------------------------------------------------------
+
+// Where things go on a panel of the given size. For 160x80 these are the
+// T-Dongle-S3's positions from before #708; larger panels centre the same
+// fonts in their space and scale the 160x80 logo by 3/2 when it fits.
+typedef struct {
+    int width, height;
+    // Logo: the 160x80 bitmap scaled by logo_num / logo_den, placed at
+    // (logo_x, logo_y); the rest of the panel is the logo's background.
+    int logo_num, logo_den;
+    int logo_x, logo_y, logo_w, logo_h;
+    // Spam badge: a pill badge_h high, right-aligned at badge_right (last
+    // column), its top at badge_top; the digits' cell top at badge_text_y.
+    int badge_top, badge_h, badge_right, badge_text_y;
+    // Caller screen: the rating band from band_y to the bottom; text cell
+    // tops for a name with the number below, or the number alone.
+    int band_y, band_text_y;
+    int name_y, name_number_y;
+    int number_large_y, number_small_y;
+} dm_layout_t;
+
+void dm_layout(int width, int height, dm_layout_t *out);
 
 // --- UTF-8 and glyphs -----------------------------------------------
 
@@ -80,7 +108,9 @@ int  dm_count_listed_spam(const stats_call_t *calls, int n);
 
 // --- caller screen --------------------------------------------------
 
-#define DM_LINE_CAP 72
+// Bytes per line: the widest panel holds 33 small-font cells, each up to
+// three UTF-8 bytes.
+#define DM_LINE_CAP 104
 
 typedef struct {
     const lcd_font_t *font;   // NULL: line not shown
@@ -101,5 +131,5 @@ typedef struct {
 // is not just digits, and that the fonts can render) the name goes large with
 // the number below; otherwise the number alone, large if it fits. The band
 // colour follows dm_class_of(); spam and suspected spam carry the direct
-// vote count.
-void dm_call_screen(const stats_call_t *call, dm_call_screen_t *out);
+// vote count. Lines are fitted to a panel `width` pixels wide.
+void dm_call_screen(const stats_call_t *call, int width, dm_call_screen_t *out);

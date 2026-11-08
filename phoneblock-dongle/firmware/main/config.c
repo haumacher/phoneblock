@@ -174,7 +174,7 @@ typedef struct {
     char log_known[4];       // "1" | "0" (or empty = default on)
     char log_info[4];        // "1" = also mirror INFO lines to the log panel (default off)
     char led_quiet[4];       // "1" = LED dark when READY (default off = solid on)
-    char lcd_flip[4];        // "1" = T-Dongle-S3 display rotated 180° (default off)
+    char lcd_flip[4];        // "1" = display rotated 180° (default off)
     char led_hw[24];         // status LED spec (board_hw.h); "" = detected
     char display[4];         // "1" | "0"; "" = detected
     char auth_enabled[4];    // "1" | "0" (or empty = default off)

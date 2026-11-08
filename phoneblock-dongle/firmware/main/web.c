@@ -49,9 +49,7 @@
 #include "chip_family.h"
 #include "status_led.h"
 #endif
-#if CONFIG_IDF_TARGET_ESP32S3
 #include "display.h"
-#endif
 #include "heap_guard.h"
 #include "hostname.h"
 #include "firmware_update.h"
@@ -1511,7 +1509,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     (void)old_hostname;
 #endif
 
-#if CONFIG_IDF_TARGET_ESP32S3
+#if DISPLAY_PRESENT
     // Turn the display right away, so the user sees the effect of the
     // checkbox while still holding the stick.
     if (have_lcd_flip) {
@@ -1526,11 +1524,11 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         board_led_t led;
         bool disp;
         board_effective(&led, &disp);
-#if CONFIG_IDF_TARGET_ESP32S3
+#if DISPLAY_PRESENT
         if (!disp) display_set_enabled(false);
 #endif
         status_led_reconfigure();
-#if CONFIG_IDF_TARGET_ESP32S3
+#if DISPLAY_PRESENT
         if (disp) display_set_enabled(true);
 #endif
     }
