@@ -295,8 +295,15 @@ test_platform_linux_net: test_platform_linux_net.c linux_test_util.h \
 # The library of the firmware modules that the Linux tests link, and the
 # service itself, come from ../linux/Makefile, shared with debian/rules
 # (#624). Its dependency check applies to these goals.
-LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
+LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_sip_digest_linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
 include ../linux/Makefile
+
+# The SIP digest response (sip_register.c) against RFC 2617 and long nonces.
+test_sip_digest_linux: test_sip_digest_linux.c linux_test_util.h \
+                       $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
 
 test_api_linux: test_api_linux.c linux_test_util.h \
                 $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
@@ -392,7 +399,7 @@ test: $(BINS)
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
-LINUX_BINS = test_platform_linux_net test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
+LINUX_BINS = test_platform_linux_net test_sip_digest_linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
 
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done
