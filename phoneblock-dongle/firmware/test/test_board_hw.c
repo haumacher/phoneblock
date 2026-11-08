@@ -112,10 +112,34 @@ static void test_check(void)
     CHECK(board_led_check(&l, &p, false, false) != NULL, "APA102 clock on flash refused");
 }
 
+static void test_display_fits(void)
+{
+    printf("display pins\n");
+    // Classic ESP32 with the T-Display (#708): MOSI 19, SCLK 18, CS 5,
+    // DC 16, RST 23, backlight 4.
+    const uint64_t tdisplay = (1ULL << 19) | (1ULL << 18) | (1ULL << 5)
+                            | (1ULL << 16) | (1ULL << 23) | (1ULL << 4);
+    // WROOM: flash 6-11, console 1/3.
+    board_pins_t wroom = {
+        .gpio_count = 40, .display_pins = tdisplay,
+        .forbidden = (((1ULL << 12) - 1) & ~((1ULL << 6) - 1)) | (1ULL << 1) | (1ULL << 3),
+    };
+    CHECK(board_display_fits(&wroom), "T-Display on a WROOM");
+    // PICO-D4: embedded flash on 6-9, 11, 16, 17.
+    board_pins_t pico = wroom;
+    pico.forbidden = (((1ULL << 10) - 1) & ~((1ULL << 6) - 1)) | (1ULL << 11)
+                   | (1ULL << 16) | (1ULL << 17) | (1ULL << 1) | (1ULL << 3);
+    CHECK(!board_display_fits(&pico), "never on the PICO-D4 (GPIO 16 is flash)");
+    board_pins_t none = wroom;
+    none.display_pins = 0;
+    CHECK(!board_display_fits(&none), "no display on a build without one");
+}
+
 int main(void)
 {
     test_parse();
     test_check();
+    test_display_fits();
     printf("test_board_hw: %d tests, %d failures\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;
 }

@@ -1,0 +1,10 @@
+# Classic ESP32 overrides, layered by ESP-IDF on top of sdkconfig.defaults
+# whenever IDF_TARGET=esp32.
+#
+# The SPI master driver is linked in for the LilyGO T-Display V1.1 (#708),
+# which only some ESP32 dongles have; nothing else on this target uses it
+# (the flash has its own driver). Its interrupt handler stays in flash
+# instead of IRAM, so the dongles without a display do not pay about 7 KB
+# of IRAM for it. A display's transfers then wait while the flash is
+# written (NVS, OTA), which only delays a redraw.
+CONFIG_SPI_MASTER_ISR_IN_IRAM=n

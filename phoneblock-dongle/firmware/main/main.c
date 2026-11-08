@@ -30,9 +30,7 @@
 #include "stats.h"
 #include "chip_temp.h"
 #include "board.h"
-#if CONFIG_IDF_TARGET_ESP32S3
 #include "display.h"
-#endif
 #include "status_led.h"
 #include "storage.h"
 #include "time_sync.h"
@@ -82,12 +80,13 @@ void app_main(void)
     // it, which is fine — those are pre-config and visible on serial.
     log_capture_start();
     config_load();
-#if CONFIG_IDF_TARGET_ESP32S3
+#if DISPLAY_PRESENT
     // Before the storage mount: the logo shows that the stick is alive
     // while the partition is mounted (and, on a first boot, formatted —
     // milliseconds on the S3's LittleFS). Only where the display is on
     // (board.h: the setting, else detected on the T-Dongle-S3); otherwise
-    // its pins are left alone (S3 Super Mini, #730).
+    // its pins are left alone (S3 Super Mini #730, ESP32 without a
+    // T-Display #708).
     {
         board_led_t led;
         bool display;

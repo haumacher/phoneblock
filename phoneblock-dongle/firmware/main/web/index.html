@@ -3167,7 +3167,9 @@ async function refreshAll(){
       {name: 'ESP32-C3 Super Mini',            chip: 'ESP32-C3', led: 'gpio:8:low'},
       {name: 'PhoneBlock-Dongle (ESP32-PICO-D4)', chip: 'ESP32', led: 'gpio:10:low'},
       {name: 'ESP32 DevKit (WROOM-32)',        chip: 'ESP32',    led: 'gpio:2'},
-    ].filter(p => p.chip === hw.chip);
+      // No user LED; display only where the chip can drive it (#708).
+      {name: 'LilyGO T-Display V1.1',          chip: 'ESP32',    led: 'none',         display: true},
+    ].filter(p => p.chip === hw.chip && (!p.display || hw.display_supported));
     const matches = (p, led, disp) =>
         p.led === led && (!hw.display_supported || !!p.display === disp);
     const detected = HW_PRESETS.find(p => matches(p, hw.led_detected, hw.display_detected));

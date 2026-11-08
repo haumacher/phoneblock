@@ -4,12 +4,14 @@
 
 #include "board_hw.h"
 
-// The board's extras — status LED and, on the ESP32-S3 build, the T-Dongle-S3
-// display — as settings with a detected default (#730).
+// The board's extras — status LED and the display (T-Dongle-S3 on the
+// ESP32-S3 build, T-Display V1.1 on the classic ESP32 build, #708) — as
+// settings with a detected default (#730).
 //
 // A chip cannot identify the board it sits on (no board ID; the eFuses
 // describe the chip only), so detection is a guess from chip properties:
-//   ESP32     embedded flash (PICO-D4 dongle) → gpio:10:low, else gpio:2
+//   ESP32     embedded flash (PICO-D4 dongle) → gpio:10:low, else gpio:2;
+//             never a display (the T-Display is only switched on by hand)
 //   ESP32-C3  → gpio:8:low (C3 Super Mini)
 //   ESP32-S3  no PSRAM in the package (LilyGO T-Dongle-S3) → apa102:40:39
 //             and the display; with PSRAM (S3 Super Mini, DevKitC-1 v1.0)
@@ -32,5 +34,7 @@ void board_effective(board_led_t *led, bool *display);
 // default; display "1"/"0"). NULL when fine, else a short English reason.
 const char *board_check_settings(const char *led_hw, const char *display);
 
-// Whether this firmware can drive a display at all (the S3 build).
+// Whether this dongle can drive a display at all: the S3 and classic ESP32
+// builds, unless a display pin is forbidden on the chip (board_display_fits(),
+// e.g. the T-Display on the PICO-D4).
 bool board_display_supported(void);

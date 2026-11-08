@@ -104,6 +104,50 @@ int dm_fit_text(const lcd_font_t *font, const char *s, int max_px,
     return (kept + 1) * font->w;
 }
 
+// The 160x80 logo and the heights of the fonts' cells, which the layout
+// centres (lcd_logo.h, lcd_font.h).
+#define LOGO_W       160
+#define LOGO_H       80
+#define BAND_H       22
+// A name (large font) over its number (small font): the number's cell top
+// sits this far below the name's.
+#define NAME_TO_NUMBER 25
+
+void dm_layout(int width, int height, dm_layout_t *out)
+{
+    memset(out, 0, sizeof(*out));
+    out->width  = width;
+    out->height = height;
+
+    // The logo grows by 3/2 where that fits (240x120 on the T-Display),
+    // and stays 1:1 otherwise.
+    bool grow = width >= LOGO_W * 3 / 2 && height >= LOGO_H * 3 / 2;
+    out->logo_num = grow ? 3 : 1;
+    out->logo_den = grow ? 2 : 1;
+    out->logo_w   = LOGO_W * out->logo_num / out->logo_den;
+    out->logo_h   = LOGO_H * out->logo_num / out->logo_den;
+    out->logo_x   = (width - out->logo_w) / 2;
+    out->logo_y   = (height - out->logo_h) / 2;
+
+    // The badge sits in the logo's empty top-right corner, above the word
+    // mark, one pixel in from the logo's top and the panel's right edge.
+    out->badge_h      = 17;
+    out->badge_top    = out->logo_y + 1;
+    out->badge_right  = width - 2;
+    out->badge_text_y = out->badge_top + (out->badge_h - lcd_font_small.h) / 2;
+
+    // The rating band at the bottom, its text centred in it; the caller's
+    // name and number, or the number alone, centred in the space above.
+    out->band_y      = height - BAND_H;
+    out->band_text_y = out->band_y + (BAND_H - lcd_font_small.h) / 2;
+    // From the name's top to the number's bottom.
+    int block = NAME_TO_NUMBER + lcd_font_small.h;
+    out->name_y         = (out->band_y - block) / 2;
+    out->name_number_y  = out->name_y + NAME_TO_NUMBER;
+    out->number_large_y = (out->band_y - lcd_font_large.h) / 2;
+    out->number_small_y = (out->band_y - lcd_font_small.h) / 2;
+}
+
 dm_class_t dm_class_of(pb_assessment_t assessment)
 {
     switch (assessment) {
@@ -141,14 +185,15 @@ static bool is_name(const char *display)
     return false;
 }
 
-static void set_line(dm_line_t *line, const lcd_font_t *font, const char *text)
+static void set_line(dm_line_t *line, const lcd_font_t *font, const char *text,
+                     int width)
 {
     line->font  = font;
-    line->width = dm_fit_text(font, text, DM_TEXT_MAX_PX,
+    line->width = dm_fit_text(font, text, DM_TEXT_MAX_PX(width),
                               line->text, sizeof(line->text));
 }
 
-void dm_call_screen(const stats_call_t *call, dm_call_screen_t *out)
+void dm_call_screen(const stats_call_t *call, int width, dm_call_screen_t *out)
 {
     memset(out, 0, sizeof(*out));
     out->cls = dm_class_of(call->assessment);
@@ -156,12 +201,13 @@ void dm_call_screen(const stats_call_t *call, dm_call_screen_t *out)
 
     out->named = is_name(call->display) && dm_renderable(call->display);
     if (out->named) {
-        set_line(&out->main, &lcd_font_large, call->display);
-        set_line(&out->sub, &lcd_font_small, number);
-    } else if (dm_text_width(&lcd_font_large, number) <= DM_TEXT_MAX_PX) {
-        set_line(&out->main, &lcd_font_large, number);
+        set_line(&out->main, &lcd_font_large, call->display, width);
+        set_line(&out->sub, &lcd_font_small, number, width);
+    } else if (dm_text_width(&lcd_font_large, number)
+               <= DM_TEXT_MAX_PX(width)) {
+        set_line(&out->main, &lcd_font_large, number, width);
     } else {
-        set_line(&out->main, &lcd_font_small, number);
+        set_line(&out->main, &lcd_font_small, number, width);
     }
 
     if ((out->cls == DM_CLASS_SPAM || out->cls == DM_CLASS_SUSPECT)
@@ -182,5 +228,5 @@ void dm_call_screen(const stats_call_t *call, dm_call_screen_t *out)
         // reports it.
         sb_appendf(&sb, "%s", call->location);
     }
-    if (band[0]) set_line(&out->band, &lcd_font_small, band);
+    if (band[0]) set_line(&out->band, &lcd_font_small, band, width);
 }

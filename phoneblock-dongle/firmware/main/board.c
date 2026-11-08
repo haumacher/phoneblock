@@ -10,8 +10,8 @@
 #if CONFIG_IDF_TARGET_ESP32S3
 #include "esp_efuse.h"
 #include "esp_efuse_table.h"
-#include "display.h"
 #endif
+#include "display.h"
 
 #include "config.h"
 
@@ -58,6 +58,7 @@ static const board_pins_t *pins(void)
         ? BIT_RANGE(6, 9) | (1ULL << 11) | (1ULL << 16) | (1ULL << 17)
         : BIT_RANGE(6, 11);
     p.forbidden |= (1ULL << 1) | (1ULL << 3);
+    p.display_pins = DISPLAY_PIN_MASK;    // T-Display V1.1 (#708)
 #elif CONFIG_IDF_TARGET_ESP32C3
     // Flash bus 12-17, USB 18/19 (console and Improv).
     p.forbidden |= BIT_RANGE(12, 19);
@@ -71,11 +72,7 @@ static const board_pins_t *pins(void)
 
 bool board_display_supported(void)
 {
-#if CONFIG_IDF_TARGET_ESP32S3
-    return true;
-#else
-    return false;
-#endif
+    return board_display_fits(pins());
 }
 
 void board_detected(board_led_t *led, bool *display)
@@ -115,7 +112,7 @@ void board_detected(board_led_t *led, bool *display)
 // the next restart (display_was_started()).
 static const char *check_led(const board_led_t *led, bool display)
 {
-#if CONFIG_IDF_TARGET_ESP32S3
+#if DISPLAY_PRESENT
     bool started = display_was_started();
     return board_led_check(led, pins(), display || started, !display && started);
 #else
@@ -165,7 +162,7 @@ const char *board_check_settings(const char *led_hw, const char *display)
         if (display[0] && strcmp(display, "0") != 0 && strcmp(display, "1") != 0)
             return "display must be 1, 0 or empty";
         if (strcmp(display, "1") == 0 && !board_display_supported())
-            return "this firmware has no display support";
+            return "this dongle cannot drive a display";
     }
     bool disp = display_setting(display ? display : config_display(), ddisp);
     const char *spec = led_hw ? led_hw : config_led_hw();

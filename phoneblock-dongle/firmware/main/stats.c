@@ -448,8 +448,9 @@ static void record_to_call(const call_record_t *r, stats_call_t *c)
     copy_trim(c->location, sizeof(c->location), r->location);
 }
 
-// Every screened call reaches the display (T-Dongle-S3; DISPLAY_PRESENT is 0
-// and the notifications are empty elsewhere, so this compiles away). Called
+// Every screened call reaches the display (T-Dongle-S3, T-Display; the
+// notifications return at once without a running display, and on the C3
+// and Linux, where DISPLAY_PRESENT is 0, this compiles away). Called
 // outside the lock: display_calls_changed() recounts the badge through
 // stats_count_calls().
 static void announce_call(const stats_call_t *shown)
