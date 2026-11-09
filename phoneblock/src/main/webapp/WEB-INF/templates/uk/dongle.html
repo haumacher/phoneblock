@@ -92,13 +92,13 @@
 			<p data-tx="t0139:1caf402b">Ці пропозиції жодним чином не пов'язані з PhoneBlock, і PhoneBlock жодним чином не бере участі в отриманні прибутку. Мова йде виключно про апаратне забезпечення. Програмне забезпечення (прошивку) PhoneBlock ви встановлюєте самостійно після отримання (див. нижче).</p>
 		</div>
 
-		<div class="notification is-warning">
-			<p data-tx="t0233:c7a2b08f"><strong>Будь ласка, не замовляйте «ESP32-S3» — він не працює.</strong> Зокрема, популярний на Amazon «LILYGO T-Dongle-S3» купують знову і знову, але його неможливо налаштувати: інсталятор у браузері завершує роботу з повідомленням «Your ESP32-S3 board is not supported».</p>
-			<p class="mt-2" data-tx="t0234:61c3809d">S3 має інше ядро процесора, ніж класичний ESP32, а прошивка PhoneBlock доступна лише для класичного ESP32. Це не проблема з драйвером — на даний момент для цих плат просто немає можливості встановити PhoneBlock. Те саме стосується моделей S2, C3, C6 та H2.</p>
-			<p class="mt-2" data-tx="t0235:4564bc8e">Тому переконайтеся, що в описі товару вказано <strong>«ESP32» без додаткових позначень</strong> — так само, як у двох посиланнях, наведених вище.</p>
+		<div class="notification is-info">
+			<p data-tx="t0233:2a66e5e7">&lt;X1&gt;Навіть без саморобних модифікацій: «LILYGO T-Dongle-S3».&lt;/X1&gt; Починаючи з прошивки 2.0, PhoneBlock працює також на T-Dongle-S3 (ESP32-S3 з 16 МБ флеш-пам’яті). Він має роз’єм USB-A і підключається безпосередньо до USB-роз’єму Fritz!Box. Кольоровий світлодіод показує стан, а маленький дисплей залишається вимкненим.<strong></strong></p>
+			<p class="mt-2" data-tx="t0234:db600a02">Також підтримуються плати з ESP32-C3, у яких роз’єм USB підключений безпосередньо до мікросхеми, наприклад «C3 Super Mini». Усі інші варіанти (наприклад, ESP32-S2, -C2, -C5, -C6, -H2 або -P4) не підтримуються: у цьому випадку інсталятор браузера припиняє роботу з повідомленням «Your … board is not supported».</p>
+			<p class="mt-2" data-tx="t0235:75c00e28">Тому переконайтеся, що в описі товару вказано <strong>«ESP32» без додаткових позначень, «ESP32-C3» або «ESP32-S3» з 16 МБ флеш-пам’яті</strong>. ESP32-S3 з меншим об’ємом флеш-пам’яті можна прошити, але він не запуститься.</p>
 		</div>
 
-		<p data-tx="t0140:7f656ebb"><strong>Ти займаєшся саморобками і в тебе вже є ESP32 у шухляді?</strong> PhoneBlock майже напевно працюватиме і на твоїй платі, якщо це класичний ESP32 (не S2/S3/C3/C6/H2) з щонайменше 4 МБ флеш-пам’яті. Можливо, тобі знадобиться інший драйвер USB-Serial або доведеться переналаштувати розкладку виводів, щоб світлодіод стану блимав — для цього найкраще зазирнути на <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">сторінку проєкту</a>.</p>
+		<p data-tx="t0140:a353e9a8"><strong>Ти займаєшся саморобками і вже маєш ESP32 у шухляді?</strong> PhoneBlock майже напевно працюватиме і на твоїй платі, якщо це класичний ESP32, ESP32-C3 з щонайменше 4 МБ флеш-пам’яті або ESP32-S3 з 16 МБ флеш-пам’яті. У випадку з ESP32-C3 роз’єм USB має бути підключений безпосередньо до мікросхеми (без окремого USB-послідовного контролера), інакше налаштування Wi-Fi в браузері не працюватиме. Інші варіанти (S2, C2, C5, C6, H2, P4, …) не підтримуються. Можливо, тобі знадобиться інший драйвер USB-Serial або доведеться переналаштувати розкладку виводів, щоб світлодіод стану блимав — для цього найкраще переглянути <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">сторінку проєкту</a>.</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Крок 2 - Підготуйте ключ</h2>
 
@@ -116,7 +116,7 @@
 		<p data-tx="t0153:a0900784">Натисніть на кнопку. Браузер запитає, до якого підключеного пристрою йому дозволено звертатися. Виберіть запис з <strong>"USB-SERIAL CH340"</strong> (Windows) або <strong>"USB Single Serial"</strong> чи <strong>"wch.cn"</strong> (macOS/Linux) у назві і підтвердіть за допомогою <strong>"Connect"</strong>.</p>
 
 		<p>
-			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/install.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
 					<span data-tx="t0154:1b4594a6">Спалахніть зараз.</span>
@@ -171,6 +171,7 @@
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Комп'ютер не розпізнає ключ? Підказки драйвера</strong></summary>
 			<p data-tx="t0194:1c40e13a">У ключі використовується послідовний USB-чіп <strong>CH340</strong>. Поточні версії Windows, macOS та Linux зазвичай вже містять драйвер - у цьому випадку вам не потрібно нічого робити. Однак, якщо ваш комп'ютер не показує донгл у списку пристроїв, вам допоможуть наступні поради:</p>
+			<p data-tx="t0243:c8d1f374">Плати з ESP32-C3 або ESP32-S3 (наприклад, T-донгл-S3) не потребують драйвера: вони підключаються безпосередньо як USB-пристрій («USB JTAG/serial debug unit»).</p>
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Завантажте <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 драйвер з wch-ic.com</a>, запустіть <code>CH341SER.EXE</code> і натисніть на <strong>"ВСТАНОВИТИ"</strong>. Перезапуск не потрібен.</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Починаючи з macOS Big Sur, драйвер включено до системи - встановлення не потрібне.</li>
