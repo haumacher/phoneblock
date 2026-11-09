@@ -40,7 +40,10 @@ Auf Deinem iPhone kannst Du die Blockliste als Internet-Telefonbuch abonieren un
 
 Nutze PhoneBlock live unter: https://phoneblock.net/ - keine Kosten, keine Zusatzhardware notwendig.
 
-Du möchtest den PhoneBlock-Anrufbeantworter lieber bei Dir zu Hause betreiben - kein Problem versucht's am besten mit dem Docker-Image: https://hub.docker.com/r/phoneblock/answerbot2
+Du möchtest den PhoneBlock-Anrufbeantworter lieber bei Dir zu Hause betreiben? Kein Problem:
+
+- **PhoneBlock-Dongle:** ein kleiner ESP32-Stick, der sich direkt an Deiner Fritz!Box anmeldet – kein eigener Server nötig: https://phoneblock.net/phoneblock/dongle
+- **Docker-Image:** dieselbe Software für Deinen Raspberry Pi, NAS oder Heimserver: https://hub.docker.com/r/phoneblock/answerbot2
 
 
 # English Version
@@ -85,4 +88,7 @@ On your iPhone, you can subscribe to the block list as an Internet phone book an
 
 Start using PhoneBlock live at: https://phoneblock.net/ - no cost, no additional hardware required.
 
-You would prefer to operate the answering machine at home - no problem, just try the Docker image: https://hub.docker.com/r/phoneblock/answerbot2
+You would prefer to operate the answering machine at home? No problem:
+
+- **PhoneBlock Dongle:** a small ESP32 stick that registers directly with your Fritz!Box – no server of your own needed: https://phoneblock.net/phoneblock/dongle
+- **Docker image:** the same software for your Raspberry Pi, NAS or home server: https://hub.docker.com/r/phoneblock/answerbot2
