@@ -20,8 +20,9 @@ anmelden. Natürlich kannst Du den Anrufbeantworter auch lokal bei Dir betreiben
 technischen Vorkenntnissen - einfach weiterlesen.
 
 ## Start as Docker container
-If you don't want to build the code your own, you can use a [pre-built docker container](https://hub.docker.com/r/phoneblock/answerbot)
-to start the answerbot locally. Check out the details on the docker page.
+The pre-built image of this Java answerbot (`phoneblock/answerbot`) is retired. To run a PhoneBlock answering machine
+locally, use its successor [`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2) instead, see
+[phoneblock-dongle/docker](../phoneblock-dongle/docker/README.md).
 
 ## Howto build and run
 

@@ -40,7 +40,7 @@ Auf Deinem iPhone kannst Du die Blockliste als Internet-Telefonbuch abonieren un
 
 Nutze PhoneBlock live unter: https://phoneblock.net/ - keine Kosten, keine Zusatzhardware notwendig.
 
-Du möchtest den PhoneBlock-Anrufbeantworter lieber bei Dir zu Hause betreiben - kein Problem versucht's am besten mit dem Docker-Image: https://hub.docker.com/r/phoneblock/answerbot
+Du möchtest den PhoneBlock-Anrufbeantworter lieber bei Dir zu Hause betreiben - kein Problem versucht's am besten mit dem Docker-Image: https://hub.docker.com/r/phoneblock/answerbot2
 
 
 # English Version
@@ -85,4 +85,4 @@ On your iPhone, you can subscribe to the block list as an Internet phone book an
 
 Start using PhoneBlock live at: https://phoneblock.net/ - no cost, no additional hardware required.
 
-You would prefer to operate the answering machine at home - no problem, just try the Docker image: https://hub.docker.com/r/phoneblock/answerbot
+You would prefer to operate the answering machine at home - no problem, just try the Docker image: https://hub.docker.com/r/phoneblock/answerbot2

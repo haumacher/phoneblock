@@ -387,9 +387,9 @@
 		<p data-tx="t0080:5a67a3ba">
 		Du kennst Dich richtig gut mit Computern aus, hast einen RaspberryPI, oder einen anderen Mini-PC sowieso zu Hause laufen? 
 		Dann installier den Anrufbeantworter einfach selbst. 
-		Am besten geht das mit dem vorbereiteten <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker-Image</a>.
+		Am besten geht das mit dem vorbereiteten <a href="https://hub.docker.com/r/phoneblock/answerbot2">Docker-Image</a>.
 		Das bietet den besten Datenschutz, weil die ganze Anrufbehandlung bei Dir stattfindet.
-		Die Einrichtung in der Telefonanlage ist dieselbe, den Anrufbeantworter richtest Du über eine Konfigurationsdatei ein. 
+		Es ist dieselbe Software wie im <a th:href="@{/dongle}">PhoneBlock-Dongle</a>: Eingerichtet wird alles bequem im Browser, das IP-Telefon legt der Anrufbeantworter in der Fritz!Box selbst an.
 		</p>
 		<div class="notification is-warning" data-tx="t0084:4bc9a0f9">
 			<strong>Wichtig beim Self-Hosting:</strong> Anders als beim Cloud-Anrufbeantworter entfallen zwei Schritte aus der Anleitung oben:
@@ -399,35 +399,21 @@
 			</ul>
 		</div>
 		
-		<h3 data-tx="t0085:b85e4fee">1. Telefoniegerät in der Fritz!Box anlegen</h3>
-		<p data-tx="t0086:77837d1f">
-		Lege ein neues Telefoniegerät an: <em>Telefonie → Telefoniegeräte → Neues Gerät einrichten → Telefon (mit und ohne Anrufbeantworter) → LAN/WLAN (IP-Telefon)</em>. Benutzername und Kennwort wählst Du frei – sie müssen gleich identisch in der <code>compose.yaml</code> stehen. Bei "Ankommende Anrufe" wählst Du <em>"auf alle Rufnummern reagieren"</em>.
-		</p>
-		
-		<h3 data-tx="t0087:f0ff4af">2. compose.yaml anlegen</h3>
+		<h3 data-tx="t0087:f0ff4af">1. compose.yaml anlegen</h3>
 		<pre>services:
   phoneblock:
-    image: phoneblock/answerbot:latest
+    image: phoneblock/answerbot2:latest
     container_name: phoneblock
     network_mode: host
+    restart: unless-stopped
     environment:
-      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
-      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
-      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
-      - VIA_ADDR=auto-configuration
-      - VIA_ADDR_V6=auto-configuration
-      - HOST_PORT=50060
-      - REGISTRAR=192.168.178.1
-      - ROUTE=192.168.178.1;lr
-      - REALM=fritz.box
-      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
-      - RECORDINGS=none
-      - CONVERSATION=/opt/phoneblock/conversation
-      - LOG_ALL_PACKETS=no
-      - ACCEPT_LOCAL=yes
-    restart: unless-stopped</pre>
+      TZ: Europe/Berlin
+    volumes:
+      - phoneblock:/var/lib/phoneblock
+volumes:
+  phoneblock:</pre>
 		
-		<h3 data-tx="t0088:68a01d83">3. Wichtige Variablen</h3>
+		<h3 data-tx="t0088:68a01d83">2. Wichtige Einstellungen</h3>
 		<div class="table-container">
 			<table class="table is-fullwidth is-striped">
 				<thead>
@@ -438,38 +424,33 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><code>PHONEBLOCK_API_KEY</code></td>
-						<td data-tx="t0091:c8ab1645">Dein persönlicher API-Key, erstellbar unter <code>phoneblock.net/phoneblock/settings</code>.</td>
-					</tr>
-					<tr>
-						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
-						<td data-tx="t0092:ea799cc3">Müssen exakt mit dem in der Fritz!Box angelegten IP-Telefon übereinstimmen.</td>
-					</tr>
-					<tr>
-						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
-						<td data-tx="t0093:17dcf955">Adresse der Fritz!Box. Tipp: Bei eigenem DNS-Server (z. B. Pi-hole/Unbound) hier die <em>IP-Adresse</em> der Fritz!Box statt <code>fritz.box</code> eintragen, da der Hostname sonst evtl. nicht aufgelöst wird und die Registrierung fehlschlägt.</td>
-					</tr>
-					<tr>
-						<td><code>ACCEPT_LOCAL</code></td>
-						<td data-tx="t0097:3aeb6350">Nimmt auch Anrufe interner Telefone (Nummern mit <code>*</code>) an – nötig für den Testanruf über die interne Nummer. Setze den Wert auf <code>no</code>, wenn der Anrufbeantworter Teil eines Sammelrufs ist (z. B. eine Türklingel, die alle Telefone klingeln lässt).</td>
-					</tr>
-					<tr>
-						<td><code>LOG_ALL_PACKETS</code></td>
-						<td data-tx="t0098:231f7ac9">Zur Fehlersuche auf <code>yes</code> setzen: protokolliert dann die gesamte SIP-Kommunikation im Log.</td>
-					</tr>
-					<tr>
 						<td><code>network_mode: host</code></td>
 						<td data-tx="t0094:a961a2ea">Pflicht – wird für die SIP-/RTP-Kommunikation benötigt.</td>
+					</tr>
+					<tr>
+						<td><code>TZ</code></td>
+						<td>Zeitzone für das Log und die Anrufzeiten.</td>
+					</tr>
+					<tr>
+						<td><code>PHONEBLOCK_WEB_PORT</code></td>
+						<td>Port der Weboberfläche (Standard <code>8080</code>). Setze einen anderen Port, wenn 8080 auf dem Rechner schon belegt ist, z. B. durch die Oberfläche Deines NAS.</td>
+					</tr>
+					<tr>
+						<td><code>/var/lib/phoneblock</code></td>
+						<td>Hier werden die Einstellungen gespeichert – sie bleiben dank des Volumes auch bei einem Update erhalten.</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 		
-		<h3 data-tx="t0095:cc612f71">4. Starten und prüfen</h3>
+		<h3 data-tx="t0095:cc612f71">3. Starten und einrichten</h3>
 		<pre>docker compose up -d
 docker logs -f phoneblock</pre>
 		<p data-tx="t0096:dabc390b">
-		Erscheint im Log eine Zeile wie <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, hat sich der Anrufbeantworter erfolgreich an der Fritz!Box angemeldet. Ein Testanruf gelingt jederzeit über die <em>interne Nummer</em> des Geräts (beginnt mit <code>**</code>) – solche Anrufe nimmt der Anrufbeantworter immer an.
+		Öffne dann <code>http://&lt;Rechner&gt;:8080/</code> im Browser und folge der Einrichtung: Gib die Zugangsdaten Deiner Fritz!Box ein – der Anrufbeantworter legt sein IP-Telefon dort selbst an – und melde Dich mit Deinem PhoneBlock-Konto an. Updates holst Du mit <code>docker compose pull &amp;&amp; docker compose up -d</code>.
+		</p>
+		<p>
+		Ohne Docker geht es auch: Für Debian und Raspberry Pi OS gibt es ein <a href="https://haumacher.github.io/phoneblock/apt/">Paket-Repository</a>.
 		</p>
 		
 	</div>
