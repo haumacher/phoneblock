@@ -1,5 +1,13 @@
 # phoneblock-ab - Der PhoneBlock-Anrufbeantworter
 
+> [!WARNING]
+> **Dieser Java-Anrufbeantworter wird nicht mehr weiterentwickelt.** Das Docker-Image `phoneblock/answerbot`
+> erhält keine Updates mehr. Nutze stattdessen den Nachfolger [`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2)
+> (Einrichtung siehe [phoneblock-dongle/docker/README.md](../phoneblock-dongle/docker/README.md)).
+>
+> **This Java answerbot is no longer maintained.** The Docker image `phoneblock/answerbot` receives no
+> more updates. Use its successor [`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2) instead (setup: [phoneblock-dongle/docker/README.md](../phoneblock-dongle/docker/README.md)).
+
 Das Blocklist-Telefonbuch wird immer größer. Mittlerweile hat es die 10.000 Nummmenmarke geknackt. Ein Telefonbuch in der 
 Fritz!Box kann aber je nach Modell nur höchstens 3000 bis 4000 Nummern fassen. Die Lösung ist der [PhoneBlock-Anrufbeantworter](https://phoneblock.net/phoneblock/anrufbeantworter/).
 
