@@ -384,7 +384,7 @@
 		
 		<h2 data-tx="t0079:b65f7797" id="experts">Für Experten: Selbst hosten</h2>
 		
-		<p data-tx="t0080:5a67a3ba">
+		<p data-tx="t0080:c455f3db">
 		Du kennst Dich richtig gut mit Computern aus, hast einen RaspberryPI, oder einen anderen Mini-PC sowieso zu Hause laufen? 
 		Dann installier den Anrufbeantworter einfach selbst. 
 		Am besten geht das mit dem vorbereiteten <a href="https://hub.docker.com/r/phoneblock/answerbot2">Docker-Image</a>.
@@ -399,7 +399,7 @@
 			</ul>
 		</div>
 		
-		<h3 data-tx="t0087:f0ff4af">1. compose.yaml anlegen</h3>
+		<h3 data-tx="t0087:7a14d1db">1. <code>compose.yaml</code> anlegen</h3>
 		<pre>services:
   phoneblock:
     image: phoneblock/answerbot2:latest
@@ -413,7 +413,7 @@
 volumes:
   phoneblock:</pre>
 		
-		<h3 data-tx="t0088:68a01d83">2. Wichtige Einstellungen</h3>
+		<h3 data-tx="t0088:325db33">2. Wichtige Einstellungen</h3>
 		<div class="table-container">
 			<table class="table is-fullwidth is-striped">
 				<thead>
@@ -429,27 +429,27 @@ volumes:
 					</tr>
 					<tr>
 						<td><code>TZ</code></td>
-						<td>Zeitzone für das Log und die Anrufzeiten.</td>
+						<td data-tx="t0097:b18bffbf">Zeitzone für das Log und die Anrufzeiten.</td>
 					</tr>
 					<tr>
 						<td><code>PHONEBLOCK_WEB_PORT</code></td>
-						<td>Port der Weboberfläche (Standard <code>8080</code>). Setze einen anderen Port, wenn 8080 auf dem Rechner schon belegt ist, z. B. durch die Oberfläche Deines NAS.</td>
+						<td data-tx="t0098:6919615e">Port der Weboberfläche (Standard <code>8080</code>). Setze einen anderen Port, wenn 8080 auf dem Rechner schon belegt ist, z. B. durch die Oberfläche Deines NAS.</td>
 					</tr>
 					<tr>
 						<td><code>/var/lib/phoneblock</code></td>
-						<td>Hier werden die Einstellungen gespeichert – sie bleiben dank des Volumes auch bei einem Update erhalten.</td>
+						<td data-tx="t0099:fae401ff">Hier werden die Einstellungen gespeichert – sie bleiben dank des Volumes auch bei einem Update erhalten.</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 		
-		<h3 data-tx="t0095:cc612f71">3. Starten und einrichten</h3>
+		<h3 data-tx="t0095:5136fc13">3. Starten und einrichten</h3>
 		<pre>docker compose up -d
 docker logs -f phoneblock</pre>
-		<p data-tx="t0096:dabc390b">
+		<p data-tx="t0096:bea4c87f">
 		Öffne dann <code>http://&lt;Rechner&gt;:8080/</code> im Browser und folge der Einrichtung: Gib die Zugangsdaten Deiner Fritz!Box ein – der Anrufbeantworter legt sein IP-Telefon dort selbst an – und melde Dich mit Deinem PhoneBlock-Konto an. Updates holst Du mit <code>docker compose pull &amp;&amp; docker compose up -d</code>.
 		</p>
-		<p>
+		<p data-tx="t0100:d5d906d">
 		Ohne Docker geht es auch: Für Debian und Raspberry Pi OS gibt es ein <a href="https://haumacher.github.io/phoneblock/apt/">Paket-Repository</a>.
 		</p>
 		
