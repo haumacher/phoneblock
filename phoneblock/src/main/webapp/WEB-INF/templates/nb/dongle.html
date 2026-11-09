@@ -92,13 +92,13 @@
 			<p data-tx="t0139:1caf402b">Disse tilbudene er på ingen måte relatert til PhoneBlock, og PhoneBlock er ikke på noen måte involvert i fortjenesten. Dette handler utelukkende om maskinvaren. Du installerer selv PhoneBlock-programvaren (firmware) etter mottak (se nedenfor).</p>
 		</div>
 
-		<div class="notification is-warning">
-			<p data-tx="t0233:c7a2b08f"><strong>Vennligst ikke bestill «ESP32-S3» — den fungerer ikke.</strong> Spesielt den populære «LILYGO T-Dongle-S3» på Amazon blir kjøpt gjentatte ganger, men lar seg ikke konfigurere: Installasjonsprogrammet i nettleseren avbrytes med meldingen «Your ESP32-S3 board is not supported».</p>
-			<p class="mt-2" data-tx="t0234:61c3809d">S3 har en annen prosessorkjerne enn den klassiske ESP32, og PhoneBlock-firmware finnes kun for den klassiske ESP32. Dette er ikke et driverproblem — med disse kortene er det foreløpig ganske enkelt ingen måte å installere PhoneBlock på. Det samme gjelder variantene S2, C3, C6 og H2.</p>
-			<p class="mt-2" data-tx="t0235:4564bc8e">Pass derfor på at det i tilbudet står <strong>«ESP32» uten tillegg</strong> — akkurat som i de to tilbudene som er lenket til ovenfor.</p>
+		<div class="notification is-info">
+			<p data-tx="t0233:2a66e5e7"><strong>Selv uten å måtte fikle: «LILYGO T-Dongle-S3».</strong> Fra og med firmwareversjon 2.0 fungerer PhoneBlock også på T-Dongle-S3 (ESP32-S3 med 16 MB flashminne). Den har en USB-A-kontakt og plugges direkte inn i USB-uttaket på Fritz!Box. Den fargede LED-lampen viser status, mens det lille displayet forblir slått av.</p>
+			<p class="mt-2" data-tx="t0234:db600a02">Det støttes også kort med ESP32-C3, der USB-kontakten er koblet direkte til brikken, f.eks. «C3 Super Mini». Alle andre varianter (f.eks. ESP32-S2, -C2, -C5, -C6, -H2 eller -P4) støttes ikke: I disse tilfellene avbrytes nettleserinstallasjonsprogrammet med meldingen «Your … board is not supported».</p>
+			<p class="mt-2" data-tx="t0235:75c00e28">Pass derfor på at det i tilbudet står <strong>«ESP32» uten tillegg, «ESP32-C3» eller «ESP32-S3» med 16 MB flashminne</strong>. En ESP32-S3 med mindre flashminne kan riktignok flashes, men starter ikke opp.</p>
 		</div>
 
-		<p data-tx="t0140:7f656ebb"><strong>Liker du å bygge ting selv og har du allerede en ESP32 liggende i skuffen?</strong> PhoneBlock vil nesten helt sikkert fungere på kortet ditt også, så lenge det er en klassisk ESP32 (ikke S2/S3/C3/C6/H2) med minst 4 MB flashminne. Det kan hende du trenger en annen USB-seriell-driver, eller må omkonfigurere pin-tilkoblingen for at status-LED-en skal blinke – for dette bør du ta en titt på <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">prosjektsiden</a>.</p>
+		<p data-tx="t0140:a353e9a8"><strong>Liker du å bygge ting selv og har du allerede en ESP32 liggende i skuffen?</strong> PhoneBlock vil nesten helt sikkert fungere på kortet ditt også, så lenge det er en klassisk ESP32, en ESP32-C3 med minst 4 MB flashminne eller en ESP32-S3 med 16 MB flashminne. På ESP32-C3 må USB-kontakten være koblet direkte til brikken (uten egen USB-seriebrikke), ellers fungerer ikke Wi-Fi-konfigurasjonen i nettleseren. Andre varianter (S2, C2, C5, C6, H2, P4, …) støttes ikke. Det kan hende du trenger en annen USB-seriell-driver, eller må omkonfigurere pin-tilkoblingen slik at status-LED-en blinker – for dette bør du ta en titt på <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">prosjektsiden</a>.</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Trinn 2 - Klargjør donglen</h2>
 
@@ -116,7 +116,7 @@
 		<p data-tx="t0153:a0900784">Klikk på knappen. Nettleseren spør deretter hvilken tilkoblet enhet den kan adressere. Velg oppføringen med <strong>"USB-SERIAL CH340"</strong> (Windows) eller <strong>"USB Single Serial"</strong> eller <strong>"wch.cn"</strong> (macOS/Linux) i navnet, og bekreft med <strong>"Connect"</strong>.</p>
 
 		<p>
-			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/install.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
 					<span data-tx="t0154:1b4594a6">Flash nå</span>
@@ -171,6 +171,7 @@
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Datamaskinen gjenkjenner ikke donglen? Tips om driveren</strong></summary>
 			<p data-tx="t0194:1c40e13a">Dongelen bruker den serielle USB-brikken <strong>CH340</strong>. Nåværende Windows-, macOS- og Linux-versjoner inkluderer vanligvis allerede driveren - i dette tilfellet trenger du ikke å gjøre noe. Men hvis datamaskinen din ikke viser donglen i enhetsvalget, vil følgende tips hjelpe:</p>
+			<p data-tx="t0243:c8d1f374">Kort med ESP32-C3 eller ESP32-S3 (f.eks. T-Dongle-S3) trenger ingen driver: De registreres direkte som en USB-enhet («USB JTAG/serial debug unit»).</p>
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Last ned <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340-driveren fra wch-ic.com</a>, kjør <code>CH341SER.EXE</code> og klikk på <strong>"INSTALL"</strong>. Ingen omstart er nødvendig.</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Fra og med macOS Big Sur er driveren inkludert i systemet - ingen installasjonstrinn er nødvendig.</li>
