@@ -3093,8 +3093,8 @@ async function refreshAll(){
   }
 
   // Display orientation (T-Dongle-S3 only). The status JSON carries
-  // "display" only on a build with a display, so the row stays hidden on
-  // the ESP32 / ESP32-C3 sticks.
+  // "display" only on a board with a display, so the row stays hidden on
+  // the ESP32 / ESP32-C3 sticks and other S3 boards.
   const lcdFlipRow = $('lcdFlipRow');
   const lcdFlipChk = $('lcdFlipChk');
   if (lcdFlipRow && lcdFlipChk){

@@ -272,6 +272,13 @@ Flash: `firmware/partitions-16mb.csv` (der ganze Rest des Flashs, ~9,6 MB, ist
 eine LittleFS-Datenpartition). Gemessen: 178 KB freier Heap im
 Betrieb, Chip-Temperatur ~57 °C.
 
+**Ab 2.0.1** läuft dasselbe S3-Image auch auf dem ESP32-S3 Super Mini mit
+16 MB Flash (N16R8, #730; die 4-MB-Varianten passen nicht zur 16-MB-
+Partitionstabelle). `firmware/main/board_s3.c` unterscheidet die Boards zur
+Laufzeit an den PSRAM-eFuses: ohne PSRAM → T-Dongle-S3 (Display, APA102),
+mit PSRAM → anderes S3-Board ohne Display, Status-LED = WS2812 an GPIO 48
+(per RMT angesteuert).
+
 ## Offene Hardware-Punkte
 
 Aus [PROGRESS.md](PROGRESS.md):

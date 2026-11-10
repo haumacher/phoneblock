@@ -44,6 +44,7 @@
 #include "dialog_manifest.h"
 #include "dialog_store.h"
 #if CONFIG_IDF_TARGET_ESP32S3
+#include "board_s3.h"
 #include "display.h"
 #endif
 #include "heap_guard.h"
@@ -730,10 +731,12 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON_AddBoolToObject  (led,  "quiet",        config_led_quiet());
 
 #if CONFIG_IDF_TARGET_ESP32S3
-    // Only the S3 build has a display; its absence tells the UI to hide
+    // Only the T-Dongle-S3 has a display; its absence tells the UI to hide
     // the orientation option.
-    cJSON *dsp = cJSON_AddObjectToObject(root, "display");
-    cJSON_AddBoolToObject  (dsp,  "flipped",      config_lcd_flipped());
+    if (board_is_t_dongle_s3()) {
+        cJSON *dsp = cJSON_AddObjectToObject(root, "display");
+        cJSON_AddBoolToObject(dsp, "flipped", config_lcd_flipped());
+    }
 #endif
 
     cJSON *au = cJSON_AddObjectToObject(root, "auth");
