@@ -26,14 +26,8 @@
 
 static const char *TAG = "display";
 
-// T-Dongle-S3 wiring, as in LilyGO's factory firmware.
+// T-Dongle-S3 wiring (pins in display.h).
 #define LCD_HOST      SPI2_HOST
-#define PIN_MOSI      3
-#define PIN_SCLK      5
-#define PIN_CS        4
-#define PIN_DC        2
-#define PIN_RST       1
-#define PIN_BACKLIGHT 38    // active-low
 #define LCD_PCLK_HZ   (40 * 1000 * 1000)
 
 // Backlight PWM. Dimmed instead of off: the logo stays readable when
@@ -109,6 +103,9 @@ static SemaphoreHandle_t s_lock;    // serialises drawing (timer vs. httpd)
 static SemaphoreHandle_t s_state;   // guards the call state below (short holds)
 
 static esp_timer_handle_t s_redraw_timer;
+// Switched off in the settings (display_set_enabled): panel off, backlight
+// dark, no drawing. Written under s_lock.
+static volatile bool s_off;
 static esp_timer_handle_t s_dim_timer;
 static esp_timer_handle_t s_call_timer;
 
@@ -164,6 +161,7 @@ static const lcd_cmd_t k_st7735_init[] = {
 
 static void set_backlight(uint32_t duty)
 {
+    if (s_off) duty = 0;
     ledc_set_duty(LEDC_LOW_SPEED_MODE, BL_CHANNEL, duty);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, BL_CHANNEL);
 }
@@ -419,7 +417,7 @@ static void redraw(void *arg)
 {
     (void)arg;
     xSemaphoreTake(s_lock, portMAX_DELAY);
-    if (s_panel) draw_screen(false);
+    if (s_panel && !s_off) draw_screen(false);
     xSemaphoreGive(s_lock);
 }
 
@@ -500,7 +498,7 @@ void display_set_flipped(bool flipped)
     if (s_panel) {
         esp_err_t err = set_orientation(flipped);
         if (err == ESP_OK) {
-            draw_screen(true);
+            if (!s_off) draw_screen(true);
             ESP_LOGI(TAG, "orientation %s", flipped ? "flipped" : "normal");
         } else {
             ESP_LOGW(TAG, "orientation: %s", esp_err_to_name(err));
@@ -606,4 +604,32 @@ void display_start(void)
     s_redraw_timer = redraw_timer;
     brighten_for_a_while();
     ESP_LOGI(TAG, "logo shown");
+}
+
+bool display_was_started(void)
+{
+    return s_lock != NULL;
+}
+
+void display_set_enabled(bool on)
+{
+    if (!s_lock) {
+        // Never brought up (switched off at boot): start it now.
+        if (on) display_start();
+        return;
+    }
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    if (s_panel && on == s_off) {
+        s_off = !on;
+        esp_lcd_panel_disp_on_off(s_panel, on);
+        if (on) {
+            draw_screen(true);
+            brighten_for_a_while();
+        } else {
+            esp_timer_stop(s_dim_timer);
+            set_backlight(0);
+        }
+        ESP_LOGI(TAG, "display %s", on ? "on" : "off");
+    }
+    xSemaphoreGive(s_lock);
 }

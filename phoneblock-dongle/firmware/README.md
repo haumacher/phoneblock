@@ -111,11 +111,12 @@ ESP32-S3 (LilyGO T-Dongle-S3) genauso in `build-esp32s3`. Die S3-Defaults
 in `sdkconfig.defaults.esp32s3`: Konsole/Improv über USB-Serial-JTAG, 16 MB
 Flash mit eigener Partitionstabelle `partitions-16mb.csv` (3-MB-OTA-Slots,
 ~9,6 MB LittleFS-Datenpartition). Dasselbe Image läuft auch auf anderen
-S3-Boards mit 16 MB Flash (ESP32-S3 Super Mini N16R8, #730): `main/board_s3.c`
-erkennt das Board zur Laufzeit an der PSRAM-Kapazität in den eFuses
-(T-Dongle-S3: kein PSRAM). Auf dem T-Dongle-S3 ist die Status-LED die
-APA102-RGB-LED des Boards, auf den anderen die WS2812 an GPIO 48; das
-Display (nur T-Dongle-S3) zeigt das PhoneBlock-Logo mit
+S3-Boards mit 16 MB Flash (ESP32-S3 Super Mini N16R8, #730). Status-LED
+(Typ und Pins) und Display sind Einstellungen (Web-UI ▸ System, NVS-Schlüssel
+`led_hw`/`display`, `main/board.h`): Ein Chip kennt sein Board nicht, die
+Firmware rät nur den Vorgabewert (S3 ohne PSRAM → T-Dongle-S3 mit APA102 an
+40/39 und Display, S3 mit PSRAM → WS2812 an GPIO 48, kein Display). Das
+Display zeigt das PhoneBlock-Logo mit
 Spam-Zähler und während eines Anrufs den Anrufer (`main/display.c`,
 `main/display_model.c`, nur im S3-Build; Logo neu erzeugen mit
 `scripts/gen-lcd-logo.py`, braucht Inkscape und Pillow; Schriften mit
