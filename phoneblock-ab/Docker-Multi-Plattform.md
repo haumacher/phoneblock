@@ -1,4 +1,9 @@
 # Bereitstellen von Multi-Plattform Images
+
+> [!WARNING]
+> **Veraltet:** Das hier gebaute Image `phoneblock/answerbot` (Java-Anrufbeantworter) wird nicht mehr
+> weiterentwickelt. Sein Nachfolger ist [`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2), gebaut von
+> `.github/workflows/dongle-linux.yml` (siehe [phoneblock-dongle/docker/README.md](../phoneblock-dongle/docker/README.md)).
 Docker unterstützt das Bereitstellen von Multi-Plattform Images.
 Die Dokumentation hierfür ist unter https://docs.docker.com/build/building/multi-platform/ zu finden.
 

@@ -90,7 +90,10 @@ java -jar phoneblock-ab/target/phoneblock-ab-*-jar-with-dependencies.jar -f ~/.p
 ```
 Requires `.phoneblock` configuration file (see `phoneblock-ab/.phoneblock.template`)
 
-**Build Docker image** (from the repository root; the JAR is built inside Docker, no JDK needed):
+**Build Docker image** (from the repository root; the JAR is built inside Docker, no JDK needed).
+**Retired:** the Java image `phoneblock/answerbot` is no longer maintained; its successor is
+`phoneblock/answerbot2` (dongle firmware Linux build, `.github/workflows/dongle-linux.yml`,
+see `phoneblock-dongle/docker/README.md`). Point users there, never to `phoneblock/answerbot`.
 ```bash
 docker build -f phoneblock-ab/Dockerfile -t phoneblock/answerbot .
 ```

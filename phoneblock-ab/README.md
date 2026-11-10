@@ -1,5 +1,13 @@
 # phoneblock-ab - Der PhoneBlock-Anrufbeantworter
 
+> [!WARNING]
+> **Dieser Java-Anrufbeantworter wird nicht mehr weiterentwickelt.** Das Docker-Image `phoneblock/answerbot`
+> erhält keine Updates mehr. Nutze stattdessen den Nachfolger [`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2)
+> (Einrichtung siehe [phoneblock-dongle/docker/README.md](../phoneblock-dongle/docker/README.md)).
+>
+> **This Java answerbot is no longer maintained.** The Docker image `phoneblock/answerbot` receives no
+> more updates. Use its successor [`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2) instead (setup: [phoneblock-dongle/docker/README.md](../phoneblock-dongle/docker/README.md)).
+
 Das Blocklist-Telefonbuch wird immer größer. Mittlerweile hat es die 10.000 Nummmenmarke geknackt. Ein Telefonbuch in der 
 Fritz!Box kann aber je nach Modell nur höchstens 3000 bis 4000 Nummern fassen. Die Lösung ist der [PhoneBlock-Anrufbeantworter](https://phoneblock.net/phoneblock/anrufbeantworter/).
 
@@ -20,8 +28,9 @@ anmelden. Natürlich kannst Du den Anrufbeantworter auch lokal bei Dir betreiben
 technischen Vorkenntnissen - einfach weiterlesen.
 
 ## Start as Docker container
-If you don't want to build the code your own, you can use a [pre-built docker container](https://hub.docker.com/r/phoneblock/answerbot)
-to start the answerbot locally. Check out the details on the docker page.
+The pre-built image of this Java answerbot (`phoneblock/answerbot`) is retired. To run a PhoneBlock answering machine
+locally, use its successor [`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2) instead, see
+[phoneblock-dongle/docker](../phoneblock-dongle/docker/README.md).
 
 ## Howto build and run
 

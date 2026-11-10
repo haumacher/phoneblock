@@ -1422,6 +1422,40 @@ function renderStatus(){
     + '<p class="hint">'
     +   esc(t('status.system.lcd_flip.hint')) + '</p>'
     + '</div>'
+    // Board hardware (#730): only on the stick — the status JSON carries
+    // "hardware" there.
+    + '<div id="hwRow" style="display:none">'
+    + '<div class="form">'
+    + '  <label>' + esc(t('status.system.hw.board'))
+    +     '<select id="hwPreset"></select></label>'
+    + '</div>'
+    + '<div id="hwCustom" class="form" style="display:none">'
+    + '  <label>' + esc(t('status.system.hw.led'))
+    +     '<select id="hwLedType">'
+    +       '<option value="none">' + esc(t('status.system.hw.led.none')) + '</option>'
+    +       '<option value="gpio">' + esc(t('status.system.hw.led.gpio')) + '</option>'
+    +       '<option value="apa102">APA102 (RGB)</option>'
+    +       '<option value="ws2812">WS2812 (RGB)</option>'
+    +     '</select></label>'
+    + '  <label id="hwPinRow">' + esc(t('status.system.hw.pin'))
+    +     '<input id="hwPin" type="number" min="0" max="63" class="w-num"></label>'
+    + '  <label id="hwClkRow">' + esc(t('status.system.hw.clk'))
+    +     '<input id="hwClk" type="number" min="0" max="63" class="w-num"></label>'
+    + '  <label id="hwLowRow" class="check">'
+    +     '<input type="checkbox" id="hwLow">'
+    +     '<span>' + esc(t('status.system.hw.low')) + '</span></label>'
+    + '  <label id="hwDispRow" class="check">'
+    +     '<input type="checkbox" id="hwDisp">'
+    +     '<span>' + esc(t('status.system.hw.display')) + '</span></label>'
+    + '</div>'
+    + '<p class="help">'
+    +   esc(t('status.system.hw.help')) + '</p>'
+    + '<p class="actions">'
+    + '  <button id="hwSave" class="btn-primary btn-sm">'
+    +   esc(t('status.system.hw.save')) + '</button>'
+    + '  <span id="hwMsg" class="muted after"></span>'
+    + '</p>'
+    + '</div>'
     // Host name (#714): only on the stick — the status JSON carries
     // "hostname" there, the Linux service has none of its own.
     + '<div id="hostnameRow" style="display:none">'
@@ -3093,8 +3127,8 @@ async function refreshAll(){
   }
 
   // Display orientation (T-Dongle-S3 only). The status JSON carries
-  // "display" only on a build with a display, so the row stays hidden on
-  // the ESP32 / ESP32-C3 sticks.
+  // "display" only on a board with a display, so the row stays hidden on
+  // the ESP32 / ESP32-C3 sticks and other S3 boards.
   const lcdFlipRow = $('lcdFlipRow');
   const lcdFlipChk = $('lcdFlipChk');
   if (lcdFlipRow && lcdFlipChk){
@@ -3111,6 +3145,116 @@ async function refreshAll(){
         });
       } catch (_){ /* next poll reconciles */ }
       refreshAll();
+    };
+  }
+
+  // Board hardware (#730). A chip cannot tell which board it sits on, so
+  // the LED (and the S3's display) is a setting; the firmware's guess is
+  // the "detected" default. Presets are just named settings: choosing one
+  // stores its values, "auto" clears them. The form is filled once per
+  // rendered section, so a poll does not overwrite a choice in progress.
+  const hwRow = $('hwRow');
+  const hw = s.hardware;
+  if (hwRow){
+    hwRow.style.display = hw ? '' : 'none';
+  }
+  if (hwRow && hw && !hwRow.dataset.filled){
+    hwRow.dataset.filled = '1';
+    const HW_PRESETS = [
+      {name: 'LilyGO T-Dongle-S3',             chip: 'ESP32-S3', led: 'apa102:40:39', display: true},
+      {name: 'ESP32-S3 Super Mini',            chip: 'ESP32-S3', led: 'ws2812:48',    display: false},
+      {name: 'ESP32-S3-DevKitC-1 v1.1',        chip: 'ESP32-S3', led: 'ws2812:38',    display: false},
+      {name: 'ESP32-C3 Super Mini',            chip: 'ESP32-C3', led: 'gpio:8:low'},
+      {name: 'PhoneBlock-Dongle (ESP32-PICO-D4)', chip: 'ESP32', led: 'gpio:10:low'},
+      {name: 'ESP32 DevKit (WROOM-32)',        chip: 'ESP32',    led: 'gpio:2'},
+    ].filter(p => p.chip === hw.chip);
+    const matches = (p, led, disp) =>
+        p.led === led && (!hw.display_supported || !!p.display === disp);
+    const detected = HW_PRESETS.find(p => matches(p, hw.led_detected, hw.display_detected));
+    const sel = $('hwPreset');
+    sel.textContent = '';   // a re-fill after saving starts over
+    const opt = (v, label) => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = label; sel.appendChild(o);
+    };
+    opt('auto', t('status.system.hw.auto',
+        {board: detected ? detected.name : hw.led_detected}));
+    HW_PRESETS.forEach((p, i) => opt(String(i), p.name));
+    opt('custom', t('status.system.hw.custom'));
+    $('hwDispRow').style.display = hw.display_supported ? '' : 'none';
+
+    // The custom fields show one spec ("gpio:8:low", "apa102:40:39", ...).
+    const showFields = () => {
+      const type = $('hwLedType').value;
+      $('hwPinRow').style.display = type === 'none' ? 'none' : '';
+      $('hwClkRow').style.display = type === 'apa102' ? '' : 'none';
+      $('hwLowRow').style.display = type === 'gpio' ? '' : 'none';
+    };
+    const fillFields = (led, disp) => {
+      const [type, a, b] = led.split(':');
+      $('hwLedType').value = type;
+      $('hwPin').value = a !== undefined ? a : '';
+      $('hwClk').value = type === 'apa102' && b !== undefined ? b : '';
+      $('hwLow').checked = type === 'gpio' && b === 'low';
+      $('hwDisp').checked = !!disp;
+      showFields();
+    };
+    const fieldsSpec = () => {
+      const type = $('hwLedType').value;
+      const pin = $('hwPin').value.trim(), clk = $('hwClk').value.trim();
+      if (type === 'none') return 'none';
+      if (type === 'apa102') return 'apa102:' + pin + ':' + clk;
+      if (type === 'gpio') return 'gpio:' + pin + ($('hwLow').checked ? ':low' : '');
+      return type + ':' + pin;
+    };
+    const auto = !hw.led_set && !hw.display_set;
+    const cur = HW_PRESETS.findIndex(p => matches(p, hw.led, hw.display));
+    sel.value = auto ? 'auto' : (cur >= 0 ? String(cur) : 'custom');
+    fillFields(hw.led, hw.display);
+    $('hwCustom').style.display = sel.value === 'custom' ? '' : 'none';
+    sel.onchange = () => {
+      const p = HW_PRESETS[Number(sel.value)];
+      if (sel.value === 'auto') fillFields(hw.led_detected, hw.display_detected);
+      else if (p) fillFields(p.led, p.display);
+      $('hwCustom').style.display = sel.value === 'custom' ? '' : 'none';
+    };
+    $('hwLedType').onchange = showFields;
+
+    $('hwSave').onclick = async () => {
+      const m = $('hwMsg');
+      const body = new URLSearchParams();
+      if (sel.value === 'auto'){
+        body.append('led_hw', '');
+        if (hw.display_supported) body.append('display', '');
+      } else {
+        body.append('led_hw', fieldsSpec());
+        if (hw.display_supported) body.append('display', $('hwDisp').checked ? '1' : '0');
+      }
+      $('hwSave').disabled = true;
+      m.textContent = '';
+      let r = null, d = {};
+      try {
+        r = await fetch('api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+        d = await r.json().catch(() => ({}));
+      } catch (_){}
+      $('hwSave').disabled = false;
+      if (!r || !r.ok){
+        // The firmware names the reason inside its generic refusal
+        // ("Invalid: hardware (GPIO 26 is reserved ...). Nothing was saved.").
+        const why = /hardware \((.*)\)\. Nothing/.exec(d.message || '');
+        m.textContent = t('status.system.hw.failed',
+            {reason: why ? why[1] : (d.message || (r ? r.status : '-'))});
+        m.style.color = 'var(--err)';
+        return;
+      }
+      delete hwRow.dataset.filled;
+      await refreshAll();
+      m.textContent = t('status.system.hw.saved');
+      m.style.color = 'var(--ok)';
     };
   }
 

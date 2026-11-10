@@ -1,5 +1,6 @@
-# Board extras that only the ESP32-S3 build (LilyGO T-Dongle-S3) carries:
-# the logo, spam badge and caller screen on its TFT. Kept out of the other
+# Board extras that only the ESP32-S3 build carries: the logo, spam badge and
+# caller screen on the LilyGO T-Dongle-S3's TFT (switched on per board by
+# the "display" setting, board.h). Kept out of the other
 # targets' source list, so their images do not change (display.h turns the
 # notifications into empty inline functions there).
 set(_board_srcs)
@@ -10,11 +11,11 @@ idf_build_get_property(_target IDF_TARGET)
 if(_target STREQUAL "esp32s3")
     list(APPEND _board_srcs "display.c" "display_model.c" "lcd_font.c" "lcd_logo.c")
     list(APPEND _board_srcs "call_rec.c" "call_rec_mix.c")
-    list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc)
+    list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc efuse)
 endif()
 
 idf_component_register(
-    SRCS ${_board_srcs} "main.c" "sip_register.c" "sip_response.c" "sip_transport.c" "sip_frame.c" "sip_srv.c" "sip_auth.c" "api.c" "api_fail.c" "api_scan.c" "../core/sip_parse.c" "audio.c" "rtp.c" "rtp_rx.c" "vad.c" "dialog.c" "dialog_manifest.c" "audio_manifest.c" "dialog_store.c" "stats.c" "log_capture.c" "config.c" "hostname.c" "smtp_body.c" "web.c" "web_http_esp32.c" "web_auth.c" "web_access.c" "webhook.c" "net_local.c" "tr064.c" "sip_client_pick.c" "../core/tr064_parse.c" "../core/platform_esp32.c" "announcement.c" "scheduler.c" "sched_time.c" "time_sync.c" "time_sync_tz.c" "mail.c" "mail_calls.c" "mail_html.c" "mail_i18n.c" "mail_rcpt.c" "name_filter.c" "sync.c" "phone_norm.c" "../core/dial_rules.c" "selftest.c" "firmware_update.c" "ota_manifest.c" "version_cmp.c" "report_queue.c" "http_util.c" "wifi.c" "link_watchdog.c" "status_led.c" "chip_temp.c" "crashreport.c" "logreport.c" "improv.c" "improv_proto.c" "blocklist_lookup.c" "blocklist_sync.c" "storage.c" "storage_budget.c" "manifest_sig.c" "i18n_sync.c" "heap_guard.c" "heap_guard_scan.c" "tls_fragment.c"
+    SRCS ${_board_srcs} "main.c" "sip_register.c" "sip_response.c" "sip_transport.c" "sip_frame.c" "sip_srv.c" "sip_auth.c" "api.c" "api_fail.c" "api_scan.c" "../core/sip_parse.c" "audio.c" "rtp.c" "rtp_rx.c" "vad.c" "dialog.c" "dialog_manifest.c" "audio_manifest.c" "dialog_store.c" "stats.c" "log_capture.c" "config.c" "hostname.c" "smtp_body.c" "web.c" "web_http_esp32.c" "web_auth.c" "web_access.c" "webhook.c" "net_local.c" "tr064.c" "sip_client_pick.c" "../core/tr064_parse.c" "../core/platform_esp32.c" "announcement.c" "scheduler.c" "sched_time.c" "time_sync.c" "time_sync_tz.c" "mail.c" "mail_calls.c" "mail_html.c" "mail_i18n.c" "mail_rcpt.c" "name_filter.c" "sync.c" "phone_norm.c" "../core/dial_rules.c" "selftest.c" "firmware_update.c" "ota_manifest.c" "version_cmp.c" "report_queue.c" "http_util.c" "wifi.c" "link_watchdog.c" "status_led.c" "board.c" "board_hw.c" "chip_temp.c" "crashreport.c" "logreport.c" "improv.c" "improv_proto.c" "blocklist_lookup.c" "blocklist_sync.c" "storage.c" "storage_budget.c" "manifest_sig.c" "i18n_sync.c" "heap_guard.c" "heap_guard_scan.c" "tls_fragment.c"
     INCLUDE_DIRS "." "../core"
     # index.html is embedded gzipped via a custom command below; the
     # announcement is no longer baked in (issue #460 — downloaded per locale).
@@ -29,6 +30,7 @@ idf_component_register(
         esp_wifi
         wpa_supplicant
         esp_driver_gpio
+        esp_driver_rmt
         esp_driver_uart
         esp_driver_usb_serial_jtag
         esp_driver_tsens

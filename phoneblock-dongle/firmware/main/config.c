@@ -62,6 +62,8 @@ static const char *NS   = "phoneblock";
 #define K_LOG_INFO      "log_info"
 #define K_LED_QUIET     "led_quiet"
 #define K_LCD_FLIP      "lcd_flip"
+#define K_LED_HW        "led_hw"
+#define K_DISPLAY       "display"
 #define K_AUTH_ENABLED  "auth_enabled"
 #define K_AUTH_USER     "auth_user"
 #define K_AUTH_PERSIST  "auth_persist"
@@ -173,6 +175,8 @@ typedef struct {
     char log_info[4];        // "1" = also mirror INFO lines to the log panel (default off)
     char led_quiet[4];       // "1" = LED dark when READY (default off = solid on)
     char lcd_flip[4];        // "1" = T-Dongle-S3 display rotated 180° (default off)
+    char led_hw[24];         // status LED spec (board_hw.h); "" = detected
+    char display[4];         // "1" | "0"; "" = detected
     char auth_enabled[4];    // "1" | "0" (or empty = default off)
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
     char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
@@ -401,6 +405,8 @@ static void load_values(void)
         s_config.log_info[0]      = '\0';
         s_config.led_quiet[0]     = '\0';
         s_config.lcd_flip[0]      = '\0';
+        s_config.led_hw[0]        = '\0';
+        s_config.display[0]       = '\0';
         s_config.auth_enabled[0]  = '\0';
         s_config.auth_user[0]     = '\0';
         s_config.auth_persist[0]  = '\0';
@@ -491,6 +497,10 @@ static void load_values(void)
              s_config.led_quiet, sizeof(s_config.led_quiet));
     load_str(h, K_LCD_FLIP, "",
              s_config.lcd_flip, sizeof(s_config.lcd_flip));
+    load_str(h, K_LED_HW, "",
+             s_config.led_hw, sizeof(s_config.led_hw));
+    load_str(h, K_DISPLAY, "",
+             s_config.display, sizeof(s_config.display));
     load_str(h, K_AUTH_ENABLED, "",
              s_config.auth_enabled, sizeof(s_config.auth_enabled));
     load_str(h, K_AUTH_USER, "",
@@ -623,6 +633,8 @@ bool        config_lcd_flipped(void)
     // explicit "1" turns the display upside down.
     return s_config.lcd_flip[0] == '1';
 }
+const char *config_led_hw(void)  { return s_config.led_hw; }
+const char *config_display(void) { return s_config.display; }
 bool        config_auth_enabled(void)
 {
     // Default off (empty / unrecognised → open) so the LAN-local UI
@@ -1027,6 +1039,10 @@ int config_update(const config_update_t *u)
                                         s_config.led_quiet, sizeof(s_config.led_quiet));
     if (err == PB_KV_OK) err = set_str_if(h, K_LCD_FLIP, u->lcd_flip,
                                         s_config.lcd_flip, sizeof(s_config.lcd_flip));
+    if (err == PB_KV_OK) err = set_str_if(h, K_LED_HW, u->led_hw,
+                                        s_config.led_hw, sizeof(s_config.led_hw));
+    if (err == PB_KV_OK) err = set_str_if(h, K_DISPLAY, u->display,
+                                        s_config.display, sizeof(s_config.display));
     if (err == PB_KV_OK) err = set_str_if(h, K_AUTH_ENABLED, u->auth_enabled,
                                         s_config.auth_enabled, sizeof(s_config.auth_enabled));
     if (err == PB_KV_OK) err = set_str_if(h, K_AUTH_USER, u->auth_user,

@@ -147,31 +147,24 @@ menu "PhoneBlock Dongle"
             without blacklisting a real number.
 
     config STATUS_LED_GPIO
-        int "Status LED GPIO (-2 = auto-detect, -1 = disable)"
+        int "Default status LED GPIO (-2 = auto-detect, -1 = none)"
         default -2
         range -2 48
         help
-            GPIO driven by the status LED task with blink patterns
-            for PAIRING / CONNECTING / SETUP / READY.
+            Default LED of the status LED task (blink patterns for
+            PAIRING / CONNECTING / SETUP / READY). Only a default: the
+            web UI's LED setting (System ▸ Hardware, board.h) wins.
 
-              -2 (default) = auto-detect: GPIO 10 on chips with
-                             embedded flash (EGBO PICO-D4 dongle —
-                             flash inside the SoC, GPIO 10 free as
-                             a regular pin), GPIO 2 otherwise (the
-                             on-board blue LED of ESP32-WROOM-32
-                             dev boards, where GPIO 10 carries the
-                             external flash WP signal and is unsafe
-                             to drive). Polarity is auto-detected
-                             too: the GPIO 10 dongle LED is wired
-                             active-low, the WROOM-32 on-board LED
-                             active-high. ESP32-C3 builds always
-                             use GPIO 8, active-low (C3 Super Mini);
-                             ESP32-S3 builds drive the APA102 RGB
-                             LED of the LilyGO T-Dongle-S3.
+              -2 (default) = auto-detect from the chip (main/board.h:
+                             GPIO 10 active-low on the PICO-D4
+                             dongle, GPIO 2 on WROOM-32 boards,
+                             GPIO 8 active-low on the C3 Super Mini,
+                             APA102 40/39 on the T-Dongle-S3, WS2812
+                             on GPIO 48 on other S3 boards).
                              STATUS_LED_ACTIVE_LOW is ignored in
                              this mode.
-              -1           = disable the LED task entirely.
-              0..48        = explicit pin override for non-standard
+              -1           = no LED by default.
+              0..48        = a plain LED on this pin for non-standard
                              hardware. Polarity then comes from
                              STATUS_LED_ACTIVE_LOW.
 
