@@ -513,6 +513,76 @@
     "description": "Dongle web UI: status.system.lcd_flip.hint",
     "x-translated": "a61035a8"
   },
+  "status.system.hw.board": "Board",
+  "@status.system.hw.board": {
+    "description": "Dongle web UI: status.system.hw.board",
+    "x-translated": "99970443"
+  },
+  "status.system.hw.auto": "Automatisch erkannt: {board}",
+  "@status.system.hw.auto": {
+    "description": "Dongle web UI: status.system.hw.auto",
+    "x-translated": "2f1d6561"
+  },
+  "status.system.hw.custom": "Eigene Einstellung",
+  "@status.system.hw.custom": {
+    "description": "Dongle web UI: status.system.hw.custom",
+    "x-translated": "f9b81d82"
+  },
+  "status.system.hw.led": "Status-LED",
+  "@status.system.hw.led": {
+    "description": "Dongle web UI: status.system.hw.led",
+    "x-translated": "2a7aa81a"
+  },
+  "status.system.hw.led.none": "keine",
+  "@status.system.hw.led.none": {
+    "description": "Dongle web UI: status.system.hw.led.none",
+    "x-translated": "a5989521"
+  },
+  "status.system.hw.led.gpio": "Einfache LED",
+  "@status.system.hw.led.gpio": {
+    "description": "Dongle web UI: status.system.hw.led.gpio",
+    "x-translated": "2ebc04db"
+  },
+  "status.system.hw.pin": "GPIO",
+  "@status.system.hw.pin": {
+    "description": "Dongle web UI: status.system.hw.pin",
+    "x-translated": "8ce33965"
+  },
+  "status.system.hw.clk": "Takt-GPIO",
+  "@status.system.hw.clk": {
+    "description": "Dongle web UI: status.system.hw.clk",
+    "x-translated": "5802fef5"
+  },
+  "status.system.hw.low": "LED leuchtet bei LOW-Pegel",
+  "@status.system.hw.low": {
+    "description": "Dongle web UI: status.system.hw.low",
+    "x-translated": "3642b6fc"
+  },
+  "status.system.hw.display": "Display einschalten",
+  "@status.system.hw.display": {
+    "description": "Dongle web UI: status.system.hw.display",
+    "x-translated": "6a8df687"
+  },
+  "status.system.hw.help": "Ein ESP32-Chip weiß nicht, auf welchem Board er sitzt; die Firmware kann es nur vermuten. Bleibt die LED dunkel oder ist die Vermutung falsch, wähle hier Dein Board oder gib die LED selbst an. RGB-LEDs zeigen den Zustand zusätzlich farbig: grün = bereit, rot = Problem, weiß = Einrichtung fehlt, gelb = verbindet, blau = WPS-Kopplung.",
+  "@status.system.hw.help": {
+    "description": "Dongle web UI: status.system.hw.help",
+    "x-translated": "d6ecb4df"
+  },
+  "status.system.hw.save": "Übernehmen",
+  "@status.system.hw.save": {
+    "description": "Dongle web UI: status.system.hw.save",
+    "x-translated": "76039730"
+  },
+  "status.system.hw.saved": "Übernommen.",
+  "@status.system.hw.saved": {
+    "description": "Dongle web UI: status.system.hw.saved",
+    "x-translated": "41007d6f"
+  },
+  "status.system.hw.failed": "Nicht übernommen: {reason}",
+  "@status.system.hw.failed": {
+    "description": "Dongle web UI: status.system.hw.failed",
+    "x-translated": "7deda014"
+  },
   "status.system.hostname": "Hostname im Heimnetz",
   "@status.system.hostname": {
     "description": "Dongle web UI: label of the host name field in the System section (the name the dongle announces via DHCP and mDNS)",

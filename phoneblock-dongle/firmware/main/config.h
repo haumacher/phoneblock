@@ -125,6 +125,13 @@ const char *config_hostname(void);
 // (the other targets have no display and never show the option).
 bool        config_lcd_flipped(void);
 
+// Board hardware settings (#730, board.h): the status LED spec
+// ("none", "gpio:<pin>[:low]", "apa102:<data>:<clock>", "ws2812:<pin>")
+// and whether the display is on ("1"/"0"). "" = not set, use the detected
+// default. Raw stored values; board_effective() validates and resolves them.
+const char *config_led_hw(void);
+const char *config_display(void);
+
 // Whether the web UI requires "Login with PhoneBlock" before
 // showing call data or accepting setting changes. Default off —
 // during initial provisioning the LAN-local UI must be reachable
@@ -431,6 +438,11 @@ typedef struct {
     // "1" = display rotated 180° (S3 only), "0" = normal orientation.
     // NULL = leave unchanged. Default when unset is "off".
     const char *lcd_flip;
+    // Status LED spec / display "1"|"0" (board.h); "" = back to the
+    // detected default. NULL = leave unchanged. Checked by the caller
+    // (board_check_settings) before storing.
+    const char *led_hw;
+    const char *display;
     // "1" = require "Login with PhoneBlock" before serving the UI,
     // "0" = open access. NULL = leave unchanged. Default when the
     // key is unset is "open access" (setup phase).

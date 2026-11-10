@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_sip_client_pick test_sip_client_pick_probe test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_version_marker test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_stats_small test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe test_hostname test_hostname_probe
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_sip_client_pick test_sip_client_pick_probe test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_version_marker test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_stats_small test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe test_hostname test_hostname_probe test_board_hw
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -24,6 +24,10 @@ test_sip_srv: test_sip_srv.c ../main/sip_srv.c ../main/sip_srv.h
 
 test_sip_auth: test_sip_auth.c ../main/sip_auth.c ../main/sip_auth.h
 	$(CC) $(CFLAGS) test_sip_auth.c ../main/sip_auth.c -o $@
+
+# The status LED setting: spec parsing and pin rules (#730).
+test_board_hw: test_board_hw.c ../main/board_hw.c ../main/board_hw.h
+	$(CC) $(CFLAGS) -fsanitize=address test_board_hw.c ../main/board_hw.c -o $@
 
 # The host name setting's validator (#714).
 test_hostname: test_hostname.c ../main/hostname.c ../main/hostname.h

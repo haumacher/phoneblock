@@ -29,8 +29,8 @@
 #include "sip_register.h"
 #include "stats.h"
 #include "chip_temp.h"
+#include "board.h"
 #if CONFIG_IDF_TARGET_ESP32S3
-#include "board_s3.h"
 #include "display.h"
 #endif
 #include "status_led.h"
@@ -85,9 +85,15 @@ void app_main(void)
 #if CONFIG_IDF_TARGET_ESP32S3
     // Before the storage mount: the logo shows that the stick is alive
     // while the partition is mounted (and, on a first boot, formatted —
-    // milliseconds on the S3's LittleFS). Only the T-Dongle-S3 has the
-    // panel; on other S3 boards (Super Mini, #730) its pins are left alone.
-    if (board_is_t_dongle_s3()) display_start();
+    // milliseconds on the S3's LittleFS). Only where the display is on
+    // (board.h: the setting, else detected on the T-Dongle-S3); otherwise
+    // its pins are left alone (S3 Super Mini, #730).
+    {
+        board_led_t led;
+        bool display;
+        board_effective(&led, &display);
+        if (display) display_start();
+    }
 #endif
     announcement_init();
     // The call list lives on the storage partition (#589), mounted by

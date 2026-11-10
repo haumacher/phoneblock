@@ -274,10 +274,15 @@ Betrieb, Chip-Temperatur ~57 °C.
 
 **Ab 2.0.1** läuft dasselbe S3-Image auch auf dem ESP32-S3 Super Mini mit
 16 MB Flash (N16R8, #730; die 4-MB-Varianten passen nicht zur 16-MB-
-Partitionstabelle). `firmware/main/board_s3.c` unterscheidet die Boards zur
-Laufzeit an den PSRAM-eFuses: ohne PSRAM → T-Dongle-S3 (Display, APA102),
-mit PSRAM → anderes S3-Board ohne Display, Status-LED = WS2812 an GPIO 48
-(per RMT angesteuert).
+Partitionstabelle). Ein ESP32 kann sein Board nicht erkennen (keine Board-ID,
+die eFuses beschreiben nur den Chip). Deshalb sind Status-LED und Display
+Einstellungen mit geratenem Vorgabewert (`firmware/main/board.h`): ohne
+PSRAM → T-Dongle-S3 (Display, APA102), mit PSRAM → anderes S3-Board ohne
+Display, WS2812 an GPIO 48 (per RMT). Passt die Vermutung nicht, wählt man
+in der Web-UI das Board oder gibt die LED (`gpio:<pin>[:low]`,
+`apa102:<data>:<clock>`, `ws2812:<pin>`) selbst an. RGB-LEDs zeigen den
+Zustand zusätzlich farbig (grün bereit, rot Problem, weiß Einrichtung, gelb
+verbindet, blau WPS).
 
 ## Offene Hardware-Punkte
 

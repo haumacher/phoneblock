@@ -43,8 +43,13 @@
 #include "config.h"
 #include "dialog_manifest.h"
 #include "dialog_store.h"
+#include "board_hw.h"
+#ifdef ESP_PLATFORM
+#include "board.h"
+#include "chip_family.h"
+#include "status_led.h"
+#endif
 #if CONFIG_IDF_TARGET_ESP32S3
-#include "board_s3.h"
 #include "display.h"
 #endif
 #include "heap_guard.h"
@@ -730,12 +735,33 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON *led = cJSON_AddObjectToObject(root, "led");
     cJSON_AddBoolToObject  (led,  "quiet",        config_led_quiet());
 
-#if CONFIG_IDF_TARGET_ESP32S3
-    // Only the T-Dongle-S3 has a display; its absence tells the UI to hide
-    // the orientation option.
-    if (board_is_t_dongle_s3()) {
-        cJSON *dsp = cJSON_AddObjectToObject(root, "display");
-        cJSON_AddBoolToObject(dsp, "flipped", config_lcd_flipped());
+#ifdef ESP_PLATFORM
+    // Board hardware (#730, board.h): the LED and display in use, what was
+    // detected, and the stored settings ("" = detected). Only the stick
+    // has any; the Linux service omits the object and the UI the section.
+    {
+        board_led_t led, dled;
+        bool disp, ddisp;
+        board_effective(&led, &disp);
+        board_detected(&dled, &ddisp);
+        char spec[BOARD_LED_SPEC_CAP];
+        cJSON *hw = cJSON_AddObjectToObject(root, "hardware");
+        cJSON_AddStringToObject(hw, "chip",             PB_CHIP_FAMILY);
+        board_led_format(&led, spec, sizeof(spec));
+        cJSON_AddStringToObject(hw, "led",              spec);
+        board_led_format(&dled, spec, sizeof(spec));
+        cJSON_AddStringToObject(hw, "led_detected",     spec);
+        cJSON_AddStringToObject(hw, "led_set",          config_led_hw());
+        cJSON_AddBoolToObject  (hw, "display_supported", board_display_supported());
+        cJSON_AddBoolToObject  (hw, "display",          disp);
+        cJSON_AddBoolToObject  (hw, "display_detected", ddisp);
+        cJSON_AddStringToObject(hw, "display_set",      config_display());
+        // Only with the display on: its absence tells the UI to hide the
+        // orientation option.
+        if (disp) {
+            cJSON *dsp = cJSON_AddObjectToObject(root, "display");
+            cJSON_AddBoolToObject(dsp, "flipped", config_lcd_flipped());
+        }
     }
 #endif
 
@@ -1056,6 +1082,8 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char log_info_s[4]    = "";
     char led_quiet_s[4]   = "";
     char lcd_flip_s[4]    = "";
+    char led_hw_s[BOARD_LED_SPEC_CAP] = "";
+    char display_s[4]     = "";
     char auto_update_s[4] = "";
     char channel_s[8]     = "";
     char crash_rep_s[4]   = "";
@@ -1148,8 +1176,13 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
 #ifdef ESP_PLATFORM
     // The Linux service runs under the host's name; there is none of its own.
     bool have_hostname   = form_get(body, "hostname",      hostname_s,  sizeof(hostname_s));
+    // Board hardware (#730): the stick's own LED and display.
+    bool have_led_hw     = form_get(body, "led_hw",        led_hw_s,    sizeof(led_hw_s));
+    bool have_display    = form_get(body, "display",       display_s,   sizeof(display_s));
 #else
     bool have_hostname   = false;
+    bool have_led_hw     = false;
+    bool have_display    = false;
 #endif
     bool have_fb_pb      = form_get(body, "fb_phonebook", fb_pb_id_s, sizeof(fb_pb_id_s));
     bool have_fb_pb_name = form_get(body, "fb_phonebook_name", fb_pb_name_s, sizeof(fb_pb_name_s));
@@ -1325,6 +1358,13 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
                         "no - at the start or end)", rej.len ? ", " : "",
                         HOSTNAME_MAX_LEN);
     }
+#ifdef ESP_PLATFORM
+    if (have_led_hw || have_display) {
+        const char *why = board_check_settings(have_led_hw ? led_hw_s : NULL,
+                                               have_display ? display_s : NULL);
+        if (why) sb_appendf(&rej, "%shardware (%s)", rej.len ? ", " : "", why);
+    }
+#endif
     if (rej.len) {
         // Clamped (sb.truncated) is fine: the first field names the problem.
         char msg[200];
@@ -1378,6 +1418,8 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .log_info        = have_log_info  ? log_info_s   : NULL,
         .led_quiet       = have_led_quiet ? led_quiet_s  : NULL,
         .lcd_flip        = have_lcd_flip  ? lcd_flip_s   : NULL,
+        .led_hw          = have_led_hw    ? led_hw_s     : NULL,
+        .display         = have_display   ? display_s    : NULL,
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
         .ota_channel     = channel,
         .crash_report    = have_crash_rep ? crash_rep_s   : NULL,
@@ -1474,6 +1516,23 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     // checkbox while still holding the stick.
     if (have_lcd_flip) {
         display_set_flipped(config_lcd_flipped());
+    }
+#endif
+#ifdef ESP_PLATFORM
+    // New LED / display: applied now. A display going off first, a display
+    // coming on last — the LED's reconfiguration is synchronous, so pins
+    // only change hands once the previous owner released them.
+    if (have_led_hw || have_display) {
+        board_led_t led;
+        bool disp;
+        board_effective(&led, &disp);
+#if CONFIG_IDF_TARGET_ESP32S3
+        if (!disp) display_set_enabled(false);
+#endif
+        status_led_reconfigure();
+#if CONFIG_IDF_TARGET_ESP32S3
+        if (disp) display_set_enabled(true);
+#endif
     }
 #endif
 
