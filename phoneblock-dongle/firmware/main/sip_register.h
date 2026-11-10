@@ -53,3 +53,15 @@ const char *sip_register_public_ip(void);
 // edits and provider presets, pass `false` so the user does not eat
 // 1.5 s of dead air after every Save.
 void sip_register_request_reload(bool needs_settle);
+
+// Digest response (RFC 2617, MD5) for the REGISTER Authorization header,
+// as 32 hex chars into out_hex33; qop "" selects the variant without
+// qop. Inputs of any length are hashed in full, never truncated. Returns
+// false only if memory for a long input could not be allocated; the
+// request must then not be sent. Used by build_register(); public for
+// test_sip_digest_linux.
+bool sip_register_digest_response(
+    const char *user, const char *password, const char *realm,
+    const char *nonce, const char *method, const char *uri,
+    const char *qop, const char *nc, const char *cnonce,
+    char *out_hex33);
