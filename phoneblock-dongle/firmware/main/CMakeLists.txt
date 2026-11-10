@@ -1,5 +1,7 @@
-# Board extras that only the ESP32-S3 build (LilyGO T-Dongle-S3) carries:
-# the logo, spam badge and caller screen on its TFT. Kept out of the other
+# Board extras that only the ESP32-S3 build carries: the logo, spam badge and
+# caller screen on the LilyGO T-Dongle-S3's TFT, and the run-time board
+# detection (board_s3.c, #730) that enables them only on that board and
+# drives the WS2812 LED of other S3 boards (Super Mini) instead. Kept out of the other
 # targets' source list, so their images do not change (display.h turns the
 # notifications into empty inline functions there).
 set(_board_srcs)
@@ -8,9 +10,9 @@ idf_build_get_property(_target IDF_TARGET)
 # The call recordings (#663, call_rec_cfg.h) likewise: the 16 MB S3 only, the
 # 4 MB boards carry none of their code, web UI or strings.
 if(_target STREQUAL "esp32s3")
-    list(APPEND _board_srcs "display.c" "display_model.c" "lcd_font.c" "lcd_logo.c")
+    list(APPEND _board_srcs "board_s3.c" "display.c" "display_model.c" "lcd_font.c" "lcd_logo.c")
     list(APPEND _board_srcs "call_rec.c" "call_rec_mix.c")
-    list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc)
+    list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc esp_driver_rmt efuse)
 endif()
 
 idf_component_register(

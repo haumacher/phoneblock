@@ -1,7 +1,10 @@
 # ESP32-S3 overrides, layered by ESP-IDF on top of sdkconfig.defaults
 # whenever IDF_TARGET=esp32s3.
 #
-# Target board: LilyGO T-Dongle-S3 (ESP32-S3, 16 MB flash, no PSRAM).
+# Target boards: LilyGO T-Dongle-S3 (ESP32-S3, 16 MB flash, no PSRAM) and
+# other S3 boards with 16 MB flash such as the ESP32-S3 Super Mini N16R8
+# (#730); the board extras are picked at run time (main/board_s3.h). PSRAM
+# stays unused.
 # Its USB-A plug is wired straight to the chip's built-in
 # USB-Serial-JTAG controller — no USB-UART bridge. As on the C3 Super
 # Mini (sdkconfig.defaults.esp32c3), USJ must be the primary console so
