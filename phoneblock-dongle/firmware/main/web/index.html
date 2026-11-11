@@ -300,6 +300,15 @@ const t = (k, p) => {
   return s;
 };
 
+// t() for innerHTML: the string itself is escaped, the parameters are
+// inserted as given, i.e. as HTML (escape plain-text values with esc()).
+const tHtml = (k, p) => {
+  let s = esc(t(k));
+  if (p) for (const [name, val] of Object.entries(p))
+    s = s.replaceAll('{' + name + '}', val);
+  return s;
+};
+
 // The UI language is a DEVICE setting (ui_lang — it also drives the status
 // mail and the answer-bot announcement). NOTHING is baked into this page: the
 // dongle serves the strings for its ui_lang from /api/i18n/ui (same-origin) —
@@ -3915,8 +3924,7 @@ async function submitFritzbox(form, onConflict){
   }
   if (r.data && r.data.two_factor){
     form.querySelector('input[name=fritz_pass]').value = '';
-    msg.innerHTML = esc(t('sip.fb.2fa.instructions', {hints: ''}))
-                  + render2FAInstructions(r.data.methods || '');
+    msg.innerHTML = render2FAInstructions(r.data.methods || '');
     msg.style.color = 'var(--warn)';
     await poll2FA(msg, btn);
     return;
@@ -3979,12 +3987,17 @@ function renderFritzboxConflict(form, d){
   };
 }
 
+// The 2FA prompt as HTML: the hints for the methods the Fritz!Box offers,
+// inside the sentence ("Bitte jetzt <hints>.", #739). Without a known method
+// only the title is shown.
 function render2FAInstructions(methods){
   const hints = [];
   if (/\bbutton\b/.test(methods)) hints.push(esc(t('sip.fb.2fa.button')));
   const dtmf = methods.match(/dtmf;(\S+)/);
-  if (dtmf) hints.push(t('sip.fb.2fa.dtmf', {seq: '<code>' + esc(dtmf[1]) + '</code>'}));
-  return hints.length ? hints.join(' ' + esc('oder') + ' ') : '';
+  if (dtmf) hints.push(tHtml('sip.fb.2fa.dtmf', {seq: '<code>' + esc(dtmf[1]) + '</code>'}));
+  if (!hints.length) return esc(t('sip.fb.2fa.title'));
+  return tHtml('sip.fb.2fa.instructions',
+               {hints: hints.join(' ' + esc(t('sip.fb.2fa.or')) + ' ')});
 }
 
 // Deliberately not paused in a hidden tab: each status request is what
