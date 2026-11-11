@@ -1863,6 +1863,11 @@
     "description": "Dongle web UI: sip.fb.2fa.dtmf",
     "x-translated": "3b7fa4bf"
   },
+  "sip.fb.2fa.or": "oder",
+  "@sip.fb.2fa.or": {
+    "description": "Dongle web UI: joins the 2FA hints sip.fb.2fa.button and sip.fb.2fa.dtmf inside sip.fb.2fa.instructions (\"... drücken oder ... wählen\")",
+    "x-translated": "ab5ed447"
+  },
   "sip.fb.2fa.instructions": "Bitte jetzt {hints}.",
   "@sip.fb.2fa.instructions": {
     "description": "Dongle web UI: sip.fb.2fa.instructions",
