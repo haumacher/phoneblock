@@ -13,6 +13,14 @@
 #
 set -e
 
+cat >&2 <<'BANNER'
+******************************************************************************
+* WARNING: phoneblock/answerbot is NO LONGER MAINTAINED and gets no updates. *
+* Please switch to its successor phoneblock/answerbot2:                      *
+*   https://hub.docker.com/r/phoneblock/answerbot2                           *
+******************************************************************************
+BANNER
+
 if [ "$(id -u)" != "0" ]; then
     if [ -n "$PUID" ] || [ -n "$PGID" ]; then
         echo "PUID/PGID are ignored: the container was started as uid $(id -u) instead of root." >&2

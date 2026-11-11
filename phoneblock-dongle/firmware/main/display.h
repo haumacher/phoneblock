@@ -34,12 +34,34 @@
 
 #define DISPLAY_PRESENT 1
 
+// T-Dongle-S3 wiring, as in LilyGO's factory firmware. The status LED must
+// keep off these pins while the display is on (board.c).
+#define PIN_MOSI      3
+#define PIN_SCLK      5
+#define PIN_CS        4
+#define PIN_DC        2
+#define PIN_RST       1
+#define PIN_BACKLIGHT 38    // active-low
+#define DISPLAY_PIN_MASK ((1ULL << PIN_MOSI) | (1ULL << PIN_SCLK) | (1ULL << PIN_CS) \
+                          | (1ULL << PIN_DC) | (1ULL << PIN_RST) | (1ULL << PIN_BACKLIGHT))
+
 void display_start(void);
 
 // Turns the display upside down (true) or back to normal and redraws the
 // current screen. Called by the web UI after the setting was stored; does
 // nothing if the display did not come up.
 void display_set_flipped(bool flipped);
+
+// Switches the display on or off at run time (the "display" setting,
+// board.h). Starts it if it was never brought up; off leaves the panel
+// dark until switched on again.
+void display_set_enabled(bool on);
+
+// Whether display_start() ran in this boot. Its pins then stay the
+// display's even while it is switched off: SPI and backlight PWM are
+// routed once, and a status LED borrowing a pin would cut that routing
+// (board.c refuses it until the next restart).
+bool display_was_started(void);
 
 // A new incoming call was screened; `call` is its entry as the call list
 // would show it (copied). Replaces any call on screen.

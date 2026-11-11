@@ -271,36 +271,24 @@
 		
 		<h2 data-tx="t0079:b65f7797" id="experts">Dla ekspertów: hosting własny</h2>
 		
-		<p data-tx="t0080:5a67a3ba">Jesteś naprawdę dobry w komputerach, masz RaspberryPI lub inny mini PC działający w domu? W takim razie po prostu zainstaluj automatyczną sekretarkę samodzielnie. Najlepszym sposobem na to jest użycie przygotowanego obrazu <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker</a>. Zapewnia to najlepszą ochronę danych, ponieważ cała obsługa połączeń odbywa się po stronie użytkownika. Konfiguracja w systemie telefonicznym jest taka sama, automatyczną sekretarkę konfiguruje się za pomocą pliku konfiguracyjnego.</p>
+		<p data-tx="t0080:c455f3db">Znasz się naprawdę dobrze na komputerach, masz w domu Raspberry Pi lub inny mini-komputer? W takim razie po prostu zainstaluj automatyczną sekretarkę samodzielnie. Najlepiej zrobić to za pomocą gotowego <a href="https://hub.docker.com/r/phoneblock/answerbot2">obrazu Docker</a>. Zapewnia to najlepszą ochronę danych, ponieważ cała obsługa połączeń odbywa się u Ciebie. Jest to to samo oprogramowanie, co w &lt;X2&gt;dongle PhoneBlock&lt;/X2&gt;: wszystko konfiguruje się wygodnie w przeglądarce, a automatyczna sekretarka sama tworzy numer IP telefonu w routerze Fritz!Box.<a th:href="@{/dongle}"></a></p>
 		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Ważne w przypadku samodzielnego hostingu:</strong> W odróżnieniu od poczty głosowej w chmurze, w powyższej instrukcji pominięto dwa kroki: <ul> <li><strong>Nie jest potrzebna usługa DynDNS.</strong> Automatyczna sekretarka działa w tej samej sieci co router Fritz!Box i loguje się lokalnie.</li> <li><strong>Opcja „Zezwól na logowanie z Internetu” pozostaje wyłączona.</strong> Fritz!Box nie musi być w tym celu dostępny z Internetu – celowo pozostaw tę opcję wyłączoną, aby nie otwierać routera bez potrzeby.</li> </ul></div>
 		
-		<h3 data-tx="t0085:b85e4fee">1. Skonfigurowanie urządzenia telefonicznego w Fritz!Boxie</h3>
-		<p data-tx="t0086:77837d1f">Dodaj nowe urządzenie telefoniczne: <em>Telefonia → Urządzenia telefoniczne → Skonfiguruj nowe urządzenie → Telefon (z automatyczną sekretarką lub bez) → LAN/Wi-Fi (telefon IP)</em>. Nazwę użytkownika i hasło możesz wybrać dowolnie – muszą one być identyczne w pliku <code>compose.yaml</code>. W sekcji „Połączenia przychodzące” wybierz opcję <em>„odpowiadać na wszystkie numery”</em>.</p>
-		
-		<h3 data-tx="t0087:f0ff4af">2. Utwórz plik compose.yaml</h3>
+		<h3 data-tx="t0087:7a14d1db">1. Utwórz plik <code>compose.yaml</code></h3>
 		<pre>services:
   phoneblock:
-    image: phoneblock/answerbot:latest
+    image: phoneblock/answerbot2:latest
     container_name: phoneblock
     network_mode: host
+    restart: unless-stopped
     environment:
-      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
-      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
-      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
-      - VIA_ADDR=auto-configuration
-      - VIA_ADDR_V6=auto-configuration
-      - HOST_PORT=50060
-      - REGISTRAR=192.168.178.1
-      - ROUTE=192.168.178.1;lr
-      - REALM=fritz.box
-      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
-      - RECORDINGS=none
-      - CONVERSATION=/opt/phoneblock/conversation
-      - LOG_ALL_PACKETS=no
-      - ACCEPT_LOCAL=yes
-    restart: unless-stopped</pre>
+      TZ: Europe/Berlin
+    volumes:
+      - phoneblock:/var/lib/phoneblock
+volumes:
+  phoneblock:</pre>
 		
-		<h3 data-tx="t0088:68a01d83">3. Istotne zmienne</h3>
+		<h3 data-tx="t0088:325db33">2. Ważne ustawienia</h3>
 		<div class="table-container">
 			<table class="table is-fullwidth is-striped">
 				<thead>
@@ -311,37 +299,30 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><code>PHONEBLOCK_API_KEY</code></td>
-						<td data-tx="t0091:c8ab1645">Twój osobisty klucz API, który można utworzyć na stronie <code>phoneblock.net/phoneblock/settings</code>.</td>
-					</tr>
-					<tr>
-						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
-						<td data-tx="t0092:ea799cc3">Muszą dokładnie odpowiadać numerowi telefonu IP skonfigurowanemu w routerze Fritz!Box.</td>
-					</tr>
-					<tr>
-						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
-						<td data-tx="t0093:17dcf955">Adres urządzenia Fritz!Box. Wskazówka: Jeśli korzystasz z własnego serwera DNS (np. Pi-hole/Unbound) należy w tym miejscu wpisać <em>adres IP</em> urządzenia Fritz!Box zamiast <code>fritz.box</code>, ponieważ w przeciwnym razie nazwa hosta może nie zostać rozpoznana, a rejestracja zakończy się niepowodzeniem.</td>
-					</tr>
-					<tr>
-						<td><code>ACCEPT_LOCAL</code></td>
-						<td data-tx="t0097:3aeb6350">Odbiera również połączenia z telefonów wewnętrznych (numery z przedrostkiem <code>*</code>) – jest to konieczne do wykonania połączenia testowego z numeru wewnętrznego. Ustaw wartość na <code>no</code>, jeśli automatyczna sekretarka jest częścią systemu powiadamiania zbiorowego (np. dzwonek do drzwi, który powoduje dzwonienie wszystkich telefonów).</td>
-					</tr>
-					<tr>
-						<td><code>LOG_ALL_PACKETS</code></td>
-						<td data-tx="t0098:231f7ac9">Aby przeprowadzić diagnostykę, należy ustawić opcję <code>yes</code>: spowoduje to rejestrowanie całej komunikacji SIP w dzienniku.</td>
-					</tr>
-					<tr>
 						<td><code>network_mode: host</code></td>
 						<td data-tx="t0094:a961a2ea">Obowiązkowe – wymagane do komunikacji SIP/RTP.</td>
+					</tr>
+					<tr>
+						<td><code>TZ</code></td>
+						<td data-tx="t0097:b18bffbf">Strefa czasowa dla dziennika i godzin połączeń.</td>
+					</tr>
+					<tr>
+						<td><code>PHONEBLOCK_WEB_PORT</code></td>
+						<td data-tx="t0098:6919615e">Port interfejsu internetowego (domyślnie <code>8080</code>). Ustaw inny port, jeśli port 8080 jest już zajęty na komputerze, np. przez interfejs Twojego serwera NAS.</td>
+					</tr>
+					<tr>
+						<td><code>/var/lib/phoneblock</code></td>
+						<td data-tx="t0099:fae401ff">W tym miejscu zapisywane są ustawienia – dzięki partycji pozostają one zachowane nawet po aktualizacji.</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 		
-		<h3 data-tx="t0095:cc612f71">4. Uruchomienie i sprawdzenie</h3>
+		<h3 data-tx="t0095:5136fc13">3. Uruchomienie i konfiguracja</h3>
 		<pre>docker compose up -d
 docker logs -f phoneblock</pre>
-		<p data-tx="t0096:dabc390b">Jeśli w dzienniku pojawi się wiersz w postaci <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, oznacza to, że automatyczna sekretarka pomyślnie zalogowała się do urządzenia Fritz!Box. Połączenie testowe można wykonać w dowolnym momencie, dzwoniąc na <em>numer wewnętrzny</em> urządzenia (zaczynający się od <code>**</code>) – automatyczna sekretarka zawsze odbiera takie połączenia.</p>
+		<p data-tx="t0096:bea4c87f">Następnie otwórz w przeglądarce adres <code>http://&lt;komputer&gt;:8080/</code> i postępuj zgodnie z instrukcjami konfiguracji: Wprowadź dane dostępowe swojego urządzenia Fritz!Box – automatyczna sekretarka sama utworzy tam swój telefon IP – i zaloguj się na swoje konto PhoneBlock. Aktualizacje pobierz za pomocą polecenia <code>docker compose pull &amp;&amp; docker compose up -d</code>.</p>
+		<p data-tx="t0100:d5d906d">Można to zrobić również bez Dockera: dla systemów Debian i Raspberry Pi OS dostępne jest <a href="https://haumacher.github.io/phoneblock/apt/">repozytorium pakietów</a>.</p>
 		
 	</div>
 </section>

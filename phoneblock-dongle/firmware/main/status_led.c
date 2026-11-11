@@ -3,13 +3,15 @@
 #include <string.h>
 
 #include "driver/gpio.h"
-#include "esp_chip_info.h"
+#include "driver/rmt_tx.h"
+#include "soc/soc_caps.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "sdkconfig.h"
 
 #include "api.h"
+#include "board.h"
 #include "config.h"
 #include "sip_register.h"
 #include "wifi.h"
@@ -21,76 +23,15 @@ static const char *TAG = "status_led";
 
 #define TICK_MS 50
 
-// LilyGO T-Dongle-S3: one APA102 ("DotStar") RGB LED on two GPIOs, data
-// and clock, BGR byte order (pins and order as in LilyGO's factory
-// firmware). APA102_LED is the pseudo-pin resolve_status_led() returns
-// for it: above the highest GPIO (48), yet within the 7 bits the task
-// argument packs a pin into.
-#define APA102_DI_GPIO 40
-#define APA102_CI_GPIO 39
-#define APA102_LED     0x7F
-// Brightness 1..31 (the APA102's 5-bit global current), colour as B, G, R.
-// Low: the LED sits a few millimetres behind a translucent case.
-#define APA102_BRIGHTNESS 4
-#define APA102_B 0xFF
-#define APA102_G 0x60
-#define APA102_R 0x00
+// The LED itself — type and pins — comes from board.h (a setting with a
+// detected default). RGB LEDs (APA102, WS2812) show the state in colour on
+// top of the blink pattern, so a single-colour LED keeps the same meaning.
+// Colours are kept dim: the LED sits behind a translucent case or in a
+// living room. R, G, B at full scale 255; the APA102 additionally runs at a
+// low global current.
+#define APA102_BRIGHTNESS 4      // 1..31, the APA102's 5-bit global current
 
-// Resolve CONFIG_STATUS_LED_GPIO into a concrete pin and polarity
-// (or a sentinel telling the caller to disable the task):
-//   -1            → caller-side "disable" sentinel kept verbatim.
-//   -2 (default)  → auto-detect: chips with flash-in-package
-//                   (PICO-D4) drive GPIO 10, which is the dongle
-//                   target board's LED and is wired active-low;
-//                   everything else falls back to GPIO 2, the
-//                   on-board LED of ESP32-WROOM-32 dev boards
-//                   (active-high). WROOM-32 routes the external
-//                   SPI flash WP signal through GPIO 10, so we
-//                   must not drive it there.
-//                   ESP32-C3 builds use GPIO 8 instead, the
-//                   active-low on-board LED of the C3 Super Mini.
-//                   ESP32-S3 builds return APA102_LED: the T-Dongle-S3
-//                   has no plain LED, only an APA102 (see below).
-//   0..48         → explicit override, returned as-is. Polarity is
-//                   then taken from CONFIG_STATUS_LED_ACTIVE_LOW so
-//                   the user stays in control for non-standard
-//                   wiring.
-static int resolve_status_led(bool *active_low_out)
-{
-    const int kcfg = CONFIG_STATUS_LED_GPIO;
-    if (kcfg == -1) return -1;
-    if (kcfg >= 0) {
-#ifdef CONFIG_STATUS_LED_ACTIVE_LOW
-        *active_low_out = true;
-#else
-        *active_low_out = false;
-#endif
-        return kcfg;
-    }
-
-#if CONFIG_IDF_TARGET_ESP32S3
-    *active_low_out = false;
-    ESP_LOGI(TAG, "auto-detect → APA102 on GPIO %d/%d (ESP32-S3)",
-             APA102_DI_GPIO, APA102_CI_GPIO);
-    return APA102_LED;
-#elif CONFIG_IDF_TARGET_ESP32C3
-    *active_low_out = true;
-    ESP_LOGI(TAG, "auto-detect → GPIO 8, active-low (ESP32-C3)");
-    return 8;
-#else
-    esp_chip_info_t info;
-    esp_chip_info(&info);
-    bool emb_flash = (info.features & CHIP_FEATURE_EMB_FLASH) != 0;
-    int  pin       = emb_flash ? 10 : 2;
-    bool active_low = emb_flash;
-    *active_low_out = active_low;
-    ESP_LOGI(TAG, "auto-detect → GPIO %d, active-%s (%s flash)",
-             pin,
-             active_low ? "low" : "high",
-             emb_flash ? "embedded" : "external");
-    return pin;
-#endif
-}
+typedef struct { uint8_t r, g, b; } rgb_t;
 
 typedef enum {
     ST_PAIRING,
@@ -166,13 +107,25 @@ static pattern_t pattern_for(led_state_t s, bool quiet)
     }
 }
 
-// Packed (gpio, active_low) → single intptr_t for xTaskCreate's void*
-// arg, so we don't need a separately allocated heap struct that would
-// outlive status_led_start(). GPIO range is 0..48, polarity is one bit.
-#define LED_ARG_PACK(gpio, active_low) \
-    ((intptr_t)(((unsigned)(gpio) & 0x7Fu) | ((active_low) ? 0x80u : 0u)))
-#define LED_ARG_GPIO(arg)        ((int)((intptr_t)(arg) & 0x7F))
-#define LED_ARG_ACTIVE_LOW(arg)  (((intptr_t)(arg) & 0x80) != 0)
+static rgb_t colour_for(led_state_t s)
+{
+    switch (s) {
+        case ST_PAIRING:    return (rgb_t){ 0x00, 0x00, 0x30 };   // blue
+        case ST_CONNECTING: return (rgb_t){ 0x28, 0x10, 0x00 };   // amber
+        case ST_SETUP:      return (rgb_t){ 0x14, 0x14, 0x14 };   // white
+        case ST_DEGRADED:   return (rgb_t){ 0x30, 0x00, 0x00 };   // red
+        case ST_READY:
+        default:            return (rgb_t){ 0x00, 0x20, 0x00 };   // green
+    }
+}
+
+// --- drivers ------------------------------------------------------------
+
+static board_led_t s_led;              // the LED being driven
+// status_led_reconfigure() bumps the request, the task acknowledges it
+// once the new LED is set up.
+static volatile uint32_t s_reconf_req, s_reconf_done;
+static TaskHandle_t s_task;
 
 // Bit-banged APA102 frame for a single LED: 32 zero bits start frame,
 // one LED frame (0b111 + 5-bit brightness, B, G, R), 32 one bits end
@@ -181,42 +134,149 @@ static pattern_t pattern_for(led_state_t s, bool quiet)
 static void apa102_byte(uint8_t b)
 {
     for (int i = 7; i >= 0; i--) {
-        gpio_set_level(APA102_DI_GPIO, (b >> i) & 1);
-        gpio_set_level(APA102_CI_GPIO, 1);
-        gpio_set_level(APA102_CI_GPIO, 0);
+        gpio_set_level(s_led.pin, (b >> i) & 1);
+        gpio_set_level(s_led.clk, 1);
+        gpio_set_level(s_led.clk, 0);
     }
 }
 
-static void apa102_set(bool on)
+static void apa102_set(rgb_t c)
 {
     for (int i = 0; i < 4; i++) apa102_byte(0x00);
-    apa102_byte(0xE0 | (on ? APA102_BRIGHTNESS : 0));
-    apa102_byte(on ? APA102_B : 0);
-    apa102_byte(on ? APA102_G : 0);
-    apa102_byte(on ? APA102_R : 0);
+    // The colours above are scaled for the WS2812; the APA102 dims through
+    // its global current instead, so stretch them back to full scale.
+    apa102_byte(0xE0 | APA102_BRIGHTNESS);
+    apa102_byte(c.b ? (uint8_t)(c.b * 5) : 0);
+    apa102_byte(c.g ? (uint8_t)(c.g * 5) : 0);
+    apa102_byte(c.r ? (uint8_t)(c.r * 5) : 0);
     for (int i = 0; i < 4; i++) apa102_byte(0xFF);
+}
+
+// WS2812 through the RMT peripheral (the 800 kHz one-wire protocol is too
+// fast to bit-bang through the GPIO driver). RMT at 10 MHz (0.1 µs ticks):
+// a 0 bit is 0.3 µs high + 0.9 µs low, a 1 bit 0.9 µs high + 0.3 µs low.
+// The line idles low between frames, which is the latch.
+static rmt_channel_handle_t s_ws_chan;
+static rmt_encoder_handle_t s_ws_enc;
+
+static bool ws2812_open(void)
+{
+    rmt_tx_channel_config_t ch = {
+        .gpio_num          = s_led.pin,
+        .clk_src           = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz     = 10 * 1000 * 1000,
+        .mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL,
+        .trans_queue_depth = 1,
+    };
+    rmt_bytes_encoder_config_t enc = {
+        .bit0 = { .level0 = 1, .duration0 = 3, .level1 = 0, .duration1 = 9 },
+        .bit1 = { .level0 = 1, .duration0 = 9, .level1 = 0, .duration1 = 3 },
+        .flags.msb_first = 1,
+    };
+    esp_err_t err = rmt_new_tx_channel(&ch, &s_ws_chan);
+    if (err == ESP_OK) err = rmt_new_bytes_encoder(&enc, &s_ws_enc);
+    if (err == ESP_OK) err = rmt_enable(s_ws_chan);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "WS2812 on GPIO %d: %s", s_led.pin, esp_err_to_name(err));
+        return false;
+    }
+    return true;
+}
+
+static void ws2812_close(void)
+{
+    if (s_ws_chan) {
+        rmt_disable(s_ws_chan);
+        rmt_del_channel(s_ws_chan);
+        s_ws_chan = NULL;
+    }
+    if (s_ws_enc) {
+        rmt_del_encoder(s_ws_enc);
+        s_ws_enc = NULL;
+    }
+}
+
+static void ws2812_set(rgb_t c)
+{
+    static uint8_t grb[3];   // must stay valid until the transfer is done
+    grb[0] = c.g;
+    grb[1] = c.r;
+    grb[2] = c.b;
+    rmt_transmit_config_t tx = { .loop_count = 0 };
+    if (rmt_transmit(s_ws_chan, s_ws_enc, grb, sizeof(grb), &tx) == ESP_OK) {
+        rmt_tx_wait_all_done(s_ws_chan, 100);
+    }
+}
+
+// Takes over the LED of board_effective(). False when there is none (or
+// it could not be set up).
+static bool led_open(void)
+{
+    bool display;
+    board_effective(&s_led, &display);
+    char spec[BOARD_LED_SPEC_CAP];
+    board_led_format(&s_led, spec, sizeof(spec));
+    ESP_LOGI(TAG, "status LED: %s", spec);
+    switch (s_led.type) {
+    case BOARD_LED_WS2812:
+        return ws2812_open();
+    case BOARD_LED_GPIO:
+    case BOARD_LED_APA102: {
+        gpio_config_t cfg = {
+            .pin_bit_mask = 1ULL << s_led.pin
+                | (s_led.type == BOARD_LED_APA102 ? 1ULL << s_led.clk : 0),
+            .mode         = GPIO_MODE_OUTPUT,
+            .pull_up_en   = GPIO_PULLUP_DISABLE,
+            .pull_down_en = GPIO_PULLDOWN_DISABLE,
+            .intr_type    = GPIO_INTR_DISABLE,
+        };
+        if (gpio_config(&cfg) != ESP_OK) return false;
+        if (s_led.type == BOARD_LED_APA102) gpio_set_level(s_led.clk, 0);
+        return true;
+    }
+    case BOARD_LED_NONE:
+    default:
+        return false;
+    }
+}
+
+// Dark, then releases the pins (back to their reset state), so a changed
+// setting starts from a clean slate.
+static void led_close(bool opened)
+{
+    if (opened) {
+        rgb_t off = { 0, 0, 0 };
+        switch (s_led.type) {
+        case BOARD_LED_WS2812: ws2812_set(off); ws2812_close(); break;
+        case BOARD_LED_APA102: apa102_set(off); break;
+        case BOARD_LED_GPIO:   gpio_set_level(s_led.pin, s_led.active_low); break;
+        default: break;
+        }
+    }
+    if (s_led.type != BOARD_LED_NONE && s_led.type != BOARD_LED_WS2812) {
+        gpio_reset_pin(s_led.pin);
+        if (s_led.type == BOARD_LED_APA102) gpio_reset_pin(s_led.clk);
+    }
+}
+
+static void led_show(bool on, rgb_t c)
+{
+    rgb_t off = { 0, 0, 0 };
+    switch (s_led.type) {
+    case BOARD_LED_WS2812: ws2812_set(on ? c : off); break;
+    case BOARD_LED_APA102: apa102_set(on ? c : off); break;
+    case BOARD_LED_GPIO:   gpio_set_level(s_led.pin, s_led.active_low ? !on : on); break;
+    default: break;
+    }
 }
 
 static void led_task(void *arg)
 {
-    const int  gpio       = LED_ARG_GPIO(arg);
-    const bool active_low = LED_ARG_ACTIVE_LOW(arg);
-
-    const bool apa102 = gpio == APA102_LED;
-    gpio_config_t cfg = {
-        .pin_bit_mask = apa102
-            ? (1ULL << APA102_DI_GPIO) | (1ULL << APA102_CI_GPIO)
-            : 1ULL << gpio,
-        .mode         = GPIO_MODE_OUTPUT,
-        .pull_up_en   = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type    = GPIO_INTR_DISABLE,
-    };
-    gpio_config(&cfg);
-    if (apa102) gpio_set_level(APA102_CI_GPIO, 0);
+    (void)arg;
+    bool opened = led_open();
 
     // Diagnostic: report the smallest free stack seen so far — i.e. right
-    // after gpio_config(), this task's deepest logging call. This is the
+    // after the driver setup, this task's deepest logging call. This is the
     // hard number behind the stack sizing (was a 2 KB stack overflowing
     // here once the log hook was added); keep an eye on it staying well
     // clear of 0.
@@ -227,9 +287,22 @@ static void led_task(void *arg)
     bool        last_quiet = false;
     pattern_t   pat        = pattern_for(ST_CONNECTING, false);
     uint8_t     tick       = 0;
-    int         last_on    = -1;   // APA102: only send a frame on a change
+    int         last_on    = -1;   // only send a frame on a change
+    rgb_t       colour     = colour_for(ST_CONNECTING);
 
     while (1) {
+        uint32_t req = s_reconf_req;
+        if (req != s_reconf_done) {
+            led_close(opened);
+            opened = led_open();
+            last_state = (led_state_t)-1;
+            s_reconf_done = req;
+        }
+        if (!opened) {
+            vTaskDelay(pdMS_TO_TICKS(TICK_MS * 10));
+            continue;
+        }
+
         led_state_t s     = derive_state();
         bool        quiet = config_led_quiet();
         // Recompute on a quiet-mode toggle too, not just a state change:
@@ -237,18 +310,16 @@ static void led_task(void *arg)
         // when the state itself never changes.
         if (s != last_state || quiet != last_quiet) {
             pat = pattern_for(s, quiet);
+            colour = colour_for(s);
             tick = 0;
+            last_on = -1;   // new colour: send even if on/off is unchanged
             last_state = s;
             last_quiet = quiet;
         }
         bool on = (pat.on_mask >> tick) & 0x1u;
-        if (apa102) {
-            if (on != last_on) {
-                apa102_set(on);
-                last_on = on;
-            }
-        } else {
-            gpio_set_level(gpio, active_low ? !on : on);
+        if (on != last_on) {
+            led_show(on, colour);
+            last_on = on;
         }
 
         tick = (uint8_t)((tick + 1) % pat.ticks);
@@ -256,20 +327,30 @@ static void led_task(void *arg)
     }
 }
 
+void status_led_reconfigure(void)
+{
+    uint32_t req = ++s_reconf_req;
+    if (!s_task) return;
+    // Wait for the task (it ticks every 50 ms, 500 ms when idle), so the
+    // caller may hand pins the old LED released to someone else (the
+    // display) right after.
+    for (int i = 0; i < 100 && s_reconf_done != req; i++) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
 void status_led_start(void)
 {
-    bool active_low = false;
-    int  gpio       = resolve_status_led(&active_low);
-    if (gpio < 0) {
-        ESP_LOGI(TAG, "LED task disabled (CONFIG_STATUS_LED_GPIO=-1)");
-        return;
-    }
-    // 3 KB: the global log hook (log_capture.c) adds a ~64 B frame to
+    // Always started, even without an LED: the user may configure one at
+    // run time (status_led_reconfigure). Idle it only polls a flag.
+    //
+    // 3.5 KB: the global log hook (log_capture.c) adds a ~64 B frame to
     // *every* log call — including the deep multi-arg INFO line
     // gpio_config() emits. 2 KB overflowed once the hook was added; 2.5 KB
     // left 804 B on the ESP32-C3 but only 324 B on the ESP32-S3, whose
     // Xtensa register windows make the same calls deeper. See the note on
-    // stack sizing in log_capture.c.
-    xTaskCreate(led_task, "status_led", 3072,
-                (void *)LED_ARG_PACK(gpio, active_low), 1, NULL);
+    // stack sizing in log_capture.c. +512 B for the WS2812's RMT setup
+    // (#730): 3 KB left 600 B on the S3 Super Mini.
+    s_reconf_done = s_reconf_req;
+    xTaskCreate(led_task, "status_led", 3584, NULL, 1, &s_task);
 }

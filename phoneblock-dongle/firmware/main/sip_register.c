@@ -1,5 +1,6 @@
 #include "sip_register.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -463,28 +464,62 @@ static void dial_destination(char *host_out, int cap, int *port_out)
 //     response = MD5(HA1:nonce:HA2)
 // ---------------------------------------------------------------------------
 
-static void digest_response(
+// MD5 (hex) of the formatted digest input. A truncated input would give a
+// wrong hash and a 401 with no hint why, so an input that does not fit the
+// stack buffer is formatted again into an exact-size heap buffer. That only
+// happens for long nonces (up to SIP_MAX_CHALLENGE - 1 chars); a Fritz!Box
+// nonce is 16 hex chars. Returns false only if that allocation fails.
+static bool md5_joined(char *out_hex33, const char *fmt, ...)
+    __attribute__((format(printf, 2, 3)));
+
+static bool md5_joined(char *out_hex33, const char *fmt, ...)
+{
+    char tmp[256];
+    va_list ap;
+
+    va_start(ap, fmt);
+    int n = vsnprintf(tmp, sizeof(tmp), fmt, ap);
+    va_end(ap);
+    if (n < 0) {
+        return false;
+    }
+    if ((size_t)n < sizeof(tmp)) {
+        md5_str(tmp, out_hex33);
+        return true;
+    }
+
+    char *big = malloc((size_t)n + 1);
+    if (!big) {
+        pb_log_err(TAG, "digest: no memory for %d-byte input", n);
+        return false;
+    }
+    va_start(ap, fmt);
+    vsnprintf(big, (size_t)n + 1, fmt, ap);
+    va_end(ap);
+    md5_str(big, out_hex33);
+    free(big);
+    return true;
+}
+
+bool sip_register_digest_response(
     const char *user, const char *password, const char *realm,
     const char *nonce, const char *method, const char *uri,
     const char *qop, const char *nc, const char *cnonce,
     char *out_hex33)
 {
-    char tmp[256];
     char ha1[33], ha2[33];
 
-    snprintf(tmp, sizeof(tmp), "%s:%s:%s", user, realm, password);
-    md5_str(tmp, ha1);
-
-    snprintf(tmp, sizeof(tmp), "%s:%s", method, uri);
-    md5_str(tmp, ha2);
-
-    if (qop && qop[0] != '\0') {
-        snprintf(tmp, sizeof(tmp), "%s:%s:%s:%s:%s:%s",
-                 ha1, nonce, nc, cnonce, qop, ha2);
-    } else {
-        snprintf(tmp, sizeof(tmp), "%s:%s:%s", ha1, nonce, ha2);
+    if (!md5_joined(ha1, "%s:%s:%s", user, realm, password)) {
+        return false;
     }
-    md5_str(tmp, out_hex33);
+    if (!md5_joined(ha2, "%s:%s", method, uri)) {
+        return false;
+    }
+    if (qop && qop[0] != '\0') {
+        return md5_joined(out_hex33, "%s:%s:%s:%s:%s:%s",
+                          ha1, nonce, nc, cnonce, qop, ha2);
+    }
+    return md5_joined(out_hex33, "%s:%s:%s", ha1, nonce, ha2);
 }
 
 // ---------------------------------------------------------------------------
@@ -579,12 +614,14 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         const char *realm     = current_realm(&c->challenge);
         random_hex(cnonce, 16);
 
-        digest_response(
-            auth_user, config_sip_pass(),
-            realm, c->challenge.nonce,
-            "REGISTER", request_uri,
-            qop, nc, cnonce,
-            response);
+        if (!sip_register_digest_response(
+                auth_user, config_sip_pass(),
+                realm, c->challenge.nonce,
+                "REGISTER", request_uri,
+                qop, nc, cnonce,
+                response)) {
+            return -1;
+        }
 
         sb_appendf(&sb,
             "Authorization: Digest username=\"%s\", realm=\"%s\", "

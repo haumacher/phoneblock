@@ -271,36 +271,24 @@
 		
 		<h2 data-tx="t0079:b65f7797" id="experts">For eksperter: selvhosting</h2>
 		
-		<p data-tx="t0080:5a67a3ba">Er du rigtig god til computere, har du alligevel en RaspberryPI eller en anden mini-pc kørende derhjemme? Så skal du bare installere telefonsvareren selv. Den bedste måde at gøre det på er med det forberedte <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker-image</a>. Det giver den bedste databeskyttelse, fordi al opkaldshåndtering foregår i din ende. Opsætningen i telefonsystemet er den samme, du opsætter telefonsvareren via en konfigurationsfil.</p>
+		<p data-tx="t0080:c455f3db">Er du rigtig god til computere og har du en Raspberry Pi eller en anden mini-pc kørende derhjemme? Så kan du nemt selv installere telefonsvareren. Det gør du bedst med det forberedte <a href="https://hub.docker.com/r/phoneblock/answerbot2">Docker-image</a>. Det giver den bedste databeskyttelse, fordi hele opkaldshåndteringen foregår hos dig. Det er den samme software som i <a th:href="@{/dongle}">PhoneBlock-donglen</a>: Alt konfigureres nemt i browseren, og telefonsvareren opretter selv IP-telefonen i Fritz!Boxen.</p>
 		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Vigtigt ved selvhosting:</strong> I modsætning til cloud-telefonsvareren kan to trin i vejledningen ovenfor udelades: <ul> <li><strong>Der er ikke behov for DynDNS.</strong> Telefonsvareren kører i samme netværk som Fritz!Boxen og logger på lokalt.</li> <li><strong>"Tillad tilgang fra internettet" forbliver deaktiveret.</strong> Fritz!Box'en behøver ikke at være tilgængelig fra internettet – lad indstillingen være deaktiveret for ikke at åbne routeren unødigt.</li> </ul></div>
 		
-		<h3 data-tx="t0085:b85e4fee">1. Oprette en telefonenhed i Fritz!Box’en</h3>
-		<p data-tx="t0086:77837d1f">Opret en ny telefonenhed: <em>Telefoni → Telefonenheder → Opret ny enhed → Telefon (med og uden telefonsvarer) → LAN/WLAN (IP-telefon)</em>. Du kan selv vælge brugernavn og adgangskode – de skal være nøjagtigt de samme som angivet i <code>compose.yaml</code>. Under "Indgående opkald" skal du vælge <em>"reagere på alle telefonnumre"</em>.</p>
-		
-		<h3 data-tx="t0087:f0ff4af">2. Opret file »compose.yaml«</h3>
+		<h3 data-tx="t0087:7a14d1db">1. Opret <code>compose.yaml</code></h3>
 		<pre>services:
   phoneblock:
-    image: phoneblock/answerbot:latest
+    image: phoneblock/answerbot2:latest
     container_name: phoneblock
     network_mode: host
+    restart: unless-stopped
     environment:
-      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
-      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
-      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
-      - VIA_ADDR=auto-configuration
-      - VIA_ADDR_V6=auto-configuration
-      - HOST_PORT=50060
-      - REGISTRAR=192.168.178.1
-      - ROUTE=192.168.178.1;lr
-      - REALM=fritz.box
-      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
-      - RECORDINGS=none
-      - CONVERSATION=/opt/phoneblock/conversation
-      - LOG_ALL_PACKETS=no
-      - ACCEPT_LOCAL=yes
-    restart: unless-stopped</pre>
+      TZ: Europe/Berlin
+    volumes:
+      - phoneblock:/var/lib/phoneblock
+volumes:
+  phoneblock:</pre>
 		
-		<h3 data-tx="t0088:68a01d83">3. Vigtige variabler</h3>
+		<h3 data-tx="t0088:325db33">2. Vigtige indstillinger</h3>
 		<div class="table-container">
 			<table class="table is-fullwidth is-striped">
 				<thead>
@@ -311,37 +299,30 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><code>PHONEBLOCK_API_KEY</code></td>
-						<td data-tx="t0091:c8ab1645">Din personlige API-nøgle, som du kan oprette på <code>phoneblock.net/phoneblock/settings</code>.</td>
-					</tr>
-					<tr>
-						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
-						<td data-tx="t0092:ea799cc3">De skal stemme nøjagtigt overens med den IP-telefon, der er oprettet i Fritz!Box.</td>
-					</tr>
-					<tr>
-						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
-						<td data-tx="t0093:17dcf955">Fritz!Box’ adresse. Tip: Hvis du bruger din egen DNS-server (f.eks. Pi-hole/Unbound), skal du her indtaste <em>IP-adressen</em> på Fritz!Box i stedet for <code>fritz.box</code>, da værtsnavnet ellers muligvis ikke bliver opløst, og registreringen mislykkes.</td>
-					</tr>
-					<tr>
-						<td><code>ACCEPT_LOCAL</code></td>
-						<td data-tx="t0097:3aeb6350">Modtager også opkald fra interne telefoner (numre med <code>*</code>) – nødvendigt for testopkaldet via det interne nummer. Indstil værdien til <code>no</code>, hvis telefonsvareren er en del af en samlet ringetone (f.eks. en dørklokke, der får alle telefoner til at ringe).</td>
-					</tr>
-					<tr>
-						<td><code>LOG_ALL_PACKETS</code></td>
-						<td data-tx="t0098:231f7ac9">Indstil til <code>yes</code> for fejlfinding: så logges al SIP-kommunikation i logfilen.</td>
-					</tr>
-					<tr>
 						<td><code>network_mode: host</code></td>
 						<td data-tx="t0094:a961a2ea">Obligatorisk – kræves til SIP-/RTP-kommunikation.</td>
+					</tr>
+					<tr>
+						<td><code>TZ</code></td>
+						<td data-tx="t0097:b18bffbf">Tidszone for loggen og opkaldstidspunkterne.</td>
+					</tr>
+					<tr>
+						<td><code>PHONEBLOCK_WEB_PORT</code></td>
+						<td data-tx="t0098:6919615e">Port for webgrænsefladen (standard <code>8080</code>). Indstil en anden port, hvis 8080 allerede er optaget på computeren, f.eks. af din NAS’ grænseflade.</td>
+					</tr>
+					<tr>
+						<td><code>/var/lib/phoneblock</code></td>
+						<td data-tx="t0099:fae401ff">Det er her, indstillingerne gemmes – takket være volumenet bevares de også ved en opdatering.</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 		
-		<h3 data-tx="t0095:cc612f71">4. Start og kontrol</h3>
+		<h3 data-tx="t0095:5136fc13">3. Opstart og konfiguration</h3>
 		<pre>docker compose up -d
 docker logs -f phoneblock</pre>
-		<p data-tx="t0096:dabc390b">Hvis der vises en linje i loggen som <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, har telefonsvareren logget sig på Fritz!Box’en uden problemer. Du kan til enhver tid foretage et testopkald via enhedens <em>interne nummer</em> (begynder med <code>**</code>) – sådanne opkald tager telefonsvareren altid imod.</p>
+		<p data-tx="t0096:bea4c87f">Åbn derefter <code>http://&lt;computer&gt;:8080/</code> i browseren, og følg vejledningen til opsætning: Indtast adgangsoplysningerne til din Fritz!Box – telefonsvareren opretter selv sin IP-telefon der – og log ind med din PhoneBlock-konto. Du henter opdateringer med <code>docker compose pull &amp;&amp; docker compose up -d</code>.</p>
+		<p data-tx="t0100:d5d906d">Det fungerer også uden Docker: Der findes et <a href="https://haumacher.github.io/phoneblock/apt/">pakkerepositorium</a> til Debian og Raspberry Pi OS.</p>
 		
 	</div>
 </section>

@@ -1,30 +1,32 @@
 #pragma once
 
 // Start the status-LED task. Polls the system state (WiFi, SIP,
-// token) every 50 ms and drives the resolved status-LED GPIO with
-// one of five blink patterns. The pin is taken from CONFIG_STATUS_LED_GPIO
-// when explicitly set; the default value (-2) auto-selects between
-// GPIO 10 (chips with embedded flash, e.g. EGBO PICO-D4 dongle)
-// and GPIO 2 (WROOM-32 dev boards); GPIO 8 on ESP32-C3 builds
-// (C3 Super Mini). ESP32-S3 builds (LilyGO T-Dongle-S3) drive the
-// board's APA102 RGB LED with the same patterns instead.
+// token) every 50 ms and drives the status LED with one of five blink
+// patterns. Which LED, on which pins, is a setting with a detected default
+// (board.h): a plain GPIO LED, an APA102 or a WS2812. The RGB LEDs show
+// the state in colour as well (in brackets below), on top of the same
+// pattern.
 //
-//   PAIRING    — fast blink (100 ms on / 100 ms off):
+//   PAIRING    — fast blink (100 ms on / 100 ms off) [blue]:
 //                WPS-PBC active, press the router's pairing button
-//   CONNECTING — slow blink (500 ms on / 500 ms off):
+//   CONNECTING — slow blink (500 ms on / 500 ms off) [amber]:
 //                WiFi up but no IP yet, or reconnecting
-//   SETUP      — short pulse (100 ms on / 900 ms off, mostly dark):
+//   SETUP      — short pulse (100 ms on / 900 ms off, mostly dark) [white]:
 //                online but SIP credentials or PhoneBlock token not
 //                yet entered — the web UI's setup steps are unfinished
-//   DEGRADED   — short dropout (900 ms on / 100 ms off, mostly lit):
+//   DEGRADED   — short dropout (900 ms on / 100 ms off, mostly lit) [red]:
 //                fully configured but something is currently failing —
 //                SIP REGISTER not in place (bad credentials, registrar
 //                unreachable, transient reconnect) or the API token
 //                was rejected by phoneblock.net (401/403). Same
 //                signals the dashboard surfaces; the LED tells the
 //                user "open the web UI to see what's wrong"
-//   READY      — solid on:
+//   READY      — solid on [green]:
 //                WiFi up + SIP registered + token set + token accepted
 //
-// No-op when CONFIG_STATUS_LED_GPIO is set to -1 (LED task disabled).
+// Without an LED the task idles, so one configured later takes effect.
 void status_led_start(void);
+
+// The LED setting changed: the task releases the old LED and takes over
+// the new one (board_effective()) within a tick.
+void status_led_reconfigure(void);

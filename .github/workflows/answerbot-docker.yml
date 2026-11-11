@@ -1,7 +1,11 @@
-name: Publish Answerbot Docker image
+name: Publish Answerbot Docker image (retired, unmaintained)
+
+# WARNING: phoneblock/answerbot (the Java answerbot) is NO LONGER MAINTAINED.
+# Its successor is phoneblock/answerbot2 (https://hub.docker.com/r/phoneblock/answerbot2),
+# published by dongle-linux.yml.
 
 # Builds the self-hosted answerbot (phoneblock-ab) and pushes it to Docker Hub as
-# phoneblock/answerbot. Manual only: the Java answerbot image is being retired in
+# phoneblock/answerbot. Manual only: the Java answerbot image is retired in
 # favour of phoneblock/answerbot2 (the dongle firmware's Linux build, see
 # dongle-linux.yml), so a server release no longer publishes it. Run it by hand
 # for any ref to (re)publish an image if one is still needed.

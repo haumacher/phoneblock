@@ -1,3 +1,7 @@
+# WARNING: This builds the retired Java answerbot image phoneblock/answerbot, which is NO LONGER
+# MAINTAINED. Its successor is phoneblock/answerbot2 (https://hub.docker.com/r/phoneblock/answerbot2), built from the dongle
+# firmware by .github/workflows/dongle-linux.yml (see phoneblock-dongle/docker/README.md).
+#
 # Self-contained build: no JDK or Maven on the host. Build from the repository root (the answerbot
 # needs the parent POM and phoneblock-shared):
 #

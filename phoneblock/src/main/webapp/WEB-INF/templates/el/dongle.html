@@ -92,13 +92,13 @@
 			<p data-tx="t0139:1caf402b">Αυτές οι προσφορές δεν σχετίζονται σε καμία περίπτωση με τη PhoneBlock και η PhoneBlock δεν συμμετέχει σε καμία περίπτωση στα κέρδη. Πρόκειται αποκλειστικά για το υλικό. Εγκαθιστάτε μόνοι σας το λογισμικό PhoneBlock (firmware) μετά την παραλαβή (βλ. παρακάτω).</p>
 		</div>
 
-		<div class="notification is-warning">
-			<p data-tx="t0233:c7a2b08f"><strong>Παρακαλώ, μην παραγγείλετε το «ESP32-S3» — δεν λειτουργεί.</strong> Ειδικά το «LILYGO T-Dongle-S3», που είναι δημοφιλές στο Amazon, αγοράζεται συνεχώς, αλλά δεν μπορεί να ρυθμιστεί: το πρόγραμμα εγκατάστασης μέσω του προγράμματος περιήγησης διακόπτεται με το μήνυμα «Your ESP32-S3 board is not supported».</p>
-			<p class="mt-2" data-tx="t0234:61c3809d">Το S3 διαθέτει διαφορετικό πυρήνα επεξεργαστή από το κλασικό ESP32, ενώ το firmware του PhoneBlock διατίθεται μόνο για το κλασικό ESP32. Δεν πρόκειται για πρόβλημα οδηγού — απλώς, με αυτές τις πλακέτες δεν υπάρχει προς το παρόν κανένας τρόπος να εγκατασταθεί το PhoneBlock. Το ίδιο ισχύει και για τις εκδόσεις S2, C3, C6 και H2.</p>
-			<p class="mt-2" data-tx="t0235:4564bc8e">Γι’ αυτό φρόντισε να αναγράφεται στην προσφορά <strong>«ESP32» χωρίς επιπλέον προσθήκες</strong> — όπως στις δύο προσφορές που παρατίθενται παραπάνω.</p>
+		<div class="notification is-info">
+			<p data-tx="t0233:64e4a4af"><strong>Ακόμη και χωρίς τροποποιήσεις: το «LILYGO T-Dongle-S3».</strong> Από την έκδοση firmware 2.0 και μετά, το PhoneBlock λειτουργεί και στο T-Dongle-S3 (ESP32-S3 με 16 MB Flash). Διαθέτει βύσμα USB-A και συνδέεται απευθείας στην υποδοχή USB του Fritz!Box. Η έγχρωμη λυχνία LED δείχνει την κατάσταση, ενώ η μικρή οθόνη εμφανίζει το λογότυπο του PhoneBlock και, σε περίπτωση κλήσης, τον καλούντα.</p>
+			<p class="mt-2" data-tx="t0234:c0d1b5f5">Υποστηρίζονται επίσης πλακέτες με ESP32-C3, των οποίων η υποδοχή USB συνδέεται απευθείας με το τσιπ, π.χ. το «C3 Super Mini», καθώς και, από την έκδοση firmware 2.0.1 και μετά, το «ESP32-S3 Super Mini» στην έκδοση με 16MB Flash (N16R8)· οι εκδόσεις με 4MB Flash δεν είναι συμβατές. Όλες οι άλλες εκδόσεις (π.χ. ESP32-S2, -C2, -C5, -C6, -H2 ή -P4) δεν υποστηρίζονται: Σε αυτές τις περιπτώσεις, το πρόγραμμα εγκατάστασης μέσω του προγράμματος περιήγησης διακόπτεται με το μήνυμα «Your … board is not supported».</p>
+			<p class="mt-2" data-tx="t0235:75c00e28">Γι’ αυτό φρόντισε να αναγράφεται στην προσφορά <strong>«ESP32» χωρίς επιπλέον προσδιορισμό, «ESP32-C3» ή «ESP32-S3» με 16 MB μνήμης Flash</strong>. Ένα ESP32-S3 με λιγότερη μνήμη Flash μπορεί μεν να προγραμματιστεί, αλλά δεν ξεκινά.</p>
 		</div>
 
-		<p data-tx="t0140:7f656ebb"><strong>Κάνεις μόνος σου κατασκευές και έχεις ήδη ένα ESP32 στο συρτάρι σου;</strong> Το PhoneBlock θα λειτουργήσει σχεδόν σίγουρα και στην πλακέτα σου, αν πρόκειται για ένα κλασικό ESP32 (όχι S2/S3/C3/C6/H2) με τουλάχιστον 4 MB μνήμης Flash. Ενδεχομένως να χρειαστείς ένα διαφορετικό πρόγραμμα οδήγησης USB-Serial ή να πρέπει να αναδιαμορφώσεις τη διάταξη των ακίδων, ώστε να αναβοσβήνει η λυχνία κατάστασης (Status-LED) – για αυτό, συνιστούμε να ανατρέξεις στη <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">σελίδα του έργου</a>.</p>
+		<p data-tx="t0140:a353e9a8"><strong>Ασχολείσαι με την κατασκευή ηλεκτρονικών συσκευών και έχεις ήδη ένα ESP32 στο συρτάρι σου;</strong> Το PhoneBlock θα λειτουργήσει σχεδόν σίγουρα και στη δική σου πλακέτα, αν πρόκειται για ένα κλασικό ESP32 ή ένα ESP32-C3 με τουλάχιστον 4 MB μνήμης Flash ή ένα ESP32-S3 με 16 MB μνήμης Flash. Στην περίπτωση του ESP32-C3, η υποδοχή USB πρέπει να είναι ενσωματωμένη απευθείας στο τσιπ (χωρίς ξεχωριστό τσιπ USB-Serial), διαφορετικά η ρύθμιση του Wi-Fi στον περιηγητή δεν θα λειτουργήσει. Άλλες παραλλαγές (S2, C2, C5, C6, H2, P4, …) δεν υποστηρίζονται. Ενδεχομένως να χρειαστείς ένα διαφορετικό πρόγραμμα οδήγησης USB-Serial ή να πρέπει να αναδιαμορφώσεις τη διάταξη των ακίδων (PIN) ώστε να αναβοσβήνει η λυχνία κατάστασης (Status-LED) – για αυτό, συνιστούμε να ανατρέξεις στη <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">σελίδα του έργου</a>.</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Βήμα 2 - Προετοιμάστε το dongle</h2>
 
@@ -116,7 +116,7 @@
 		<p data-tx="t0153:a0900784">Κάντε κλικ στο κουμπί. Στη συνέχεια, το πρόγραμμα περιήγησης ρωτά ποια συνδεδεμένη συσκευή μπορεί να απευθυνθεί. Επιλέξτε την καταχώρηση με <strong>"USB-SERIAL CH340"</strong> (Windows) ή <strong>"USB Single Serial"</strong> ή <strong>"wch.cn"</strong> (macOS/Linux) στο όνομα και επιβεβαιώστε με <strong>"Connect"</strong>.</p>
 
 		<p>
-			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/install.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
 					<span data-tx="t0154:1b4594a6">Flash τώρα</span>
@@ -171,6 +171,7 @@
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Ο υπολογιστής δεν αναγνωρίζει το dongle; Συμβουλές προγράμματος οδήγησης</strong></summary>
 			<p data-tx="t0194:1c40e13a">Το dongle χρησιμοποιεί το σειριακό τσιπ USB <strong>CH340</strong>. Οι τρέχουσες εκδόσεις των Windows, macOS και Linux συνήθως περιλαμβάνουν ήδη το πρόγραμμα οδήγησης - σε αυτή την περίπτωση, δεν χρειάζεται να κάνετε τίποτα. Ωστόσο, αν ο υπολογιστής σας δεν εμφανίζει το dongle στην επιλογή συσκευής, οι παρακάτω συμβουλές θα σας βοηθήσουν:</p>
+			<p data-tx="t0243:c8d1f374">Οι πλακέτες με ESP32-C3 ή ESP32-S3 (π.χ. το T-Dongle-S3) δεν χρειάζονται πρόγραμμα οδήγησης: αναγνωρίζονται απευθείας ως συσκευή USB («USB JTAG/serial debug unit»).</p>
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Κατεβάστε το πρόγραμμα οδήγησης <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 από το wch-ic.com</a>, εκτελέστε το <code>CH341SER.EXE</code> και κάντε κλικ στο <strong>"INSTALL"</strong>. Δεν απαιτείται επανεκκίνηση.</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Από το macOS Big Sur, το πρόγραμμα οδήγησης περιλαμβάνεται στο σύστημα - δεν απαιτείται βήμα εγκατάστασης.</li>

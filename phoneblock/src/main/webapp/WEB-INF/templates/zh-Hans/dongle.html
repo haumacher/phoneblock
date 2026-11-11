@@ -92,13 +92,13 @@
 			<p data-tx="t0139:1caf402b">这些优惠与 PhoneBlock 毫无关系，PhoneBlock 也绝不参与盈利。这完全是关于硬件。在收到产品后，您可以自行安装 PhoneBlock 软件（固件）（见下文）。</p>
 		</div>
 
-		<div class="notification is-warning">
-			<p data-tx="t0233:c7a2b08f"><strong>请勿订购“ESP32-S3”——该产品无法正常工作。</strong> 尤其是亚马逊上颇受欢迎的“LILYGO T-Dongle-S3”，虽然经常有人购买，但无法完成设置：浏览器安装程序会因“Your ESP32-S3 board is not supported”的提示而中断。</p>
-			<p class="mt-2" data-tx="t0234:61c3809d">S3 采用的处理器内核与经典版 ESP32 不同，而 PhoneBlock 固件仅支持经典版 ESP32。这并非驱动程序问题——目前这些开发板根本无法安装 PhoneBlock。 S2、C3、C6 和 H2 型号也同样如此。</p>
-			<p class="mt-2" data-tx="t0235:4564bc8e">因此，请务必确认商品描述中写着<strong>“ESP32”（无附加说明）</strong>——就像上面链接的这两款一样。</p>
+		<div class="notification is-info">
+			<p data-tx="t0233:64e4a4af">&lt;X1&gt;无需自行改装："LILYGO T-Dongle-S3"。&lt;/X1&gt; 从固件 2.0 版本开始，PhoneBlock 也可在 T-Dongle-S3（配备 16MB 闪存的 ESP32-S3）上运行。 该设备配有USB-A插头，可直接插入Fritz!Box的USB接口。彩色LED指示灯显示设备状态，小屏幕则显示PhoneBlock徽标，接听电话时会显示来电者信息。<strong></strong></p>
+			<p class="mt-2" data-tx="t0234:c0d1b5f5">此外，还支持搭载ESP32-C3且USB接口直接连接在芯片上的开发板，例如“C3 Super Mini”，以及固件版本2.0.1及更高版本的“ESP32-S3 Super Mini”（16MB闪存版本） (N16R8)的“ESP32-S3 Super Mini”（固件版本2.0.1及以上）也支持；而配备4MB闪存的型号则不兼容。 所有其他型号（例如 ESP32-S2、-C2、-C5、-C6、-H2 或 -P4）均不支持：在这些型号上，浏览器安装程序会因“Your … board is not supported”的提示而中断。</p>
+			<p class="mt-2" data-tx="t0235:75c00e28">因此，请务必确认商品描述中注明<strong>“ESP32”（无后缀）、“ESP32-C3”或“ESP32-S3”（配备16MB闪存）</strong>。虽然闪存容量较小的ESP32-S3可以刷写固件，但无法启动。</p>
 		</div>
 
-		<p data-tx="t0140:7f656ebb"><strong>你喜欢自己动手制作，而且抽屉里已经放着一块ESP32了吗？</strong> 只要是经典版ESP32（非S2/S3/C3/C6/H2），且闪存容量至少为4MB，PhoneBlock几乎肯定也能在你的开发板上运行。 你可能需要另一个 USB-串口驱动程序，或者需要重新配置引脚分配以使状态 LED 闪烁——为此，最好查看 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">项目页面</a>。</p>
+		<p data-tx="t0140:a353e9a8"><strong>你喜欢自己动手做项目，而且抽屉里已经放着一块ESP32了吗？</strong> 只要是经典版 ESP32、配备至少 4MB 闪存的 ESP32-C3，或是配备 16MB 闪存的 ESP32-S3，PhoneBlock 几乎肯定也能在你的开发板上运行。 对于 ESP32-C3，USB 接口必须直接连接在芯片上（不带独立的 USB-串口转换芯片），否则无法在浏览器中完成 Wi-Fi 设置。其他型号（S2、C2、C5、C6、H2、P4 等）均不支持。 你可能需要另一个 USB-串口驱动程序，或者需要重新配置引脚分配以使状态 LED 闪烁——为此，建议你查看 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">项目页面</a>。</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">步骤 2 - 准备加密狗</h2>
 
@@ -116,7 +116,7 @@
 		<p data-tx="t0153:a0900784">点击按钮。然后，浏览器会询问允许其寻址的连接设备。选择名称为 <strong>"USB-SERIAL CH340"</strong> (Windows) 或 <strong>"USB Single Serial"</strong> 或 <strong>"wch.cn"</strong> (macOS/Linux) 的条目，然后用 <strong>"连接"</strong>确认。</p>
 
 		<p>
-			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/install.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
 					<span data-tx="t0154:1b4594a6">立即 Flash</span>
@@ -171,6 +171,7 @@
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">电脑无法识别加密狗？驱动程序提示</strong></summary>
 			<p data-tx="t0194:1c40e13a">加密狗使用 <strong>CH340</strong> USB 串行芯片。当前的 Windows、macOS 和 Linux 版本通常已包含驱动程序，在这种情况下，你不需要做任何事情。不过，如果你的电脑在设备选择中没有显示加密狗，下面的提示会有所帮助：</p>
+			<p data-tx="t0243:c8d1f374">搭载 ESP32-C3 或 ESP32-S3 的开发板（例如 T-Dongle-S3）无需驱动程序：它们会直接作为 USB 设备（“USB JTAG/串行调试单元”）进行识别。</p>
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>：从 wch-ic.com 下载 <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 驱动程序</a>，执行 <code>CH341SER.EXE</code> 并单击 <strong>"安装"</strong>。无需重新启动。</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>：从 macOS Big Sur 开始，驱动程序已包含在系统中，无需任何安装步骤。</li>
