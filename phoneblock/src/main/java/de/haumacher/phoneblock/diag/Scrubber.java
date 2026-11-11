@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  *
  * <p>A <b>built-in</b> rule set is the always-on baseline — high-confidence PII
  * shapes (email, phone in a {@code sip:}/{@code tel:} URI, international
- * subscriber number). It deliberately does <b>not</b> blanket-mask bare digit
+ * subscriber number, MAC address, the host part of a host name). It deliberately does <b>not</b> blanket-mask bare digit
  * runs (that would eat HTTP status codes, SIP reason codes, uptimes and byte
  * counts). On top of the baseline, LIVE rows of {@code DIAG_SCRUB_RULE} are
  * layered so an agent can grow the anonymizer without a redeploy (see
@@ -35,6 +35,10 @@ public final class Scrubber {
 
 	private record Rule(Pattern pattern, String replacement) {}
 
+	/** Last labels that make a dotted name a file name rather than a host. */
+	private static final String FILE_EXTENSIONS =
+		"(?:js|json|php|html?|xml|txt|log|bak|old|orig|swp|conf|cfg|ini|env|ya?ml|sql|sh|zip|gz|tar|rar|bin|jsp|aspx?|cgi|pl|py|rb|css|map)";
+
 	// Order matters. The sip:/tel: rule runs first: a URI like
 	// "sip:+4930123456@fritz.box" otherwise looks like an email to the email rule.
 	private static final List<DiagScrubRule> BUILTIN = List.of(
@@ -44,7 +48,30 @@ public final class Scrubber {
 		// a letter/digit. The trailing guard keeps the dongle uptime "+606260s" (and
 		// similar "+<n><unit>" tokens) from being read as a number. Short country
 		// prefixes ("+49") and prefix wildcards ("+43*") are left alone on purpose.
-		builtin("builtin-intl-phone", "\\+[0-9]{6,}(?![A-Za-z0-9])", "<phone>"));
+		builtin("builtin-intl-phone", "\\+[0-9]{6,}(?![A-Za-z0-9])", "<phone>"),
+		// MAC address / Wi-Fi BSSID ("44:4e:6d:b4:e6:a9"). Identifies the user's
+		// access point, and the hex digits would otherwise only partly fall to <N>,
+		// splitting one message into a signature per router.
+		builtin("builtin-mac", "(?<![0-9A-Fa-f:])(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}(?![0-9A-Fa-f:])", "<mac>"),
+		// Host name with 3+ labels ("kln4-l1-mav-pc-ra-7.edns.t-ipnet.de"): masks
+		// the leading labels and keeps the registrable domain, so the provider
+		// (t-ipnet.de, gmx.net, a private domain) stays visible for diagnosis while
+		// per-customer host names no longer fragment the signature. Our own hosts
+		// stay whole (cdn vs. cdn1 matters). Must not start after a word char, '.',
+		// '-', '@' or '/' (except a URL's "://"), so path segments and file names
+		// ("lang-de.json", ".../i18n/manifest.json") are left alone; the
+		// alphabetic last label excludes IPs and version numbers. A sentence-ending
+		// '.' after the name is fine; a further label is not. Server lines carry
+		// Java names: a lower-case last label spares classes ("java.lang.String"),
+		// and names starting with a top-level domain are packages
+		// ("de.haumacher.phoneblock.diag"), not hosts. A file extension as last
+		// label marks a file name probed by scanners ("app.config.json").
+		builtin("builtin-hostname",
+			"(?:(?<=://)|(?<![\\w./@-]))"
+				+ "(?!(?:java|javax|jakarta|sun|jdk|com|org|net|de|io)\\.)"
+				+ "(?!(?:[A-Za-z0-9-]+\\.)*phoneblock\\.net(?![\\w-]|\\.\\w))"
+				+ "(?:[A-Za-z0-9-]+\\.)+([A-Za-z0-9-]+\\.(?!" + FILE_EXTENSIONS + "(?![\\w-]|\\.\\w))[a-z]{2,24})(?![\\w-]|\\.\\w)",
+			"<host>.$1"));
 
 	private final List<Rule> _signatureRules;
 	private final List<Rule> _sampleRules;
