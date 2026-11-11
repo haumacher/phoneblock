@@ -174,14 +174,30 @@ if [[ ! -f "$NOTES" ]]; then
     exit 1
 fi
 # A final release's notes carry its date in place of the "*unreleased*"
-# placeholder (third line, "*YYYY-MM-DD*") — set by hand in the tagged
-# commit, the tag then already contains it. A pre-release keeps the
-# placeholder: its notes are those of the upcoming release.
+# placeholder (third line, "*YYYY-MM-DD*"); a pre-release keeps the
+# placeholder, its notes are those of the upcoming release. A full run stamps
+# today's date itself: it commits the notes and moves the (still local) tag
+# onto that commit, so the tag contains the dated notes; the commit is pushed
+# with the tag at the end. --stage / --dry-run only report it.
+STAMP_BRANCH=""
 if [[ "$VERSION" != *-* ]] && ! sed -n 3p "$NOTES" | grep -qE '^\*[0-9]{4}-[0-9]{2}-[0-9]{2}'; then
-    echo "ERROR: release-notes/${BASE_VERSION}.md has no release date (line 3: $(sed -n 3p "$NOTES"))." >&2
-    echo "       Replace it with *$(date +%F)*, commit, and move the tag:" >&2
-    echo "       git tag -d $DESCRIBE && git tag $DESCRIBE" >&2
-    exit 1
+    TODAY="$(date +%F)"
+    if [[ "$MODE" != "full" ]]; then
+        echo "Note: release-notes/${BASE_VERSION}.md has no date yet; a full run stamps *${TODAY}*."
+    else
+        echo "Stamping release-notes/${BASE_VERSION}.md with *${TODAY}* and moving ${DESCRIBE}."
+        sed -i "3s/.*/*${TODAY}*/" "$NOTES"
+        git commit --quiet -m "Dongle release notes: ${BASE_VERSION} released ${TODAY}" -- "$NOTES"
+        if [[ "$(git cat-file -t "refs/tags/${DESCRIBE}")" == "tag" ]]; then
+            git tag -f -a -m "$(git tag -l --format='%(contents)' "$DESCRIBE")" "$DESCRIBE" >/dev/null
+        else
+            git tag -f "$DESCRIBE" >/dev/null
+        fi
+        STAMP_BRANCH="$(git symbolic-ref --quiet --short HEAD || true)"
+        if [[ -z "$STAMP_BRANCH" ]]; then
+            echo "WARNING: detached HEAD — after the release, merge ${DESCRIBE} into its branch to keep the dated notes." >&2
+        fi
+    fi
 fi
 
 # Derive the target channel(s) from the tag. A pre-release suffix
@@ -526,3 +542,13 @@ done
 # so the user can `git tag -d ${DESCRIBE}` and re-tag the same
 # version without a force-push to the remote.
 run git push origin "$DESCRIBE"
+
+# The dated release notes (see "Stamping" above) go to the branch as well.
+# Should the branch have moved meanwhile, the release itself is done: merge
+# (not rebase — the tag points at the commit) and push by hand.
+if [[ -n "$STAMP_BRANCH" ]]; then
+    if ! run git push origin "HEAD:${STAMP_BRANCH}"; then
+        echo "WARNING: the dated release notes did not reach origin/${STAMP_BRANCH}." >&2
+        echo "         git pull --no-rebase && git push" >&2
+    fi
+fi
