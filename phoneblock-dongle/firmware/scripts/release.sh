@@ -173,6 +173,16 @@ if [[ ! -f "$NOTES" ]]; then
     echo "       The web UI links the version there; create it before releasing." >&2
     exit 1
 fi
+# A final release's notes carry its date in place of the "*unreleased*"
+# placeholder (third line, "*YYYY-MM-DD*") — set by hand in the tagged
+# commit, the tag then already contains it. A pre-release keeps the
+# placeholder: its notes are those of the upcoming release.
+if [[ "$VERSION" != *-* ]] && ! sed -n 3p "$NOTES" | grep -qE '^\*[0-9]{4}-[0-9]{2}-[0-9]{2}'; then
+    echo "ERROR: release-notes/${BASE_VERSION}.md has no release date (line 3: $(sed -n 3p "$NOTES"))." >&2
+    echo "       Replace it with *$(date +%F)*, commit, and move the tag:" >&2
+    echo "       git tag -d $DESCRIBE && git tag $DESCRIBE" >&2
+    exit 1
+fi
 
 # Derive the target channel(s) from the tag. A pre-release suffix
 # (anything after a '-', e.g. 1.6.0-rc1) ships to beta only; a clean

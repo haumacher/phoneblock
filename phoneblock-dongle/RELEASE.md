@@ -13,6 +13,9 @@ Voraussetzung: sauberer, aktueller Tree, HEAD genau auf einem `dongle-v*`-Tag
 (`release.sh` bricht ab, wenn der Branch hinter `origin` liegt, HEAD mehrere
 `dongle-v*`-Tags trägt oder der Tag schon auf `origin` liegt),
 KeePassXC-Master-Passwort zur Hand (siehe „OTA-Signing-Key").
+Bei einem finalen Release (ohne `-rcN`/`-betaN`) muss in
+`firmware/release-notes/X.Y.Z.md` vor dem Taggen das Datum statt
+`*unreleased*` stehen (`*YYYY-MM-DD*`), sonst bricht `release.sh` ab.
 
 Pfad zur `.kdbx` einmalig in `firmware/scripts/release.settings`
 eintragen — `release.sh` sourcet die Datei automatisch.
