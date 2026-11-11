@@ -29,6 +29,7 @@
 #include "smtp_body.h"
 #include "stats.h"
 #include "strbuf.h"
+#include "tls_fragment.h"
 #include "time_sync.h"
 #include "wifi.h"
 
@@ -293,7 +294,12 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     // SNI must be the service hostname the user configured — this is what
     // the server matches its certificate against.
     if (mbedtls_ssl_set_hostname(&c.ssl, host) != 0) goto done;
-    if (mbedtls_ssl_setup(&c.ssl, &conf) != 0) goto done;
+    // No 4 KB record request towards the user's mail server (#734,
+    // tls_fragment.h): its certificate chain may not fit one 4 KB record.
+    tls_fragment_exempt(true);
+    int setup_rc = mbedtls_ssl_setup(&c.ssl, &conf);
+    tls_fragment_exempt(false);
+    if (setup_rc != 0) goto done;
 
     snprintf(port_s, sizeof(port_s), "%d", port);
     ESP_LOGI(TAG, "connecting to %s:%d (%s)", host, port,

@@ -15,7 +15,11 @@
 // esp-tls has no hook to adjust its mbedtls_ssl_config, so the call it makes
 // right after building the client configuration, mbedtls_ssl_setup(), is
 // wrapped at link time (-Wl,--wrap=mbedtls_ssl_setup, main/CMakeLists.txt).
-// Only client endpoints are touched.
+// Only client endpoints are touched, and only those whose task has not
+// exempted its next sessions (tls_fragment_exempt(), #734: SMTP and SIP over
+// TLS to servers the user configured, see tls_fragment.h).
+
+#include "tls_fragment.h"
 
 #include "mbedtls/ssl.h"
 #include "esp_log.h"
@@ -25,11 +29,20 @@
 
 static const char *TAG = "tls";
 
+// Thread-local: each FreeRTOS task has its own copy.
+static __thread bool s_exempt;
+
+void tls_fragment_exempt(bool exempt)
+{
+    s_exempt = exempt;
+}
+
 int __real_mbedtls_ssl_setup(mbedtls_ssl_context *ssl, const mbedtls_ssl_config *conf);
 
 int __wrap_mbedtls_ssl_setup(mbedtls_ssl_context *ssl, const mbedtls_ssl_config *conf)
 {
-    if (conf != NULL && mbedtls_ssl_conf_get_endpoint(conf) == MBEDTLS_SSL_IS_CLIENT) {
+    if (conf != NULL && !s_exempt
+            && mbedtls_ssl_conf_get_endpoint(conf) == MBEDTLS_SSL_IS_CLIENT) {
         // esp-tls owns this configuration (tls->conf) and builds it per
         // connection, so adjusting it here affects only this connection.
         int rc = mbedtls_ssl_conf_max_frag_len((mbedtls_ssl_config *)conf,

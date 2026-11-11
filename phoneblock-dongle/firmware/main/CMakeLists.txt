@@ -47,7 +47,7 @@ idf_component_register(
         ${_board_requires}
 )
 
-# Every TLS client asks for 4 KB records (tls_fragment.c, #711): esp-tls has
+# HTTPS clients ask for 4 KB records (tls_fragment.c, #711; not SMTP/SIP-TLS, #734): esp-tls has
 # no hook into its mbedtls_ssl_config, so mbedtls_ssl_setup() is wrapped.
 target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=mbedtls_ssl_setup")
 

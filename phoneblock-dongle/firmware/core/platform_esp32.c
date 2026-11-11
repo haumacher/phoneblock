@@ -27,6 +27,7 @@
 
 #include "chip_family.h"
 #include "ticks_util.h"
+#include "tls_fragment.h"
 
 struct pb_event {
     EventGroupHandle_t handle;
@@ -328,8 +329,12 @@ pb_tls_t *pb_tls_connect(const char *host, int port, const char *server_name,
         .timeout_ms = (int)timeout_ms,
         .common_name = server_name && server_name[0] ? server_name : NULL,
     };
+    // A TLS session to a server the user configured (the SIP registrar): no
+    // 4 KB record request (#734, tls_fragment.h).
+    tls_fragment_exempt(true);
     int rc = esp_tls_conn_new_sync(host, (int)strlen(host), port, &config,
                                    tls->handle);
+    tls_fragment_exempt(false);
     if (rc != 1) {
         esp_tls_conn_destroy(tls->handle);
         free(tls);
