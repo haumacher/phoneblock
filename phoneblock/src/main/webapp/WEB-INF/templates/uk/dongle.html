@@ -79,7 +79,7 @@
 
 		<p data-tx="t0134:2e54f376">Замовте цей USB-ключ ("плата розробника ESP32"). Не хвилюйтеся, вам не потрібно нічого "розробляти", просто встановіть готове програмне забезпечення PhoneBlock з браузера.</p>
 
-		<figure class="image" style="max-width:300px;">
+		<figure class="image pb-max-300">
 			<img alt="Ключ ESP32" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
@@ -112,12 +112,12 @@
 
 		<p data-tx="t0150:6972bbca">Вам потрібно один раз завантажити програмне забезпечення PhoneBlock на ваш ключ. Для цього один раз підключіть брелок до вільного USB-порту комп'ютера. Не маєш комп'ютера? Попросіть друга підготувати для вас брелок. Ви також можете налаштувати його пізніше у вашій мережі з мобільного телефону. Вам не знадобляться інші пристрої для роботи.</p>
 		
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="Екран привітання донгла" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0205:24785f50">Підключіть ключ до USB-порту комп'ютера</figcaption>
 		</figure>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+		<div class="notification is-warning pb-hidden" id="dongle-install-unsupported">
 			<p data-tx="t0127:cc2d5f5e"><strong>Цей браузер не може прошити ключ.</strong> Щоб підготувати ключ до використання, вам потрібен браузер <strong>Google Chrome</strong> або <strong>Microsoft Edge</strong> на комп'ютері (не на смартфоні). Відкрийте цю сторінку в Chrome або Edge і спробуйте ще раз.</p>
 		</div>
 
@@ -142,7 +142,7 @@
 
 		<p data-tx="t0157:8a955c74">У діалоговому вікні вибору з'явиться список усіх послідовних пристроїв на комп'ютері. Якщо відображається декілька пристроїв CH340, тому що до комп'ютера підключено інший пристрій з цією мікросхемою, вилучіть інші пристрої на даний момент.</p>
 
-		<figure class="image" style="max-width:600px;">
+		<figure class="image pb-max-600">
 			<img alt="Виберіть послідовний порт" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Виберіть послідовний порт.</figcaption>
 		</figure>
@@ -191,7 +191,7 @@
 
 		<p data-tx="t0162:d933bd4d">Коли браузер повідомить "Встановлення завершено!", вийміть ключ PhoneBlock з комп'ютера і підключіть його до вільного USB-порту роутера (або до будь-якого USB-джерела живлення 5 В у зоні дії бездротової локальної мережі).</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="ESP32-ключ у Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:ff071800">Підключіть донгл PhoneBlock до USB-порту Fritz!</figcaption>
 		</figure>
@@ -202,7 +202,7 @@
 
 		<p data-tx="t0166:e6ac9e1a">Тепер натисніть кнопку <strong>WPS</strong> на роутері. На Fritz!Box це кнопка <strong>"Connect / WPS"</strong> у верхній частині пристрою - натисніть коротко, поки не почне блимати індикатор Wi-Fi на самому роутері. На інших роутерах кнопка позначена як "WPS" або "Pair". Протягом декількох секунд роутер передасть дані доступу до Wi-Fi на донгл PhoneBlock, який збереже їх і встановить з'єднання.</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="Кнопка WPS на Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">Кнопка WPS на Fritz!Box</figcaption>
 		</figure>
@@ -315,16 +315,9 @@
 
 <script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
 
-<script>
-(function() {
-	if (!('serial' in navigator)) {
-		var box = document.getElementById('dongle-install-unsupported');
-		if (box) { box.style.display = ''; }
-	}
-})();
-</script>
+<script th:src="@{/assets/js/dongle.js(v=${props.project.version})}" type="text/javascript"></script>
 
-<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/video.js(v=${props.project.version})}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

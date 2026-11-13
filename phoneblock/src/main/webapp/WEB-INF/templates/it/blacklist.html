@@ -19,7 +19,7 @@
 		<p data-tx="t0005:7a770612">In questa pagina potete vedere tutti i numeri che avete personalmente bloccato. Un numero presente nella vostra lista nera sarà sempre bloccato sui vostri dispositivi, anche se non ha ancora un punteggio elevato nel database della community.</p>
 
 		<div class="notification is-success" th:if="${settingsMessage}">
-			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+			<button class="delete" type="button"></button>
 			<span th:text="${settingsMessage}"></span>
 		</div>
 	</div>
@@ -56,7 +56,7 @@
 				</button>
 				<p class="help entry-comment" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 
-				<form class="entry-edit" method="post" style="display:none;" th:action="@{/update-settings(action='lists')}">
+				<form class="entry-edit pb-hidden" method="post" th:action="@{/update-settings(action='lists')}">
 					<input name="redirect" type="hidden" value="/blacklist"/>
 					<input name="edit-comment-phone" th:value="${entry.phone}" type="hidden"/>
 					<div class="field">
@@ -191,6 +191,6 @@
 
 <div th:replace="~{fragments/page :: footer}"></div>
 
-<script th:src="@{/assets/js/personal-list.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/personal-list.js(v=${props.project.version})}" type="text/javascript"></script>
 </body>
 </html>

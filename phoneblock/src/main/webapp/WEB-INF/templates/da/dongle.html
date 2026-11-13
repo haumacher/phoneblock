@@ -79,7 +79,7 @@
 
 		<p data-tx="t0134:2e54f376">Bestil denne USB-dongle ("ESP32 developer board"). Bare rolig, du behøver ikke at "udvikle" noget, du skal bare installere den færdige PhoneBlock-software fra browseren.</p>
 
-		<figure class="image" style="max-width:300px;">
+		<figure class="image pb-max-300">
 			<img alt="ESP32-dongle" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
@@ -112,12 +112,12 @@
 
 		<p data-tx="t0150:6972bbca">Du skal indlæse PhoneBlock-softwaren på din dongle én gang. Det gør du ved at sætte donglen i en ledig USB-port på din computer. Har du ikke en computer? Så spørg en ven, om han eller hun kan klargøre donglen for dig. Du kan også sætte den op senere i dit netværk fra en mobiltelefon. Du har ikke brug for andre enheder til at betjene den.</p>
 		
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="Donglens velkomstskærm" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0205:24785f50">Dongle i computerens USB-port</figcaption>
 		</figure>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+		<div class="notification is-warning pb-hidden" id="dongle-install-unsupported">
 			<p data-tx="t0127:cc2d5f5e"><strong>Denne browser kan ikke flashe donglen.</strong> For at gøre din dongle klar til brug skal du have en <strong>Google Chrome</strong> eller <strong>Microsoft Edge</strong> browser på en computer (ikke på en smartphone). Åbn denne side med Chrome eller Edge, og prøv igen.</p>
 		</div>
 
@@ -142,7 +142,7 @@
 
 		<p data-tx="t0157:8a955c74">En liste over alle serielle enheder på computeren vises i valgdialogen. Hvis der vises flere CH340-enheder, fordi der tilfældigvis er tilsluttet en anden enhed med denne chip, skal du fjerne de andre indtil videre.</p>
 
-		<figure class="image" style="max-width:600px;">
+		<figure class="image pb-max-600">
 			<img alt="Vælg seriel port" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Vælg seriel port.</figcaption>
 		</figure>
@@ -191,7 +191,7 @@
 
 		<p data-tx="t0162:d933bd4d">Når browseren melder "Installation completed!", skal du fjerne PhoneBlock-donglen fra computeren og sætte den i en ledig USB-port på din router (eller en hvilken som helst 5 V USB-strømforsyning inden for WLAN-rækkevidde).</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="ESP32-dongle i Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:ff071800">PhoneBlock-dongle i USB-porten på Fritz!</figcaption>
 		</figure>
@@ -202,7 +202,7 @@
 
 		<p data-tx="t0166:e6ac9e1a">Tryk nu på <strong>WPS-knappen</strong> på routeren. På Fritz!Box er det <strong>"Connect / WPS"</strong>-knappen på toppen af enheden - tryk kort, indtil Wi-Fi-LED'en på selve routeren begynder at blinke. Andre routere kalder knappen "WPS" eller "Pair". I løbet af få sekunder sender routeren dine Wi-Fi-adgangsdata til PhoneBlock-donglen, som gemmer dem og opretter forbindelse.</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="WPS-knap på Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">WPS-knap på Fritz!Box</figcaption>
 		</figure>
@@ -315,16 +315,9 @@
 
 <script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
 
-<script>
-(function() {
-	if (!('serial' in navigator)) {
-		var box = document.getElementById('dongle-install-unsupported');
-		if (box) { box.style.display = ''; }
-	}
-})();
-</script>
+<script th:src="@{/assets/js/dongle.js(v=${props.project.version})}" type="text/javascript"></script>
 
-<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/video.js(v=${props.project.version})}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

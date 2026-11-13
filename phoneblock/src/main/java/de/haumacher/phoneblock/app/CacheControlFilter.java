@@ -8,21 +8,18 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link Filter} setting reasonable cache control headers.
  */
-@WebFilter(urlPatterns = "/*", dispatcherTypes = DispatcherType.REQUEST)
 public class CacheControlFilter implements Filter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CacheControlFilter.class);

@@ -17,11 +17,11 @@
 	<div class="content">
 		<h1 data-tx="t0003:1798fbdb">Ustawienia</h1>
 			<form class="welcomename-rename-form" method="post" th:action="@{/update-settings(action='renameDisplayName')}">
-				<p data-tx="t0004:8ea3fa93">Witamy <span><th:block th:text="${settings.displayName}">użytkownika</th:block> <button class="button is-small is-ghost welcomename-edit-btn" data-tx="t0100:65a9dbde" title="Zmiana nazwy" type="button"> <i class="fa-solid fa-pen-to-square"></i> </button> </span> <span> <input class="input is-small welcomename-input" name="newDisplayName" style="display: none; width: 200px;" th:value="${settings.displayName}" type="text"/> <button class="button is-small is-success welcomename-save-btn" data-tx="t0101:a484a888" style="display: none;" title="Zapisz" type="button"> <i class="fa-solid fa-check"></i> </button> <button class="button is-small is-ghost welcomename-cancel-btn" data-tx="t0102:207feda3" style="display: none;" title="Anuluj" type="button"> <i class="fa-solid fa-xmark"></i> </button> </span> !</p>
+				<p data-tx="t0004:8ea3fa93">Witamy <span><th:block th:text="${settings.displayName}">użytkownika</th:block> <button class="button is-small is-ghost welcomename-edit-btn" data-tx="t0100:65a9dbde" title="Zmiana nazwy" type="button"> <i class="fa-solid fa-pen-to-square"></i> </button> </span> <span> <input class="input is-small welcomename-input pb-hidden pb-inline-input" name="newDisplayName" th:value="${settings.displayName}" type="text"/> <button class="button is-small is-success welcomename-save-btn pb-hidden" data-tx="t0101:a484a888" title="Zapisz" type="button"> <i class="fa-solid fa-check"></i> </button> <button class="button is-small is-ghost welcomename-cancel-btn pb-hidden" data-tx="t0102:207feda3" title="Anuluj" type="button"> <i class="fa-solid fa-xmark"></i> </button> </span> !</p>
 			</form>
 
 			<div class="notification is-success" th:if="${settingsMessage}">
-				<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+				<button class="delete" type="button"></button>
 				<span th:text="${settingsMessage}"></span>
 			</div>
 
@@ -141,8 +141,8 @@
 	<table class="table is-fullwidth">
 		<thead>
 			<tr>
-				<th style="width: 40px;"></th>
-				<th data-tx="t0103:df714d36" style="width: 100px;">Typ</th>
+				<th class="pb-col-40"></th>
+				<th class="pb-col-100" data-tx="t0103:df714d36">Typ</th>
 				<th data-tx="t0036:b4d4555f">Nazwa</th>
 				<th data-tx="t0037:1e1e9f52">Generuje</th>
 				<th data-tx="t0038:46b89898">Ostatnie użycie</th>
@@ -162,13 +162,13 @@
 
 				<td>
 					<span class="apikey-label" th:text="${authToken.label}"></span>
-					<form class="apikey-rename-form" method="post" style="display: inline;" th:action="@{/update-settings(action='renameAPIKey')}">
+					<form class="apikey-rename-form is-inline" method="post" th:action="@{/update-settings(action='renameAPIKey')}">
 						<input name="keyId" th:value="${authToken.id}" type="hidden"/>
-						<input class="input is-small apikey-input" name="newLabel" style="display: none; width: 200px;" th:value="${authToken.label}" type="text"/>
-						<button class="button is-small is-success apikey-save-btn" data-tx="t0123:a484a888" style="display: none;" title="Zapisz" type="button">
+						<input class="input is-small apikey-input pb-hidden pb-inline-input" name="newLabel" th:value="${authToken.label}" type="text"/>
+						<button class="button is-small is-success apikey-save-btn pb-hidden" data-tx="t0123:a484a888" title="Zapisz" type="button">
 							<i class="fa-solid fa-check"></i>
 						</button>
-						<button class="button is-small is-ghost apikey-cancel-btn" data-tx="t0124:207feda3" style="display: none;" title="Anuluj" type="button">
+						<button class="button is-small is-ghost apikey-cancel-btn pb-hidden" data-tx="t0124:207feda3" title="Anuluj" type="button">
 							<i class="fa-solid fa-xmark"></i>
 						</button>
 						<button class="button is-small is-ghost apikey-edit-btn" data-tx="t0125:65a9dbde" title="Zmiana nazwy" type="button">

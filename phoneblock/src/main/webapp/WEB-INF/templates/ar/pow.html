@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<script th:src="@{/assets/js/pow.js}" type="text/javascript"></script>
-	<link rel="stylesheet" th:href="@{/assets/css/pow.css}"/>
+	<script th:src="@{/assets/js/pow.js(v=${props.project.version})}" type="text/javascript"></script>
+	<link rel="stylesheet" th:href="@{/assets/css/pow.css(v=${props.project.version})}"/>
 	
 	<meta http-equiv="content-language" th:content="${currentLang.tag}"/>
 	<meta content="text/html;charset=utf-8" http-equiv="content-type"/>

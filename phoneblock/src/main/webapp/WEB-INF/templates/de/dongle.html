@@ -114,7 +114,7 @@
 			sondern einfach nur aus dem Browser die fertige PhoneBlock-Software aufspielen.
 		</p>
 
-		<figure class="image" style="max-width:300px;">
+		<figure class="image pb-max-300">
 			<img alt="ESP32-Dongle" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
@@ -171,12 +171,12 @@
 		Bekannten, ob er den Dongle für Dich vorbereiten kann. Die spätere Einrichtung in deinem Netzwerk kannst Du auch von einem 
 		Mobiltelefon aus machen. Für den Betrieb benötigst du dann gar keine weiteren Geräte mehr.</p>
 		
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="Dongle Welcome-Screen" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0205:24785f50">Dongle im USB-Port des Computers</figcaption>
 		</figure>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+		<div class="notification is-warning pb-hidden" id="dongle-install-unsupported">
 			<p data-tx="t0127:cc2d5f5e"><strong>Dieser Browser kann den Dongle nicht flashen.</strong> Um Deinen Dongle
 			für den Einsatz vorzubereiten benötigst du einen <strong>Google Chrome</strong> oder <strong>Microsoft Edge</strong> Browser
 			auf einem Computer (nicht am Smartphone). Öffne diese Seite mit Chrome oder Edge und
@@ -210,7 +210,7 @@
 		Falls mehrere CH340-Geräte angezeigt werden, weil zufällig noch
 		ein anderes Gerät mit diesem Chip angeschlossen ist, zieh die anderen für den Moment ab.</p>
 
-		<figure class="image" style="max-width:600px;">
+		<figure class="image pb-max-600">
 			<img alt="Seriellen Port auswählen" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Seriellen Port auswählen.</figcaption>
 		</figure>
@@ -275,7 +275,7 @@
 		steck ihn in einen freien USB-Port deines Routers (oder ein beliebiges 5-V-USB-Netzteil in
 		WLAN-Reichweite).</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="ESP32-Dongle in der Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:ff071800">PhoneBlock-Dongle im USB-Port der Fritz!Box</figcaption>
 		</figure>
@@ -292,7 +292,7 @@
 		„Pair". Innerhalb weniger Sekunden überträgt der Router deine WLAN-Zugangsdaten an den
 		PhoneBlock-Dongle, der sie speichert und sich verbindet.</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="WPS-Knopf an der Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">WPS-Knopf an der Fritz!Box</figcaption>
 		</figure>
@@ -457,16 +457,9 @@
 
 <script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
 
-<script>
-(function() {
-	if (!('serial' in navigator)) {
-		var box = document.getElementById('dongle-install-unsupported');
-		if (box) { box.style.display = ''; }
-	}
-})();
-</script>
+<script th:src="@{/assets/js/dongle.js(v=${props.project.version})}" type="text/javascript"></script>
 
-<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/video.js(v=${props.project.version})}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

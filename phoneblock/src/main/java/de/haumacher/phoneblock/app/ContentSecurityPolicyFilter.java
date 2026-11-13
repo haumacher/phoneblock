@@ -2,24 +2,36 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
-import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebFilter(urlPatterns = "/*", dispatcherTypes = DispatcherType.REQUEST)
+/**
+ * Sets the Content-Security-Policy header.
+ *
+ * <p>
+ * Registered in {@code web.xml}, not by annotation: the order of annotated
+ * filters is undefined, and {@code ContentFilter} renders the pages without
+ * passing them down the chain. On Tomcat it ran first, so the pages never got
+ * this header. Filter mappings in {@code web.xml} precede annotated ones.
+ * </p>
+ *
+ * <p>
+ * {@code cdn.phoneblock.net} serves the dongle's browser installer (script
+ * modules, firmware manifest and images).
+ * </p>
+ */
 public class ContentSecurityPolicyFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         if (addWebsiteHeaders((HttpServletRequest) request)) {
-            httpResponse.setHeader("Content-Security-Policy", "default-src 'none'; img-src 'self' http://fritz.box/favicon.ico https://fritz.box/favicon.ico data: w3.org/svg/2000; font-src 'self'; style-src 'self'; script-src 'self'; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; connect-src 'self';");
+            httpResponse.setHeader("Content-Security-Policy", "default-src 'none'; img-src 'self' http://fritz.box/favicon.ico https://fritz.box/favicon.ico data: w3.org/svg/2000; font-src 'self'; style-src 'self'; script-src 'self' https://cdn.phoneblock.net; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; connect-src 'self' https://cdn.phoneblock.net;");
         }
         chain.doFilter(request, response);
     }

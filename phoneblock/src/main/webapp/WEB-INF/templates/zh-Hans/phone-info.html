@@ -212,7 +212,7 @@
 			}
 		}
 		</pre>
-		<script th:src="@{/assets/js/phone-info-ratings.js}" type="text/javascript"></script>
+		<script th:src="@{/assets/js/phone-info-ratings.js(v=${props.project.version})}" type="text/javascript"></script>
 	</div>
 	<p data-tx="t0027:b79530bf" th:unless="${ratings}">目前还没有评论，请率先分享！</p>
 	</div>
@@ -254,7 +254,7 @@
 			}
 		}
 		</pre>
-		<script th:src="@{/assets/js/phone-info-searches.js}" type="text/javascript"></script>
+		<script th:src="@{/assets/js/phone-info-searches.js(v=${props.project.version})}" type="text/javascript"></script>
 	</div>
 	<p data-tx="t0028:9bfce631" th:unless="${searches}">该号码没有搜索查询。</p>
 	</div>

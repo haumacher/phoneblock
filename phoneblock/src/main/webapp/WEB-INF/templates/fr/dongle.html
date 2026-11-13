@@ -79,7 +79,7 @@
 
 		<p data-tx="t0134:2e54f376">Commande ce dongle USB ("carte de développement ESP32"). Ne t'inquiète pas, tu n'as rien à "développer", il te suffit d'installer le logiciel PhoneBlock prêt à l'emploi depuis ton navigateur.</p>
 
-		<figure class="image" style="max-width:300px;">
+		<figure class="image pb-max-300">
 			<img alt="Clé électronique ESP32" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
@@ -112,12 +112,12 @@
 
 		<p data-tx="t0150:6972bbca">Tu dois télécharger une seule fois le logiciel PhoneBlock sur ta clé. Pour ce faire, insère une seule fois le dongle dans un port USB libre de ton ordinateur. Tu n'as pas d'ordinateur ? Demande simplement à une connaissance de préparer le dongle pour toi. L'installation ultérieure dans ton réseau peut également se faire à partir d'un téléphone portable. Tu n'auras alors plus besoin d'aucun autre appareil pour le fonctionnement.</p>
 		
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="Écran d'accueil de la clé électronique" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0205:24785f50">Clé électronique dans le port USB de l'ordinateur</figcaption>
 		</figure>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+		<div class="notification is-warning pb-hidden" id="dongle-install-unsupported">
 			<p data-tx="t0127:cc2d5f5e"><strong>Ce navigateur ne peut pas flasher le dongle.</strong> Pour préparer ton dongle à l'utilisation, tu as besoin d'un navigateur <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> sur un ordinateur (pas sur un smartphone). Ouvre cette page avec Chrome ou Edge et réessaie.</p>
 		</div>
 
@@ -142,7 +142,7 @@
 
 		<p data-tx="t0157:8a955c74">La boîte de dialogue de sélection affiche une liste de tous les appareils série de l'ordinateur. Si plusieurs appareils CH340 s'affichent parce qu'il se trouve qu'un autre appareil équipé de cette puce est connecté, retire les autres pour le moment.</p>
 
-		<figure class="image" style="max-width:600px;">
+		<figure class="image pb-max-600">
 			<img alt="Sélectionner le port série" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Sélectionner le port série.</figcaption>
 		</figure>
@@ -191,7 +191,7 @@
 
 		<p data-tx="t0162:d933bd4d">Lorsque le navigateur indique "Installation complete !", retire le dongle PhoneBlock de l'ordinateur et branche-le sur un port USB libre de ton routeur (ou sur n'importe quel bloc d'alimentation USB 5 V à portée de WLAN).</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="Dongle ESP32 dans la Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:ff071800">Dongle PhoneBlock dans le port USB de la Fritz!Box</figcaption>
 		</figure>
@@ -202,7 +202,7 @@
 
 		<p data-tx="t0166:e6ac9e1a">Appuie maintenant sur le bouton <strong>WPS</strong> du routeur. Sur la Fritz!Box, il s'agit du bouton <strong>"Connect / WPS"</strong> sur le dessus de l'appareil - appuie brièvement jusqu'à ce que le voyant WLAN du routeur commence à clignoter. D'autres routeurs indiquent "WPS" ou "Pair" sur le bouton. En quelques secondes, le routeur transmettra tes données d'accès WLAN au dongle PhoneBlock, qui les enregistrera et se connectera.</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="Bouton WPS sur la Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">Bouton WPS sur la Fritz!Box</figcaption>
 		</figure>
@@ -315,16 +315,9 @@
 
 <script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
 
-<script>
-(function() {
-	if (!('serial' in navigator)) {
-		var box = document.getElementById('dongle-install-unsupported');
-		if (box) { box.style.display = ''; }
-	}
-})();
-</script>
+<script th:src="@{/assets/js/dongle.js(v=${props.project.version})}" type="text/javascript"></script>
 
-<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/video.js(v=${props.project.version})}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

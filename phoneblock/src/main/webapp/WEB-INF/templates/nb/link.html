@@ -58,7 +58,7 @@
 
 		<p data-tx="t0020:2ef6837e">Du kan nå lukke dette vinduet og gå tilbake til enheten din eller til Home Assistant.</p>
 
-		<script th:src="@{/assets/js/link-done.js}" type="text/javascript"></script>
+		<script th:src="@{/assets/js/link-done.js(v=${props.project.version})}" type="text/javascript"></script>
 	</th:block>
 
 </div>

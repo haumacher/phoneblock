@@ -33,10 +33,10 @@
 	
 	<link data-tx="t0042:3e5d77fa" href="https://news.phoneblock.net/feed" rel="alternate" title="Aktualizacje PhoneBlock" type="application/rss+xml"/>
 	
-	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css}"/>
+	<link rel="stylesheet" th:href="@{/assets/css/phoneblock-style.css(v=${props.project.version})}"/>
 	
 	<script th:src="|${contextPath}${deps.jquery}/jquery.min.js|" type="text/javascript"></script>
-	<script th:src="@{/assets/js/phoneblock.js(v=5)}" type="text/javascript"></script>
+	<script th:src="@{/assets/js/phoneblock.js(v=${props.project.version})}" type="text/javascript"></script>
 	<script th:src="|${contextPath}${deps.bulmaCollapsible}/js/bulma-collapsible.min.js|" type="text/javascript"></script>
 	<script th:src="|${contextPath}${deps.bulmaCalendar}/dist/js/bulma-calendar.min.js|" type="text/javascript"></script>
 </th:block>
@@ -336,7 +336,7 @@
 </footer>
 </th:block>
 
-<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/bulma.js(v=${props.project.version})}" type="text/javascript"></script>
 </th:block>
 
 <div th:fragment="mobileUsageNav">

@@ -12,6 +12,7 @@
 
 	function show(el) {
 		if (el) {
+			el.classList.remove('pb-hidden');
 			el.style.display = '';
 		}
 	}

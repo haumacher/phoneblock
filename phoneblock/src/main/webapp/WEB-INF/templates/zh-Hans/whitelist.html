@@ -19,7 +19,7 @@
 		<p data-tx="t0005:1f03ef52">在此页面上，您可以看到所有已被排除在拦截范围之外的号码。白名单上的号码即使在社区数据库中被报告为垃圾邮件，也不会被阻止。</p>
 
 		<div class="notification is-success" th:if="${settingsMessage}">
-			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+			<button class="delete" type="button"></button>
 			<span th:text="${settingsMessage}"></span>
 		</div>
 	</div>
@@ -45,7 +45,7 @@
 				</button>
 				<p class="help entry-comment" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 
-				<form class="entry-edit" method="post" style="display:none;" th:action="@{/update-settings(action='lists')}">
+				<form class="entry-edit pb-hidden" method="post" th:action="@{/update-settings(action='lists')}">
 					<input name="redirect" type="hidden" value="/whitelist"/>
 					<input name="edit-comment-phone" th:value="${entry.phone}" type="hidden"/>
 					<div class="field">
@@ -120,6 +120,6 @@
 
 <div th:replace="~{fragments/page :: footer}"></div>
 
-<script th:src="@{/assets/js/personal-list.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/personal-list.js(v=${props.project.version})}" type="text/javascript"></script>
 </body>
 </html>

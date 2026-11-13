@@ -18,7 +18,7 @@
 </section>
 
 <th:block th:fragment="footer">
-<script th:src="@{/assets/js/bulma.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/bulma.js(v=${props.project.version})}" type="text/javascript"></script>
 </th:block>
 
 </body>

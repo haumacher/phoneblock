@@ -212,7 +212,7 @@
 			}
 		}
 		</pre>
-		<script th:src="@{/assets/js/phone-info-ratings.js}" type="text/javascript"></script>
+		<script th:src="@{/assets/js/phone-info-ratings.js(v=${props.project.version})}" type="text/javascript"></script>
 	</div>
 	<p data-tx="t0027:b79530bf" th:unless="${ratings}">Er zijn nog geen beoordelingen, wees de eerste om er een te delen!</p>
 	</div>
@@ -254,7 +254,7 @@
 			}
 		}
 		</pre>
-		<script th:src="@{/assets/js/phone-info-searches.js}" type="text/javascript"></script>
+		<script th:src="@{/assets/js/phone-info-searches.js(v=${props.project.version})}" type="text/javascript"></script>
 	</div>
 	<p data-tx="t0028:9bfce631" th:unless="${searches}">Er zijn geen zoekopdrachten voor dit nummer.</p>
 	</div>
