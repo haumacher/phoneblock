@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Two-factor confirmation",
   "sip.fb.2fa.button": "press any button on the Fritz!Box",
   "sip.fb.2fa.dtmf": "dial {seq} on a connected phone",
+  "sip.fb.2fa.or": "or",
   "sip.fb.2fa.instructions": "Please now {hints}.",
   "sip.fb.2fa.cancelled": "2FA cancelled.",
   "sip.fb.2fa.timeout": "Timed out. Please try again.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "sip.fb.2fa.or": "or"
+  "status.token.test.unreachable": "PhoneBlock is unavailable. Please check your Internet connection.",
+  "status.token.test.server": "PhoneBlock is reporting an error. Please try again later."
 }

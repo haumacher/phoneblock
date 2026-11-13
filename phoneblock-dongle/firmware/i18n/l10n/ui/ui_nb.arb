@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Tofaktorbekreftelse",
   "sip.fb.2fa.button": "trykk på en hvilken som helst knapp på Fritz!Boxen",
   "sip.fb.2fa.dtmf": "Ring opp {seq} på en tilkoblet telefon",
+  "sip.fb.2fa.or": "eller",
   "sip.fb.2fa.instructions": "Vennligst {hints} nå.",
   "sip.fb.2fa.cancelled": "2FA avbrutt.",
   "sip.fb.2fa.timeout": "Tidsavbrudd. Prøv på nytt.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
   "status.rec.failed": "Opptaket kunne ikke lastes inn.",
-  "sip.fb.2fa.or": "eller"
+  "status.token.test.unreachable": "PhoneBlock er ikke tilgjengelig. Kontroller internettforbindelsen.",
+  "status.token.test.server": "PhoneBlock melder om en feil. Prøv igjen senere."
 }

@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Uwierzytelnianie dwuskładnikowe",
   "sip.fb.2fa.button": "naciśnij dowolny przycisk na urządzeniu Fritz!Box",
   "sip.fb.2fa.dtmf": "Wybierz numer {seq} na podłączonym telefonie",
+  "sip.fb.2fa.or": "lub",
   "sip.fb.2fa.instructions": "Proszę teraz o {hints}.",
   "sip.fb.2fa.cancelled": "Przerwano uwierzytelnianie dwuskładnikowe (2FA).",
   "sip.fb.2fa.timeout": "Przekroczono limit czasu. Proszę spróbować ponownie.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
   "status.rec.failed": "Nie udało się załadować nagrania.",
-  "sip.fb.2fa.or": "lub"
+  "status.token.test.unreachable": "PhoneBlock jest niedostępny. Sprawdź połączenie internetowe.",
+  "status.token.test.server": "PhoneBlock zgłasza błąd. Proszę spróbować ponownie później."
 }

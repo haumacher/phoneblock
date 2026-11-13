@@ -151,14 +151,24 @@ void phoneblock_api_init(void);
 verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
                            api_phases_t *phases_opt);
 
+// Outcome of phoneblock_selftest(). Only PB_SELFTEST_REJECTED says
+// anything about the token; the other failures are about the network or
+// the server and must not send the user off to request a new token.
+typedef enum {
+    PB_SELFTEST_OK = 0,      // HTTP 200: reachable, token accepted
+    PB_SELFTEST_UNREACHABLE, // transport failure: DNS, connect, TLS, timeout
+    PB_SELFTEST_REJECTED,    // HTTP 401/403: the server refused the token
+    PB_SELFTEST_SERVER,      // any other HTTP status (5xx, proxy page, ...)
+} pb_selftest_t;
+
 // Verify API reachability + token validity via GET /test (expects
-// HTTP 200 body "ok"). Returns true on success, false on any failure.
-// Logs the outcome and records a stats error on failure.
+// HTTP 200 body "ok"). Returns PB_SELFTEST_OK on success, otherwise the
+// kind of failure. Logs the outcome and records a stats error on failure.
 //
 // If `phases_opt` is non-NULL it receives the latency breakdown of the
 // /api/test call (see api_phases_t). Pass NULL when latency is not
 // measured.
-bool phoneblock_selftest(api_phases_t *phases_opt);
+pb_selftest_t phoneblock_selftest(api_phases_t *phases_opt);
 
 // Reads the country dial prefix ("+49", "+44", …) of the PhoneBlock
 // account this dongle's token belongs to, via GET /api/account. On

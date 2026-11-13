@@ -114,6 +114,20 @@ func TestProcessLogLine(t *testing.T) {
 			shouldProcessLine:   false,
 		},
 		{
+			name:                "API request with challenge parameter (should NOT be processed)",
+			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /phoneblock/api/test?challenge=abc HTTP/1.1" 200 1234 "-" "ESP32 HTTP Client/1.0"`,
+			expectChallenge:     false,
+			expectSolution:      false,
+			shouldProcessLine:   false,
+		},
+		{
+			name:                "Challenge value containing /api/ only in query (should be processed)",
+			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /phoneblock/nums/123?challenge=x/api/y HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			expectChallenge:     true,
+			expectSolution:      false,
+			shouldProcessLine:   true,
+		},
+		{
 			name:                "No challenge or solution",
 			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
 			expectChallenge:     false,

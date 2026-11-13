@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Двофакторна аутентифікація",
   "sip.fb.2fa.button": "натисніть будь-яку кнопку на Fritz!Box",
   "sip.fb.2fa.dtmf": "Набрати номер {seq} на підключеному телефоні",
+  "sip.fb.2fa.or": "або",
   "sip.fb.2fa.instructions": "Будь ласка, тепер {hints}.",
   "sip.fb.2fa.cancelled": "Двофакторна аутентифікація (2FA) перервана.",
   "sip.fb.2fa.timeout": "Час очікування вичерпано. Спробуйте ще раз.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Видалити запис",
   "status.rec.delete.confirm": "Видалити цей запис? Дзвінок залишиться у списку.",
   "status.rec.failed": "Не вдалося завантажити запис.",
-  "sip.fb.2fa.or": "або"
+  "status.token.test.unreachable": "PhoneBlock недоступний. Будь ласка, перевірте підключення до Інтернету.",
+  "status.token.test.server": "PhoneBlock повідомляє про помилку. Будь ласка, спробуйте ще раз пізніше."
 }

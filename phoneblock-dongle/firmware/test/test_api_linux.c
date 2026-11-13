@@ -119,7 +119,7 @@ int main(void)
     REQUIRE(pthread_create(&server_thread, NULL, serve_test_endpoint, NULL) == 0);
 
     api_phases_t phases = {0};
-    REQUIRE(phoneblock_selftest(&phases));
+    REQUIRE(phoneblock_selftest(&phases) == PB_SELFTEST_OK);
     REQUIRE(phases.valid);
     REQUIRE(phases.total_us > 0);
     pb_check_result_t result;
@@ -132,7 +132,7 @@ int main(void)
     REQUIRE(phoneblock_post_log(log_body, sizeof(log_body) - 1) == 200);
     REQUIRE(api_token_is_valid());
     // A rejected token fails the self-test and flips the token flag.
-    REQUIRE(!phoneblock_selftest(NULL));
+    REQUIRE(phoneblock_selftest(NULL) == PB_SELFTEST_REJECTED);
     REQUIRE(!api_token_is_valid());
     // A failure names the URL and shows a body in short: an HTML page by
     // its title, a text quoted (#532).
@@ -142,7 +142,8 @@ int main(void)
     snprintf(expected, sizeof(expected),
              "self-test: HTTP 401 from %s/api/test: \"bad token\"", base_url);
     REQUIRE(strcmp(errors[0].message, expected) == 0);
-    REQUIRE(!phoneblock_selftest(NULL));
+    // A 502 is the server's problem, not the token's.
+    REQUIRE(phoneblock_selftest(NULL) == PB_SELFTEST_SERVER);
     REQUIRE(stats_snapshot_errors(errors, 4) >= 1);
     snprintf(expected, sizeof(expected),
              "self-test: HTTP 502 from %s/api/test: "
@@ -164,7 +165,7 @@ int main(void)
     // Nothing listens on port 1: the connection never comes up.
     config_update_t unreachable = { .phoneblock_base_url = "http://127.0.0.1:1" };
     REQUIRE(config_update(&unreachable) == 0);
-    REQUIRE(!phoneblock_selftest(NULL));
+    REQUIRE(phoneblock_selftest(NULL) == PB_SELFTEST_UNREACHABLE);
     stats_snapshot_counters(&c);
     REQUIRE(c.last_api_failed);
     REQUIRE(c.last_api_failure.kind == API_FAIL_CONNECT);

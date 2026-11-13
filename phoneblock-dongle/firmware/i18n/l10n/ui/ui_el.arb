@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Επαλήθευση δύο παραγόντων",
   "sip.fb.2fa.button": "πατήστε οποιοδήποτε κουμπί στο Fritz!Box",
   "sip.fb.2fa.dtmf": "Πληκτρολογήστε τον αριθμό {seq} σε ένα συνδεδεμένο τηλέφωνο",
+  "sip.fb.2fa.or": "ή",
   "sip.fb.2fa.instructions": "Παρακαλώ, τώρα {hints}.",
   "sip.fb.2fa.cancelled": "Η διαδικασία 2FA διακόπηκε.",
   "sip.fb.2fa.timeout": "Η χρονική προθεσμία έληξε. Παρακαλώ δοκιμάστε ξανά.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Διαγραφή εγγραφής",
   "status.rec.delete.confirm": "Να διαγραφεί αυτή η εγγραφή; Η κλήση θα παραμείνει στη λίστα.",
   "status.rec.failed": "Δεν ήταν δυνατή η φόρτωση της εικόνας.",
-  "sip.fb.2fa.or": "ή"
+  "status.token.test.unreachable": "Το PhoneBlock δεν είναι προσβάσιμο. Ελέγξτε τη σύνδεση στο Διαδίκτυο.",
+  "status.token.test.server": "Το PhoneBlock αναφέρει σφάλμα. Παρακαλώ, δοκιμάστε ξανά αργότερα."
 }
