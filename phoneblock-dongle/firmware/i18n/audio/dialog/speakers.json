@@ -6,6 +6,16 @@
     {"id": "lisa", "name": "Lisa", "voice": "p2Wol3C7j3rHbfOrbL18", "gender": "female", "langs": ["de"]},
     {"id": "tosca", "name": "Tosca", "voice": "fNmw8sukfGuvWVOp33Ge", "gender": "female", "langs": ["de"]},
     {"id": "johann", "name": "Johann", "voice": "R3XXDwKMU2YHwBcuYUH3", "gender": "male", "langs": ["de"]},
-    {"id": "grandpa", "name": "Grandpa", "voice": "GtvrBPZOsCHv7plFvX8i", "gender": "male", "langs": ["de"]}
+    {"id": "grandpa", "name": "Grandpa", "voice": "GtvrBPZOsCHv7plFvX8i", "gender": "male", "langs": ["de"]},
+    {"id": "eleonore", "name": "Eleonore", "voice": "hcbJLSPyFeHgRNBG3yl1", "gender": "female", "langs": ["de"]},
+    {"id": "elke", "name": "Elke", "voice": "Ns3AEOIovhjdrxad17pt", "gender": "female", "langs": ["de"]},
+    {"id": "heidi", "name": "Heidi", "voice": "ogdlaxy0T9rCSVdH0VJM", "gender": "female", "langs": ["de"]},
+    {"id": "corinna", "name": "Corinna", "voice": "gVOibprogMfmHVVyo5r6", "gender": "female", "langs": ["de"]},
+    {"id": "ithaka", "name": "Ithaka", "voice": "b07hJVVJyFDBHxFNr1Qb", "gender": "female", "langs": ["de"]},
+    {"id": "franzi", "name": "Franzi", "voice": "Juhf0FPNgWSQ31o2ocR5", "gender": "female", "langs": ["de"]},
+    {"id": "berta", "name": "Berta", "voice": "CoFoB7a7PXA8RBsMHbua", "gender": "female", "langs": ["de"]},
+    {"id": "nadine", "name": "Nadine", "voice": "yMouMDT5kvrfmH76gqc1", "gender": "female", "langs": ["de"]},
+    {"id": "christian", "name": "Christian", "voice": "z1EhmmPwF0ENGYE8dBE6", "gender": "male", "langs": ["de"]},
+    {"id": "jonas", "name": "Jonas", "voice": "GpMEuRGYD0oLjmn4ptQZ", "gender": "male", "langs": ["de"]}
   ]
 }

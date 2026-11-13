@@ -344,7 +344,16 @@ def add_speaker(a, key):
     """Appends the voice a.add_speaker to speakers.json; returns its id."""
     if not VOICE_ID_RE.match(a.add_speaker):
         sys.exit(f"--add-speaker: {a.add_speaker!r} is not a voice ID (20 letters and digits)")
-    v = json.loads(request(f"/voices/{a.add_speaker}", key))
+    # /voices/<id> only knows premade voices and those in "My voices"; a voice
+    # of the shared library is found by searching for its ID.
+    shared = json.loads(request(f"/shared-voices?search={a.add_speaker}&page_size=10", key))
+    match = [x for x in shared.get("voices", []) if x.get("voice_id") == a.add_speaker]
+    if match:
+        v = match[0]
+        v["labels"] = {"gender": v.get("gender"), "language": v.get("language"),
+                       **(v.get("labels") or {})}
+    else:
+        v = json.loads(request(f"/voices/{a.add_speaker}", key))
     full = v.get("name", "").strip()
     gender = (v.get("labels") or {}).get("gender")
     if gender not in ("female", "male"):
@@ -427,6 +436,8 @@ def fetch(langs, rows):
                 r = subprocess.run(["sftp", *SSH_OPTS, "-b", "-", CDN_HOST],
                                    input=f"get {CDN_TTS}/{lang}/{s['id']}/* {tmp}/\n",
                                    text=True, capture_output=True)
+                if r.returncode != 0 and "No such file" not in r.stderr + r.stdout:
+                    sys.exit(f"sftp {CDN_HOST}: {r.stderr.strip() or r.stdout.strip()}")
                 if r.returncode != 0 or not os.path.exists(os.path.join(tmp, "voice.json")):
                     print(f"{lang}/{s['id']}: nothing on the CDN")
                     continue
