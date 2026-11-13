@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Confirmation à deux facteurs",
   "sip.fb.2fa.button": "appuyer sur un bouton quelconque de la Fritz!Box",
   "sip.fb.2fa.dtmf": "composer {seq} sur un téléphone connecté",
+  "sip.fb.2fa.or": "ou",
   "sip.fb.2fa.instructions": "Veuillez maintenant {hints}.",
   "sip.fb.2fa.cancelled": "2FA annulée.",
   "sip.fb.2fa.timeout": "Délai dépassé. Veuillez réessayer.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "sip.fb.2fa.or": "ou"
+  "status.token.test.unreachable": "PhoneBlock est inaccessible. Veuillez vérifier votre connexion Internet.",
+  "status.token.test.server": "PhoneBlock signale une erreur. Veuillez réessayer plus tard."
 }

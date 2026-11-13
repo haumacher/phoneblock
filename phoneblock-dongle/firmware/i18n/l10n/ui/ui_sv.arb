@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Tvåfaktorsautentisering",
   "sip.fb.2fa.button": "tryck på valfri knapp på Fritz!Boxen",
   "sip.fb.2fa.dtmf": "Ring upp {seq} på en ansluten telefon",
+  "sip.fb.2fa.or": "eller",
   "sip.fb.2fa.instructions": "Vänligen ange {hints} nu.",
   "sip.fb.2fa.cancelled": "2FA avbruten.",
   "sip.fb.2fa.timeout": "Tidsgränsen har överskridits. Försök igen.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Radera inspelning",
   "status.rec.delete.confirm": "Vill du radera den här inspelningen? Samtalet finns kvar i listan.",
   "status.rec.failed": "Det gick inte att ladda bilden.",
-  "sip.fb.2fa.or": "eller"
+  "status.token.test.unreachable": "PhoneBlock kan inte nås. Kontrollera internetanslutningen.",
+  "status.token.test.server": "PhoneBlock rapporterar ett fel. Försök igen senare."
 }

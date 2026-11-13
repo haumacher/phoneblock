@@ -4113,7 +4113,8 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
 static web_http_error_t handle_token_test(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
-    // Response shape: { ok: bool, code: "ok"|"fail"|"none", message: ... }
+    // Response shape: { ok: bool, code: "ok"|"fail"|"unreachable"|"server"|"none",
+    // message: ... } — "fail" means the server rejected the token.
     // `code` is a stable discriminator the UI localises via i18n; the
     // `message` is the English default, only shown if the UI cannot
     // map the code.
@@ -4125,12 +4126,31 @@ static web_http_error_t handle_token_test(web_http_request_t *req)
         send_json(req, root);
         return WEB_HTTP_OK;
     }
-    bool ok = phoneblock_selftest(NULL);
-    cJSON_AddBoolToObject  (root, "ok", ok);
-    cJSON_AddStringToObject(root, "code", ok ? "ok" : "fail");
-    cJSON_AddStringToObject(root, "message",
-        ok ? "Token valid — PhoneBlock reachable."
-           : "Token was rejected. Please request a new one.");
+    // Only a 401/403 blames the token; a network or server failure must
+    // not send the user off to request a new one.
+    const char *code, *message;
+    switch (phoneblock_selftest(NULL)) {
+    case PB_SELFTEST_OK:
+        code = "ok";
+        message = "Token valid — PhoneBlock reachable.";
+        break;
+    case PB_SELFTEST_REJECTED:
+        code = "fail";
+        message = "Token was rejected. Please request a new one.";
+        break;
+    case PB_SELFTEST_SERVER:
+        code = "server";
+        message = "PhoneBlock reported an error. Please try again later.";
+        break;
+    case PB_SELFTEST_UNREACHABLE:
+    default:
+        code = "unreachable";
+        message = "PhoneBlock is not reachable. Please check the internet connection.";
+        break;
+    }
+    cJSON_AddBoolToObject  (root, "ok", strcmp(code, "ok") == 0);
+    cJSON_AddStringToObject(root, "code", code);
+    cJSON_AddStringToObject(root, "message", message);
     send_json(req, root);
     return WEB_HTTP_OK;
 }

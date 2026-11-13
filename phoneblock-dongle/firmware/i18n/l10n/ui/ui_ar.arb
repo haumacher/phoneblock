@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "التحقق الثنائي",
   "sip.fb.2fa.button": "اضغط على أي زر في جهاز Fritz!Box",
   "sip.fb.2fa.dtmf": "اطلب الرقم {seq} على هاتف متصل",
+  "sip.fb.2fa.or": "أو",
   "sip.fb.2fa.instructions": "يرجى الآن {hints}.",
   "sip.fb.2fa.cancelled": "تم إيقاف عملية المصادقة الثنائية (2FA).",
   "sip.fb.2fa.timeout": "تجاوز الوقت المحدد. يرجى المحاولة مرة أخرى.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "حذف التسجيل",
   "status.rec.delete.confirm": "هل تريد حذف هذا التسجيل؟ ستبقى المكالمة في القائمة.",
   "status.rec.failed": "تعذر تحميل المقطع الصوتي.",
-  "sip.fb.2fa.or": "أو"
+  "status.token.test.unreachable": "PhoneBlock غير متاح. يرجى التحقق من اتصال الإنترنت.",
+  "status.token.test.server": "أبلغ PhoneBlock عن حدوث خطأ. يرجى إعادة المحاولة لاحقًا."
 }

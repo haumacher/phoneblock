@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Tweefactorauthenticatie",
   "sip.fb.2fa.button": "druk op een willekeurige knop op de Fritz!Box",
   "sip.fb.2fa.dtmf": "Kies {seq} op een aangesloten telefoon",
+  "sip.fb.2fa.or": "of",
   "sip.fb.2fa.instructions": "Geef nu alsjeblieft {hints}.",
   "sip.fb.2fa.cancelled": "2FA afgebroken.",
   "sip.fb.2fa.timeout": "Tijdlimiet overschreden. Probeer het nog eens.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
   "status.rec.failed": "Het bestand kon niet worden geladen.",
-  "sip.fb.2fa.or": "of"
+  "status.token.test.unreachable": "PhoneBlock is niet bereikbaar. Controleer uw internetverbinding.",
+  "status.token.test.server": "PhoneBlock meldt een fout. Probeer het later nog eens."
 }

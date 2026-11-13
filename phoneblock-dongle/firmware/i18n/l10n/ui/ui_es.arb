@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Confirmación de dos factores",
   "sip.fb.2fa.button": "pulsar cualquier botón de la Fritz!Box",
   "sip.fb.2fa.dtmf": "marcar {seq} en un teléfono conectado",
+  "sip.fb.2fa.or": "o",
   "sip.fb.2fa.instructions": "Ahora {hints}, por favor.",
   "sip.fb.2fa.cancelled": "2FA cancelada.",
   "sip.fb.2fa.timeout": "Tiempo agotado. Inténtalo de nuevo.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
   "status.rec.failed": "No se ha podido cargar la grabación.",
-  "sip.fb.2fa.or": "o"
+  "status.token.test.unreachable": "PhoneBlock no está disponible. Comprueba la conexión a Internet.",
+  "status.token.test.server": "PhoneBlock ha notificado un error. Inténtalo de nuevo más tarde."
 }
