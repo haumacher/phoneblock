@@ -388,6 +388,23 @@
 			<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.
 		</p>
 
+		<h2 id="selber-hosten">Ohne Dongle: Selbst hosten</h2>
+
+		<p>
+		Die Software des PhoneBlock-Dongles läuft auch als Linux-Dienst auf einem Raspberry Pi, Mini-PC oder NAS, der bei Dir sowieso läuft.
+		Weboberfläche, Einstellungen und Version sind dieselben wie beim ESP32-Dongle, Hardware musst Du dafür nicht bestellen.
+		Eingerichtet wird alles im Browser, genau wie in <a href="#schritt-7">Schritt 5</a>.
+		</p>
+		<ul>
+			<li><strong>Home Assistant:</strong> Die <a href="https://yaannntech.github.io/HA-Apps/phoneblock_dongle/" rel="noopener" target="_blank">PhoneBlock-App für Home Assistant</a>
+			installiert dieselbe Software als App (Add-on) auf amd64- und aarch64-Installationen. Sie ist ein Community-Projekt.</li>
+			<li><strong>Docker:</strong> Das Image <a href="https://hub.docker.com/r/phoneblock/answerbot2" rel="noopener" target="_blank"><code>phoneblock/answerbot2</code></a>
+			gibt es für amd64, arm64 und arm/v7. Eine fertige <code>compose.yaml</code> steht auf der Seite zum
+			<a th:href="@{/anrufbeantworter#experts}">Anrufbeantworter</a>.</li>
+			<li><strong>Debian-Paket:</strong> Das <a href="https://haumacher.github.io/phoneblock/apt/" rel="noopener" target="_blank">APT-Repository</a>
+			liefert Pakete für Bookworm und Trixie auf amd64, arm64 und armhf.</li>
+		</ul>
+
 		<h2 data-tx="t0237:f99f48f3" id="hilfe">Hilfe und Fehlerberichte</h2>
 
 		<p data-tx="t0242:16bfd1c5"><strong>Mesh mit mehreren Fritz!Boxen:</strong> Hängt der Dongle nach einer Neuverbindung an
