@@ -344,7 +344,16 @@ def add_speaker(a, key):
     """Appends the voice a.add_speaker to speakers.json; returns its id."""
     if not VOICE_ID_RE.match(a.add_speaker):
         sys.exit(f"--add-speaker: {a.add_speaker!r} is not a voice ID (20 letters and digits)")
-    v = json.loads(request(f"/voices/{a.add_speaker}", key))
+    # /voices/<id> only knows premade voices and those in "My voices"; a voice
+    # of the shared library is found by searching for its ID.
+    shared = json.loads(request(f"/shared-voices?search={a.add_speaker}&page_size=10", key))
+    match = [x for x in shared.get("voices", []) if x.get("voice_id") == a.add_speaker]
+    if match:
+        v = match[0]
+        v["labels"] = {"gender": v.get("gender"), "language": v.get("language"),
+                       **(v.get("labels") or {})}
+    else:
+        v = json.loads(request(f"/voices/{a.add_speaker}", key))
     full = v.get("name", "").strip()
     gender = (v.get("labels") or {}).get("gender")
     if gender not in ("female", "male"):
