@@ -27,6 +27,8 @@
   "status.token.testing": "Comprobando el token…",
   "status.token.test.ok": "Token válido — PhoneBlock accesible.",
   "status.token.test.fail": "Token rechazado. Solicita uno nuevo.",
+  "status.token.test.unreachable": "PhoneBlock no está disponible. Comprueba la conexión a Internet.",
+  "status.token.test.server": "PhoneBlock ha notificado un error. Inténtalo de nuevo más tarde.",
   "status.token.test.none": "No hay token configurado.",
   "status.counters.total": "Total",
   "status.counters.spam": "Spam bloqueado",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "guardada — déjala en blanco para conservarla",
   "status.mail.from": "Remitente (correo, vacío = nombre de usuario)",
   "status.mail.to": "Destinatarios (correo electrónico; separar varios con «;»)",
-  "status.mail.help": "Consejo: en Gmail u Outlook normalmente necesitas una «contraseña de aplicación» (si tienes activada la verificación en dos pasos), no tu contraseña habitual. Proveedores clásicos como GMX, web.de o mailbox.org funcionan con nombre de usuario y contraseña.",
   "status.mail.on_error": "Correo en caso de errores y fallos",
   "status.mail.on_error.help": "Envía un correo al día si ha aparecido un error en el registro desde la última notificación — esto incluye un reinicio tras un fallo.",
   "status.mail.on_spam": "Notificar llamadas por correo electrónico",
@@ -515,6 +516,5 @@
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
   "status.rec.failed": "No se ha podido cargar la grabación.",
-  "status.token.test.unreachable": "PhoneBlock no está disponible. Comprueba la conexión a Internet.",
-  "status.token.test.server": "PhoneBlock ha notificado un error. Inténtalo de nuevo más tarde."
+  "status.mail.help": "Consejo: En Gmail, Outlook o iCloud, normalmente necesitas una «contraseña de aplicación» (si tienes activada la autenticación de dos factores), no la contraseña habitual de tu cuenta. iCloud utiliza smtp.mail.me.com con STARTTLS (puerto 587). Los proveedores clásicos como GMX, web.de o mailbox.org funcionan con nombre de usuario y contraseña."
 }

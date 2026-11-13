@@ -27,6 +27,8 @@
   "status.token.testing": "Kontroller token…",
   "status.token.test.ok": "Token er gyldigt — PhoneBlock er tilgængeligt.",
   "status.token.test.fail": "Tokenet blev afvist. Anmod venligst om et nyt.",
+  "status.token.test.unreachable": "PhoneBlock kan ikke nås. Kontroller venligst internetforbindelsen.",
+  "status.token.test.server": "PhoneBlock melder en fejl. Prøv igen senere.",
   "status.token.test.none": "Der er ikke angivet noget token.",
   "status.counters.total": "I alt",
   "status.counters.spam": "Spam blokeret",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "gemt — lad feltet være tomt for at beholde det",
   "status.mail.from": "Afsender (e-mail, tom = brugernavn)",
   "status.mail.to": "Modtager (e-mail, adskil flere med „;“)",
-  "status.mail.help": "Tip: I Gmail eller Outlook skal du som regel bruge en »app-adgangskode« (hvis tofaktorautentificering er aktiveret) og ikke din normale kontoadgangskode. Traditionelle udbydere som GMX, web.de eller mailbox.org fungerer med brugernavn og adgangskode.",
   "status.mail.on_error": "E-mail ved fejl og nedbrud",
   "status.mail.on_error.help": "Sender en e-mail én gang om dagen, hvis der er opstået en fejl i loggen siden den sidste meddelelse — dette omfatter også en genstart efter et nedbrud.",
   "status.mail.on_spam": "Indberet opkald via e-mail",
@@ -515,6 +516,5 @@
   "status.rec.delete": "Slet optagelse",
   "status.rec.delete.confirm": "Skal denne optagelse slettes? Opkaldet forbliver på listen.",
   "status.rec.failed": "Optagelsen kunne ikke indlæses.",
-  "status.token.test.unreachable": "PhoneBlock kan ikke nås. Kontroller venligst internetforbindelsen.",
-  "status.token.test.server": "PhoneBlock melder en fejl. Prøv igen senere."
+  "status.mail.help": "Tip: Ved brug af Gmail, Outlook eller iCloud skal du som regel bruge en \"app-adgangskode\" (hvis tofaktorautentificering er aktiveret) og ikke din normale kontoadgangskode. iCloud bruger smtp.mail.me.com med STARTTLS (port 587). Traditionelle udbydere som GMX, web.de eller mailbox.org fungerer med brugernavn og adgangskode."
 }

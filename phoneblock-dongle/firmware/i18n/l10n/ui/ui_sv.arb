@@ -27,6 +27,8 @@
   "status.token.testing": "Kontrollera token…",
   "status.token.test.ok": "Token giltigt — PhoneBlock tillgängligt.",
   "status.token.test.fail": "Tokenet har avvisats. Vänligen begär ett nytt.",
+  "status.token.test.unreachable": "PhoneBlock kan inte nås. Kontrollera internetanslutningen.",
+  "status.token.test.server": "PhoneBlock rapporterar ett fel. Försök igen senare.",
   "status.token.test.none": "Inget token har angetts.",
   "status.counters.total": "Totalt",
   "status.counters.spam": "Spam blockerat",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "sparat — lämna fältet tomt för att behålla det",
   "status.mail.from": "Avsändare (e-postadress, tom = användarnamn)",
   "status.mail.to": "Mottagare (e-post, separera flera med ”;”)",
-  "status.mail.help": "Tips: I Gmail eller Outlook behöver du oftast ett ”app-lösenord” (om tvåfaktorsautentisering är aktiverad), inte ditt vanliga kontolösenord. Traditionella leverantörer som GMX, web.de eller mailbox.org fungerar med användarnamn och lösenord.",
   "status.mail.on_error": "E-post vid fel och krascher",
   "status.mail.on_error.help": "Skickar ett e-postmeddelande en gång om dagen om ett fel har uppstått i loggen sedan det senaste meddelandet — detta inkluderar även en omstart efter ett systemkrasch.",
   "status.mail.on_spam": "Rapportera samtal via e-post",
@@ -515,6 +516,5 @@
   "status.rec.delete": "Radera inspelning",
   "status.rec.delete.confirm": "Vill du radera den här inspelningen? Samtalet finns kvar i listan.",
   "status.rec.failed": "Det gick inte att ladda bilden.",
-  "status.token.test.unreachable": "PhoneBlock kan inte nås. Kontrollera internetanslutningen.",
-  "status.token.test.server": "PhoneBlock rapporterar ett fel. Försök igen senare."
+  "status.mail.help": "Tips: För Gmail, Outlook eller iCloud behöver du oftast ett ”app-lösenord” (om tvåfaktorsautentisering är aktiverad), inte ditt vanliga kontolösenord. iCloud använder smtp.mail.me.com med STARTTLS (port 587). Traditionella leverantörer som GMX, web.de eller mailbox.org fungerar med användarnamn och lösenord."
 }

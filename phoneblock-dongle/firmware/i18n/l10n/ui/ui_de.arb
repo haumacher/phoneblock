@@ -1028,10 +1028,10 @@
     "description": "Dongle web UI: status.mail.to",
     "x-translated": "e3608712"
   },
-  "status.mail.help": "Tipp: Bei Gmail oder Outlook brauchst du meist ein „App-Passwort\" (bei aktivierter Zwei-Faktor-Anmeldung), nicht dein normales Kontopasswort. Klassische Anbieter wie GMX, web.de oder mailbox.org funktionieren mit Benutzername und Passwort.",
+  "status.mail.help": "Tipp: Bei Gmail, Outlook oder iCloud brauchst du meist ein „App-Passwort\" (bei aktivierter Zwei-Faktor-Anmeldung), nicht dein normales Kontopasswort. iCloud nutzt smtp.mail.me.com mit STARTTLS (Port 587). Klassische Anbieter wie GMX, web.de oder mailbox.org funktionieren mit Benutzername und Passwort.",
   "@status.mail.help": {
     "description": "Dongle web UI: status.mail.help",
-    "x-translated": "9341f023"
+    "x-translated": "ad308ad5"
   },
   "status.mail.on_error": "E-Mail bei Fehlern und Abstürzen",
   "@status.mail.on_error": {
