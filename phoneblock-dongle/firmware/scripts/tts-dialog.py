@@ -18,7 +18,8 @@ languages (the premade and multilingual library voices speak them all).
 The masters are what costs API credits, and with several speakers they are too
 large for git: --upload copies them with their .txt and voice.json to the CDN
 (CDN_TTS below, named like the local files: <lang>/<speaker>/question-14.mp3),
---fetch brings them into a fresh checkout. A different device encoding
+--fetch brings them into a fresh checkout (over public HTTPS, CDN_URL, in
+parallel and only the missing ones; no SSH key needed). A different device encoding
 (trimming, loudness, a wideband codec) is a local re-run of --convert-only,
 not new API credits.
 
@@ -51,7 +52,6 @@ account's library, or a voice ID from the shared library. The CDN account is
 CDN_HOST (default haumac@cdn.phoneblock.net, as audio-assets.sh).
 """
 import argparse
-import filecmp
 import json
 import math
 import os
@@ -60,10 +60,10 @@ import shutil
 import struct
 import subprocess
 import sys
-import tempfile
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIRMWARE = os.path.dirname(HERE)
@@ -78,6 +78,9 @@ CDN_BASE = os.environ.get("CDN_BASE", "/public_html/cdn/dongle")
 # The masters: https://cdn.phoneblock.net/dongle/firmware/audio/tts/<lang>/<speaker>/.
 # Outside the audio/v<N> channels: they are the source, not a device format.
 CDN_TTS = CDN_BASE + "/firmware/audio/tts"
+# The same directory over public HTTPS, read by --fetch.
+CDN_URL = os.environ.get("CDN_URL", "https://cdn.phoneblock.net/dongle/firmware/audio/tts")
+FETCH_THREADS = 16
 SSH_OPTS = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=20"]
 
 # The model all speakers speak with.
@@ -396,72 +399,137 @@ def sftp(batch):
         sys.exit(f"sftp {CDN_HOST}: {r.stderr.strip() or r.stdout.strip()}")
 
 
+def cdn_size(url):
+    """The size of a public CDN file, or None if it does not exist."""
+    req = urllib.request.Request(url, method="HEAD")
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return int(r.headers.get("Content-Length", -1))
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            err = f"HTTP {e.code}"
+        except urllib.error.URLError as e:
+            err = str(e.reason)
+        time.sleep(2 ** attempt)
+    raise RuntimeError(f"{url}: {err}")
+
+
 def upload(langs, rows):
-    """Copies masters, transcripts and voice.json of every speaker directory
-    to CDN_TTS, one sftp session per directory (the next --upload repeats
-    whatever an interrupted one did not finish; files are replaced in place)."""
+    """Copies the masters the CDN does not have yet (no transcript there, another
+    transcript, or a master of another size), with their transcripts and the
+    directory's voice.json, to CDN_TTS. Checks over HTTPS in parallel, then
+    uploads in one sftp session; the next --upload repeats whatever an
+    interrupted one did not finish."""
     dirs = [(lang, s["id"]) for lang in langs for s in rows
             if os.path.exists(os.path.join(AUDIO, lang, s["id"], "voice.json"))]
-    total = 0
-    for i, (lang, sid) in enumerate(dirs, 1):
+
+    def stale(lang, sid, name):
+        d = os.path.join(AUDIO, lang, sid)
+        url = f"{CDN_URL}/{lang}/{sid}/{name}"
+        with open(os.path.join(d, name + ".txt"), "rb") as f:
+            if cdn_get(url + ".txt") != f.read():
+                return True
+        return cdn_size(url + ".mp3") != os.path.getsize(os.path.join(d, name + ".mp3"))
+
+    clips = [(lang, sid, x[:-4]) for lang, sid in dirs
+             for x in sorted(os.listdir(os.path.join(AUDIO, lang, sid)))
+             if x.endswith(".txt") and os.path.exists(os.path.join(AUDIO, lang, sid, x[:-4] + ".mp3"))]
+    try:
+        with ThreadPoolExecutor(FETCH_THREADS) as pool:
+            todo = [c for c, s in zip(clips, pool.map(lambda c: stale(*c), clips)) if s]
+    except RuntimeError as e:
+        sys.exit(f"--upload: {e}")
+    print(f"{len(todo)} of {len(clips)} masters are not on the CDN yet")
+    if not todo:
+        return
+    lines = [f"-mkdir {CDN_BASE}{p}" for p in ("/firmware", "/firmware/audio", "/firmware/audio/tts")]
+    for lang, sid in sorted({(lang, sid) for lang, sid, _ in todo}):
         d = os.path.join(AUDIO, lang, sid)
         remote = f"{CDN_TTS}/{lang}/{sid}"
-        lines = [f"-mkdir {CDN_BASE}{p}" for p in
-                 ("/firmware", "/firmware/audio", "/firmware/audio/tts", f"/firmware/audio/tts/{lang}")]
-        lines.append(f"-mkdir {remote}")
-        names = sorted(x for x in os.listdir(d)
-                       if x.endswith(".txt") and os.path.exists(os.path.join(d, x[:-4] + ".mp3")))
+        lines += [f"-mkdir {CDN_TTS}/{lang}", f"-mkdir {remote}"]
         # Master before transcript: a transcript on the CDN vouches for its master.
-        for x in names:
-            lines.append(f'put "{os.path.join(d, x[:-4] + ".mp3")}" {remote}/{x[:-4]}.mp3')
-            lines.append(f'put "{os.path.join(d, x)}" {remote}/{x}')
+        for _, _, name in (c for c in todo if c[:2] == (lang, sid)):
+            lines.append(f'put "{os.path.join(d, name + ".mp3")}" {remote}/{name}.mp3')
+            lines.append(f'put "{os.path.join(d, name + ".txt")}" {remote}/{name}.txt')
         lines.append(f'put "{os.path.join(d, "voice.json")}" {remote}/voice.json')
-        print(f"[{i}/{len(dirs)}] {lang}/{sid}: {len(names)} masters ...", end=" ", flush=True)
-        sftp("\n".join(lines) + "\n")
-        print("done", flush=True)
-        total += len(names)
-    print(f"uploaded {total} masters to {CDN_HOST}:{CDN_TTS}")
+    sftp("\n".join(lines) + "\n")
+    print(f"uploaded {len(todo)} masters to {CDN_HOST}:{CDN_TTS}")
+
+
+def cdn_get(url):
+    """The body of a public CDN file, or None if it does not exist (404)."""
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(url, timeout=60) as r:
+                return r.read()
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            err = f"HTTP {e.code}"
+        except urllib.error.URLError as e:
+            err = str(e.reason)
+        time.sleep(2 ** attempt)
+    raise RuntimeError(f"{url}: {err}")
 
 
 def fetch(langs, rows):
     """Brings the CDN's master of every clip whose local transcript and
-    voice.json match the CDN's, and converts it. Returns the number fetched."""
-    n = 0
-    for lang in langs:
-        for s in rows:
-            d = os.path.join(AUDIO, lang, s["id"])
-            if not os.path.exists(os.path.join(d, "voice.json")):
-                continue
-            with tempfile.TemporaryDirectory() as tmp:
-                r = subprocess.run(["sftp", *SSH_OPTS, "-b", "-", CDN_HOST],
-                                   input=f"get {CDN_TTS}/{lang}/{s['id']}/* {tmp}/\n",
-                                   text=True, capture_output=True)
-                if r.returncode != 0 and "No such file" not in r.stderr + r.stdout:
-                    sys.exit(f"sftp {CDN_HOST}: {r.stderr.strip() or r.stdout.strip()}")
-                if r.returncode != 0 or not os.path.exists(os.path.join(tmp, "voice.json")):
-                    print(f"{lang}/{s['id']}: nothing on the CDN")
-                    continue
-                key = lambda v: (v.get("voice_id"), v.get("model"))
-                if key(recorded_speaker(tmp)) != key(recorded_speaker(d)):
-                    print(f"{lang}/{s['id']}: the CDN has another voice or model, not fetched")
-                    continue
-                tempo = recorded_speaker(d).get("tempo", 1)
-                got = 0
-                for x in sorted(os.listdir(d)):
-                    if not x.endswith(".txt"):
-                        continue
-                    mp3 = x[:-4] + ".mp3"
-                    if os.path.exists(os.path.join(d, mp3)):
-                        continue
-                    remote_txt = os.path.join(tmp, x)
-                    if (os.path.exists(remote_txt) and os.path.exists(os.path.join(tmp, mp3))
-                            and filecmp.cmp(remote_txt, os.path.join(d, x), shallow=False)):
-                        shutil.copyfile(os.path.join(tmp, mp3), os.path.join(d, mp3))
-                        to_alaw(os.path.join(d, mp3), os.path.join(d, x[:-4] + ".alaw"), tempo)
-                        got += 1
-                print(f"{lang}/{s['id']}: fetched {got}")
-                n += got
-    return n
+    voice.json match the CDN's, and converts it. Returns the number fetched.
+
+    Reads over public HTTPS (CDN_URL), no SSH key needed, and only the clips
+    that have no local master, FETCH_THREADS at a time."""
+    key = lambda v: (v.get("voice_id"), v.get("model"))
+    jobs = []      # (label, local dir, remote dir URL, clip name, tempo)
+    dirs = [(lang, s["id"]) for lang in langs for s in rows
+            if os.path.exists(os.path.join(AUDIO, lang, s["id"], "voice.json"))]
+
+    def check_dir(lang, sid):
+        d = os.path.join(AUDIO, lang, sid)
+        url = f"{CDN_URL}/{lang}/{sid}"
+        missing = sorted(x[:-4] for x in os.listdir(d) if x.endswith(".txt")
+                         and not os.path.exists(os.path.join(d, x[:-4] + ".mp3")))
+        if not missing:
+            return f"{lang}/{sid}: complete", []
+        body = cdn_get(f"{url}/voice.json")
+        if body is None:
+            return f"{lang}/{sid}: nothing on the CDN", []
+        if key(json.loads(body)) != key(recorded_speaker(d)):
+            return f"{lang}/{sid}: the CDN has another voice or model, not fetched", []
+        tempo = recorded_speaker(d).get("tempo", 1)
+        return None, [(f"{lang}/{sid}", d, url, name, tempo) for name in missing]
+
+    def fetch_clip(label, d, url, name, tempo):
+        with open(os.path.join(d, name + ".txt"), "rb") as f:
+            local_txt = f.read()
+        if cdn_get(f"{url}/{name}.txt") != local_txt:
+            return label, False          # the CDN has another (or no) sentence
+        mp3 = cdn_get(f"{url}/{name}.mp3")
+        if mp3 is None:
+            return label, False
+        out = os.path.join(d, name + ".mp3")
+        with open(out + ".tmp", "wb") as f:
+            f.write(mp3)
+        os.replace(out + ".tmp", out)
+        to_alaw(out, os.path.join(d, name + ".alaw"), tempo)
+        return label, True
+
+    try:
+        with ThreadPoolExecutor(FETCH_THREADS) as pool:
+            for note, js in pool.map(lambda x: check_dir(*x), dirs):
+                if note:
+                    print(note)
+                jobs += js
+            print(f"fetching {len(jobs)} masters from {CDN_URL} ...", flush=True)
+            got = {}
+            for label, ok in pool.map(lambda j: fetch_clip(*j), jobs):
+                got.setdefault(label, [0, 0])[0 if ok else 1] += 1
+    except RuntimeError as e:
+        sys.exit(f"--fetch: {e}")
+    for label, (ok, skipped) in got.items():
+        print(f"{label}: fetched {ok}" + (f", {skipped} not on the CDN" if skipped else ""))
+    return sum(ok for ok, _ in got.values())
 
 
 def main():
