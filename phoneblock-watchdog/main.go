@@ -335,6 +335,17 @@ func extractRequestMethodAndURI(line string) (string, string) {
 	return "", ""
 }
 
+// isAPIRequest reports whether the path of the request URI (the query is
+// ignored) contains an "/api/" segment, e.g. "/phoneblock/api/test" or
+// "/pb-test/api/num/123".
+func isAPIRequest(requestURI string) bool {
+	path := requestURI
+	if i := strings.IndexByte(path, '?'); i >= 0 {
+		path = path[:i]
+	}
+	return strings.Contains(path, "/api/")
+}
+
 func processLogLine(line string, tracker *IPTracker) {
 	// Extract the request method and URI from the log line
 	method, requestURI := extractRequestMethodAndURI(line)
@@ -344,6 +355,13 @@ func processLogLine(line string, tracker *IPTracker) {
 
 	// Only process GET requests
 	if method != "GET" {
+		return
+	}
+
+	// API requests never get a proof-of-work challenge (the server only
+	// challenges page requests). Counting them would ban API clients such as
+	// dongles - and, through NAT, everybody behind the same address.
+	if isAPIRequest(requestURI) {
 		return
 	}
 
