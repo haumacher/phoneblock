@@ -11,9 +11,15 @@
 
 		<p class="subtitle" data-tx="t0095:dab19814">An intelligent answering machine in the guise of an IP phone. The size of a thumb, it plugs into the router's USB port, registers as an additional SIP phone - and intercepts commercial calls before your actual phone rings. Works regardless of the router model, even without a Fritz!</p>
 		
-		<p class="container">
-			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
-		</p>		
+		<div class="pb-video" data-video-id="vudH7Qgo1P8">
+			<div class="pb-video-stage">
+				<button class="pb-video-play" data-tx="t0250:c9a28e7d" title="Play Video" type="button">
+					<img alt="Video: Setting Up the PhoneBlock Dongle" data-tx="t0251:d87dcc" height="720" th:src="@{/assets/img/video/dongle-install.jpg}" width="1280"/>
+					<span class="pb-video-icon"><i class="fa-solid fa-play"></i></span>
+				</button>
+			</div>
+			<p class="pb-video-note has-text-grey" data-tx="t0252:b1b60732">In this video, you'll see in just a few minutes how to order, install, plug in, and set up the PhoneBlock dongle. The video won't load until you click on it on YouTube; when you do, your browser will send data to YouTube/Google (see <a th:href="@{/datenschutz#video}">Privacy Policy</a>). Alternatively, <a href="https://www.youtube.com/watch?v=vudH7Qgo1P8" rel="noopener" target="_blank">open the video on YouTube</a>.</p>
+		</div>		
 
 		<h2 data-tx="t0004:6b104c7a">The idea in one sentence</h2>
 
@@ -317,6 +323,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

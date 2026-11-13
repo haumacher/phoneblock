@@ -15,9 +15,18 @@
 			klingelt. Funktioniert unabhängig vom Router-Modell, auch ohne Fritz!Box.
 		</p>
 		
-		<p class="container">
-			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
-		</p>		
+		<div class="pb-video" data-video-id="vudH7Qgo1P8">
+			<div class="pb-video-stage">
+				<button class="pb-video-play" data-tx="t0250:c9a28e7d" title="Video abspielen" type="button">
+					<img alt="Video: PhoneBlock-Dongle einrichten" data-tx="t0251:d87dcc" height="720" th:src="@{/assets/img/video/dongle-install.jpg}" width="1280"/>
+					<span class="pb-video-icon"><i class="fa-solid fa-play"></i></span>
+				</button>
+			</div>
+			<p class="pb-video-note has-text-grey" data-tx="t0252:b1b60732">
+				Im Video siehst Du in wenigen Minuten, wie Du den PhoneBlock-Dongle bestellst, aufspielst, einsteckst und einrichtest. Das Video wird erst beim Klick von YouTube geladen; dabei überträgt Dein Browser
+				Daten an YouTube/Google (siehe <a th:href="@{/datenschutz#video}">Datenschutz</a>). Alternativ: <a href="https://www.youtube.com/watch?v=vudH7Qgo1P8" rel="noopener" target="_blank">Video auf YouTube öffnen</a>.
+			</p>
+		</div>		
 
 		<h2 data-tx="t0004:6b104c7a">Die Idee in einem Satz</h2>
 
@@ -456,6 +465,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

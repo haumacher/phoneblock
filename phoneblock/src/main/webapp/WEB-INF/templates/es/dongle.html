@@ -11,9 +11,15 @@
 
 		<p class="subtitle" data-tx="t0095:dab19814">Un contestador automático inteligente con apariencia de teléfono IP. Del tamaño de un pulgar, se conecta al puerto USB del router, se registra como un teléfono SIP adicional e intercepta las llamadas comerciales antes de que suene su teléfono real. Funciona independientemente del modelo de router, ¡incluso sin Fritz!</p>
 		
-		<p class="container">
-			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
-		</p>		
+		<div class="pb-video" data-video-id="vudH7Qgo1P8">
+			<div class="pb-video-stage">
+				<button class="pb-video-play" data-tx="t0250:c9a28e7d" title="Reproducir vídeo" type="button">
+					<img alt="Vídeo: Configuración del adaptador PhoneBlock" data-tx="t0251:d87dcc" height="720" th:src="@{/assets/img/video/dongle-install.jpg}" width="1280"/>
+					<span class="pb-video-icon"><i class="fa-solid fa-play"></i></span>
+				</button>
+			</div>
+			<p class="pb-video-note has-text-grey" data-tx="t0252:b1b60732">En el vídeo podrás ver en pocos minutos cómo pedir, instalar, conectar y configurar el dongle PhoneBlock. El vídeo no se carga hasta que hagas clic en YouTube; al hacerlo, tu navegador transmite datos a YouTube/Google (véase <a th:href="@{/datenschutz#video}">la política de privacidad</a>). Alternativa: <a href="https://www.youtube.com/watch?v=vudH7Qgo1P8" rel="noopener" target="_blank">abrir el vídeo en YouTube</a>.</p>
+		</div>		
 
 		<h2 data-tx="t0004:6b104c7a">La idea en una frase</h2>
 
@@ -317,6 +323,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

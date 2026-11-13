@@ -11,9 +11,15 @@
 
 		<p class="subtitle" data-tx="t0095:dab19814">جهاز رد آلي ذكي في شكل هاتف IP. بحجم الإبهام، يتم توصيله بمنفذ USB في جهاز التوجيه، ويسجل كهاتف SIP إضافي - ويعترض المكالمات التجارية قبل أن يرن هاتفك الفعلي. يعمل بغض النظر عن طراز جهاز التوجيه، حتى من دون فريتز!</p>
 		
-		<p class="container">
-			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
-		</p>		
+		<div class="pb-video" data-video-id="vudH7Qgo1P8">
+			<div class="pb-video-stage">
+				<button class="pb-video-play" data-tx="t0250:c9a28e7d" title="تشغيل الفيديو" type="button">
+					<img alt="فيديو: إعداد جهاز PhoneBlock-Dongle" data-tx="t0251:d87dcc" height="720" th:src="@{/assets/img/video/dongle-install.jpg}" width="1280"/>
+					<span class="pb-video-icon"><i class="fa-solid fa-play"></i></span>
+				</button>
+			</div>
+			<p class="pb-video-note has-text-grey" data-tx="t0252:b1b60732">في هذا الفيديو، ستشاهد في غضون بضع دقائق كيفية طلب جهاز PhoneBlock-Dongle وتثبيته وتوصيله وإعداده. لن يتم تحميل الفيديو إلا عند النقر عليه من YouTube؛ وعندها سيقوم متصفحك بنقل البيانات إلى YouTube/Google (انظر <a th:href="@{/datenschutz#video}">سياسة الخصوصية</a>). أو بدلاً من ذلك: <a href="https://www.youtube.com/watch?v=vudH7Qgo1P8" rel="noopener" target="_blank">افتح الفيديو على YouTube</a>.</p>
+		</div>		
 
 		<h2 data-tx="t0004:6b104c7a">الفكرة في جملة واحدة</h2>
 
@@ -317,6 +323,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

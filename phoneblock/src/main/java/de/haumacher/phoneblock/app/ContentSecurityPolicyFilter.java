@@ -19,7 +19,7 @@ public class ContentSecurityPolicyFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         if (addWebsiteHeaders((HttpServletRequest) request)) {
-            httpResponse.setHeader("Content-Security-Policy", "default-src 'none'; img-src 'self' http://fritz.box/favicon.ico https://fritz.box/favicon.ico data: w3.org/svg/2000; font-src 'self'; style-src 'self'; script-src 'self'; frame-ancestors 'none'; connect-src 'self';");
+            httpResponse.setHeader("Content-Security-Policy", "default-src 'none'; img-src 'self' http://fritz.box/favicon.ico https://fritz.box/favicon.ico data: w3.org/svg/2000; font-src 'self'; style-src 'self'; script-src 'self'; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; connect-src 'self';");
         }
         chain.doFilter(request, response);
     }
