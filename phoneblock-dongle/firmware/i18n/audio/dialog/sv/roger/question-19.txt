@@ -1,0 +1,1 @@
+Finns det någon minsta löptid?

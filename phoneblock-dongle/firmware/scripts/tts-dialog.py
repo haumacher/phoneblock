@@ -427,6 +427,8 @@ def fetch(langs, rows):
                 r = subprocess.run(["sftp", *SSH_OPTS, "-b", "-", CDN_HOST],
                                    input=f"get {CDN_TTS}/{lang}/{s['id']}/* {tmp}/\n",
                                    text=True, capture_output=True)
+                if r.returncode != 0 and "No such file" not in r.stderr + r.stdout:
+                    sys.exit(f"sftp {CDN_HOST}: {r.stderr.strip() or r.stdout.strip()}")
                 if r.returncode != 0 or not os.path.exists(os.path.join(tmp, "voice.json")):
                     print(f"{lang}/{s['id']}: nothing on the CDN")
                     continue

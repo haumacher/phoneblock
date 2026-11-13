@@ -3,7 +3,7 @@
 // sentences into i18n/audio/dialog/<lang>/. Key = <phase>_<n>, the phase in
 // the manifest spelling with '-' as '_' (hello, who_is_there, am_aparat,
 // question, cant_hear_you); the number of keys per phase is the number of
-// clips (1..8). Same plugin/credential as mail/ and ui/.
+// clips (1..DIALOG_MAX_CLIPS in main/dialog.h). Same plugin/credential as mail/ and ui/.
 plugins {
     id 'de.haumacher.auto-translate-arb' version '1.1.4'
 }
