@@ -2626,6 +2626,8 @@ async function refreshAll(){
         let key;
         if (d.ok)                   key = 'status.token.test.ok';
         else if (d.code === 'none') key = 'status.token.test.none';
+        else if (d.code === 'unreachable') key = 'status.token.test.unreachable';
+        else if (d.code === 'server')      key = 'status.token.test.server';
         else                        key = 'status.token.test.fail';
         m.textContent = t(key);
         m.style.color = d.ok ? 'var(--ok)' : 'var(--err)';

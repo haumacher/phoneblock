@@ -135,6 +135,16 @@
     "description": "Dongle web UI: status.token.test.fail",
     "x-translated": "dbf04694"
   },
+  "status.token.test.unreachable": "PhoneBlock nicht erreichbar. Bitte Internetverbindung prüfen.",
+  "@status.token.test.unreachable": {
+    "description": "Dongle web UI: token test could not connect to PhoneBlock (network problem, token not checked)",
+    "x-translated": "9f1adc30"
+  },
+  "status.token.test.server": "PhoneBlock meldet einen Fehler. Bitte später erneut versuchen.",
+  "@status.token.test.server": {
+    "description": "Dongle web UI: token test got an unexpected HTTP error from PhoneBlock (not a token rejection)",
+    "x-translated": "e689fe02"
+  },
   "status.token.test.none": "Kein Token gesetzt.",
   "@status.token.test.none": {
     "description": "Dongle web UI: status.token.test.none",

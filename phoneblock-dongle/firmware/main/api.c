@@ -754,7 +754,7 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
     return true;
 }
 
-bool phoneblock_selftest(api_phases_t *phases_opt)
+pb_selftest_t phoneblock_selftest(api_phases_t *phases_opt)
 {
     char url[160];
     snprintf(url, sizeof(url), "%s/api/test", config_phoneblock_base_url());
@@ -770,13 +770,13 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
     };
     if (!resp.data) {
         pb_log_err(TAG, "self-test: out of memory");
-        return false;
+        return PB_SELFTEST_UNREACHABLE;
     }
 
     if (s_check_mutex == NULL) {
         pb_log_err(TAG, "phoneblock_selftest before phoneblock_api_init()");
         free(resp.data);
-        return false;
+        return PB_SELFTEST_UNREACHABLE;
     }
 
     // Runs on the shared session-resuming client on purpose: the
@@ -805,19 +805,24 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
     pb_mutex_unlock(s_check_mutex);
     note_api_response(err, status);
 
-    bool ok = false;
+    pb_selftest_t result;
     if (err != PB_HTTP_OK) {
         pb_log_err(TAG, "self-test transport: %s", pb_http_err_name(err));
+        result = PB_SELFTEST_UNREACHABLE;
     } else if (status == 200) {
         pb_log_info(TAG, "self-test: HTTP 200, token accepted");
-        ok = true;
+        result = PB_SELFTEST_OK;
     } else {
         char problem[16];
         snprintf(problem, sizeof(problem), "HTTP %d", status);
         log_body_error("self-test", problem, url, resp.data, resp.len, true);
+        // Same rule as note_api_response(): only an explicit 401/403 is a
+        // verdict on the token.
+        result = (status == 401 || status == 403)
+            ? PB_SELFTEST_REJECTED : PB_SELFTEST_SERVER;
     }
     free(resp.data);
-    return ok;
+    return result;
 }
 
 bool phoneblock_fetch_dial_prefix(char *out, size_t cap)

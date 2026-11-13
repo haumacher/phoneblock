@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "双因素验证",
   "sip.fb.2fa.button": "按下Fritz!Box上的任意按钮",
   "sip.fb.2fa.dtmf": "在已连接的电话上拨打序列号 {seq}",
+  "sip.fb.2fa.or": "或者",
   "sip.fb.2fa.instructions": "请现在点击 {hints}。",
   "sip.fb.2fa.cancelled": "双因素认证（2FA）已中断。",
   "sip.fb.2fa.timeout": "超时。请重试。",
@@ -514,5 +515,6 @@
   "status.rec.delete": "删除录音",
   "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
   "status.rec.failed": "无法加载该照片。",
-  "sip.fb.2fa.or": "或者"
+  "status.token.test.unreachable": "无法连接到 PhoneBlock。请检查网络连接。",
+  "status.token.test.server": "PhoneBlock 报告了一个错误。请稍后再试。"
 }

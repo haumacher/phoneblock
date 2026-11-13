@@ -368,6 +368,7 @@
   "sip.fb.2fa.title": "Autenticazione a due fattori",
   "sip.fb.2fa.button": "premere un pulsante qualsiasi sul Fritz!Box",
   "sip.fb.2fa.dtmf": "Comporre il numero {seq} su un telefono collegato",
+  "sip.fb.2fa.or": "oppure",
   "sip.fb.2fa.instructions": "Per favore, ora {hints}.",
   "sip.fb.2fa.cancelled": "Autenticazione a due fattori (2FA) interrotta.",
   "sip.fb.2fa.timeout": "Tempo scaduto. Riprovare.",
@@ -514,5 +515,6 @@
   "status.rec.delete": "Elimina registrazione",
   "status.rec.delete.confirm": "Elimina questa registrazione? La chiamata rimane nell'elenco.",
   "status.rec.failed": "Non è stato possibile caricare il file.",
-  "sip.fb.2fa.or": "oppure"
+  "status.token.test.unreachable": "PhoneBlock non raggiungibile. Verificare la connessione a Internet.",
+  "status.token.test.server": "PhoneBlock segnala un errore. Si prega di riprovare più tardi."
 }
