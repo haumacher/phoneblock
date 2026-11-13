@@ -57,7 +57,7 @@
 
 		<li data-tx="t0010:61ab95ee" th:if="${number.city}">城市：<th:block th:text="${number.city}"></th:block> (<code dir="ltr" th:text="${number.cityCode}"></code>)</li>
 
-		<li data-tx="t0011:886a84aa" th:if="${info.votes} &gt; 0">赞成封杀的票数：<th:block th:text="${info.votes}">&lt;/x1</th:block></li>
+		<li data-tx="t0011:886a84aa" th:if="${info.votes} &gt; 0">支持封禁的意见：<th:block th:text="${info.votes}"></th:block></li>
 		
 		<li data-tx="t0012:7fff511b" th:if="${info.votesWildcard} &gt; ${info.votes}">锁定数字键盘的投票：<th:block th:text="${info.votesWildcard}"></th:block></li>
 
