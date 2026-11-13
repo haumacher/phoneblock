@@ -79,7 +79,7 @@
 
 		<p data-tx="t0134:2e54f376">اطلب دونجل USB ("لوحة مطور ESP32"). لا تقلق، ليس عليك "تطوير" أي شيء، فقط قم بتثبيت برنامج PhoneBlock النهائي من المتصفح.</p>
 
-		<figure class="image" style="max-width:300px;">
+		<figure class="image pb-max-300">
 			<img alt="دونجل ESP32" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
@@ -112,12 +112,12 @@
 
 		<p data-tx="t0150:6972bbca">تحتاج إلى تحميل برنامج PhoneBlock على الدونجل مرة واحدة. للقيام بذلك، قم بتوصيل الدونجل مرة واحدة بمنفذ USB مجاني على جهاز الكمبيوتر الخاص بك. ليس لديك جهاز كمبيوتر؟ فقط اسأل صديقاً إذا كان بإمكانه إعداد الدونجل لك. يمكنك أيضًا إعداده لاحقًا في شبكتك من هاتفك المحمول. لن تحتاج إلى أي أجهزة أخرى للتشغيل.</p>
 		
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="شاشة ترحيب دونجل" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0205:24785f50">دونجل في منفذ USB بالكمبيوتر</figcaption>
 		</figure>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+		<div class="notification is-warning pb-hidden" id="dongle-install-unsupported">
 			<p data-tx="t0127:cc2d5f5e"><strong>لا يمكن لهذا المتصفح فلاش الدونجل. لإعداد الدونجل للاستخدام، تحتاج إلى متصفح <strong>Google Chrome</strong> أو <strong>Microsoft Edge</strong> على جهاز كمبيوتر (وليس على هاتف ذكي). افتح هذه الصفحة باستخدام Chrome أو Edge وحاول مرة أخرى.</strong></p>
 		</div>
 
@@ -142,7 +142,7 @@
 
 		<p data-tx="t0157:8a955c74">تظهر قائمة بجميع الأجهزة التسلسلية على الكمبيوتر في حوار التحديد. إذا تم عرض العديد من أجهزة CH340 بسبب توصيل جهاز آخر بهذه الشريحة، فقم بإزالة الأجهزة الأخرى في الوقت الحالي.</p>
 
-		<figure class="image" style="max-width:600px;">
+		<figure class="image pb-max-600">
 			<img alt="حدد المنفذ التسلسلي" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">حدد المنفذ التسلسلي.</figcaption>
 		</figure>
@@ -191,7 +191,7 @@
 
 		<p data-tx="t0162:d933bd4d">عندما يُبلغ المتصفح عن "اكتمل التثبيت!"، قم بإزالة دونجل PhoneBlock من الكمبيوتر وقم بتوصيله بمنفذ USB مجاني على جهاز التوجيه (أو أي مصدر طاقة USB 5 فولت ضمن نطاق شبكة WLAN).</p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="دونجل ESP32 في صندوق فريتز!" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:ff071800">دونجل PhoneBlock في منفذ USB الخاص بـ Fritz!</figcaption>
 		</figure>
@@ -202,7 +202,7 @@
 
 		<p data-tx="t0166:e6ac9e1a">اضغط الآن على الزر <strong>"WPS" على جهاز التوجيه. في جهاز Fritz! Box، هذا هو الزر <strong>"Connect / WPS"</strong> الموجود أعلى الجهاز - اضغط لفترة وجيزة حتى يبدأ مؤشر Wi-Fi LED على جهاز التوجيه نفسه في الوميض. تسمي أجهزة التوجيه الأخرى الزر "WPS" أو "إقران". في غضون ثوانٍ قليلة، ينقل جهاز التوجيه بيانات الوصول إلى شبكة Wi-Fi إلى دونجل PhoneBlock، الذي يحفظها ويتصل.</strong></p>
 
-		<figure class="image" style="max-width:500px;">
+		<figure class="image pb-max-500">
 			<img alt="زر WPS في صندوق فريتز!" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">زر WPS في صندوق فريتز!</figcaption>
 		</figure>
@@ -315,16 +315,9 @@
 
 <script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
 
-<script>
-(function() {
-	if (!('serial' in navigator)) {
-		var box = document.getElementById('dongle-install-unsupported');
-		if (box) { box.style.display = ''; }
-	}
-})();
-</script>
+<script th:src="@{/assets/js/dongle.js(v=${props.project.version})}" type="text/javascript"></script>
 
-<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
+<script th:src="@{/assets/js/video.js(v=${props.project.version})}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

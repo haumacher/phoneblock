@@ -296,3 +296,48 @@ button.showaddr:after {
 	margin-top: 0.5rem;
 	font-size: 0.85rem;
 }
+
+/*
+ * Replacements for inline style attributes, which the Content-Security-Policy
+ * (style-src 'self') blocks.
+ */
+
+/* Initially hidden, shown by script. Not !important (unlike Bulma's is-hidden),
+   so an inline style.display set by script still wins. */
+.pb-hidden {
+	display: none;
+}
+
+.pb-inline-input {
+	width: 200px;
+}
+
+.pb-col-40 {
+	width: 40px;
+}
+
+.pb-col-100 {
+	width: 100px;
+}
+
+.pb-max-280 {
+	max-width: 280px;
+}
+
+.pb-max-300 {
+	max-width: 300px;
+}
+
+.pb-max-500 {
+	max-width: 500px;
+}
+
+.pb-max-600 {
+	max-width: 600px;
+}
+
+.pb-chart-box {
+	position: relative;
+	height: clamp(350px, 60vw, 600px);
+	width: 100%;
+}

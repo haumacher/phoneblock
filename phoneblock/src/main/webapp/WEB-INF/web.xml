@@ -4,6 +4,43 @@
 	xsi:schemaLocation="https://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/web-app_4_0.xsd">
 	<display-name>PhoneBlock</display-name>
 
+	<!--
+		Response header filters. Declared here, not by @WebFilter: the order of
+		annotated filters is undefined, and ContentFilter renders the pages
+		without passing them down the chain, so filters behind it never see a
+		page (on Tomcat, the pages lacked the CSP). Mappings in web.xml come
+		before all annotated ones.
+	-->
+	<filter>
+		<filter-name>ContentSecurityPolicyFilter</filter-name>
+		<filter-class>de.haumacher.phoneblock.app.ContentSecurityPolicyFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>ContentSecurityPolicyFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>ContentTypeOptionFilter</filter-name>
+		<filter-class>de.haumacher.phoneblock.app.ContentTypeOptionFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>ContentTypeOptionFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>CacheControlFilter</filter-name>
+		<filter-class>de.haumacher.phoneblock.app.CacheControlFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>CacheControlFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+
 	<filter>
 		<filter-name>loginFilter</filter-name>
 		<filter-class>org.pac4j.jee.filter.SecurityFilter</filter-class>
