@@ -166,17 +166,18 @@ sudo journalctl -u phoneblock-watchdog -f
 ## How It Works
 
 1. **GET Requests Only**: Only GET requests are processed; POST, PUT, and other methods are ignored
-2. **Request URI Parsing**: Extracts the request URI from the HTTP request field (not from referer or user-agent)
-3. **Challenge Access**: When a GET request URI contains `challenge=`, the IP is added to the tracking set (or access count incremented if already tracked)
-4. **Solution Access**: When a GET request URI contains `solution=`, the IP is removed from the tracking set
-5. **Tracking**: Each IP stores:
+2. **API Requests Ignored**: Requests whose path contains `/api/` are skipped. The server never challenges API calls, and counting them would ban API clients (e.g. dongles) and everyone sharing their NAT address
+3. **Request URI Parsing**: Extracts the request URI from the HTTP request field (not from referer or user-agent)
+4. **Challenge Access**: When a GET request URI contains `challenge=`, the IP is added to the tracking set (or access count incremented if already tracked)
+5. **Solution Access**: When a GET request URI contains `solution=`, the IP is removed from the tracking set
+6. **Tracking**: Each IP stores:
    - Total number of challenge accesses
    - Timestamp of the most recent access
-6. **Status Reports**:
+7. **Status Reports**:
    - **Initial report**: Shows all IPs exceeding the minimum access threshold
    - **Periodic reports** (every minute): Shows only IPs with NEW accesses since last report (and exceeding the threshold)
    - Threshold is configurable via `-min-accesses` flag (default: 5)
-7. **Firewall Management** (optional, requires `-enable-firewall` flag):
+8. **Firewall Management** (optional, requires `-enable-firewall` flag):
    - Automatically blocks IPs exceeding the threshold using `ufw deny from <ip>`
    - Blocks are automatically removed after 30 minutes
    - Requires root/sudo privileges to manage firewall rules
