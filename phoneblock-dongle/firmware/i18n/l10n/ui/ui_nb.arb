@@ -27,6 +27,8 @@
   "status.token.testing": "Kontroller token…",
   "status.token.test.ok": "Token gyldig — PhoneBlock tilgjengelig.",
   "status.token.test.fail": "Tokenet ble avvist. Vennligst be om et nytt.",
+  "status.token.test.unreachable": "PhoneBlock er ikke tilgjengelig. Kontroller internettforbindelsen.",
+  "status.token.test.server": "PhoneBlock melder om en feil. Prøv igjen senere.",
   "status.token.test.none": "Ingen token er angitt.",
   "status.counters.total": "Totalt",
   "status.counters.spam": "Spam blokkert",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "lagret — la feltet stå tomt for å beholde det",
   "status.mail.from": "Avsender (e-post, tomt felt = brukernavn)",
   "status.mail.to": "Mottaker (e-post, skille flere med «;»)",
-  "status.mail.help": "Tips: I Gmail eller Outlook trenger du som regel et «app-passord» (hvis tofaktorautentisering er aktivert), ikke det vanlige passordet til kontoen din. Tradisjonelle tjenesteleverandører som GMX, web.de eller mailbox.org fungerer med brukernavn og passord.",
   "status.mail.on_error": "E-post ved feil og systemkrasj",
   "status.mail.on_error.help": "Sender en e-post én gang om dagen hvis det har oppstått en feil i loggen siden forrige melding — dette inkluderer også en omstart etter et krasj.",
   "status.mail.on_spam": "Rapportere anrop via e-post",
@@ -515,6 +516,5 @@
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
   "status.rec.failed": "Opptaket kunne ikke lastes inn.",
-  "status.token.test.unreachable": "PhoneBlock er ikke tilgjengelig. Kontroller internettforbindelsen.",
-  "status.token.test.server": "PhoneBlock melder om en feil. Prøv igjen senere."
+  "status.mail.help": "Tips: For Gmail, Outlook eller iCloud trenger du vanligvis et «app-passord» (hvis tofaktorautentisering er aktivert), ikke det vanlige passordet til kontoen din. iCloud bruker smtp.mail.me.com med STARTTLS (port 587). Tradisjonelle leverandører som GMX, web.de eller mailbox.org fungerer med brukernavn og passord."
 }

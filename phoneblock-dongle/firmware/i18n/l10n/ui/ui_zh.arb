@@ -27,6 +27,8 @@
   "status.token.testing": "验证令牌……",
   "status.token.test.ok": "令牌有效——PhoneBlock 可用。",
   "status.token.test.fail": "令牌被拒绝。请重新申请。",
+  "status.token.test.unreachable": "无法连接到 PhoneBlock。请检查网络连接。",
+  "status.token.test.server": "PhoneBlock 报告了一个错误。请稍后再试。",
   "status.token.test.none": "未设置令牌。",
   "status.counters.total": "总计",
   "status.counters.spam": "已拦截垃圾邮件",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "已保存——若要保留，请留空",
   "status.mail.from": "发件人（电子邮件，留空即为用户名）",
   "status.mail.to": "收件人（电子邮件，多个收件人请用“;”分隔）",
-  "status.mail.help": "提示：使用Gmail或Outlook时，通常需要输入“应用密码”（当启用了双因素认证时），而不是你的常规账户密码。而GMX、web.de或mailbox.org等传统服务商则只需使用用户名和密码即可登录。",
   "status.mail.on_error": "出现错误和崩溃时的电子邮件通知",
   "status.mail.on_error.help": "如果自上次报告以来日志中出现了错误（包括因系统崩溃而重启的情况），则每天发送一次电子邮件。",
   "status.mail.on_spam": "通过电子邮件报告来电",
@@ -515,6 +516,5 @@
   "status.rec.delete": "删除录音",
   "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
   "status.rec.failed": "无法加载该照片。",
-  "status.token.test.unreachable": "无法连接到 PhoneBlock。请检查网络连接。",
-  "status.token.test.server": "PhoneBlock 报告了一个错误。请稍后再试。"
+  "status.mail.help": "提示：使用 Gmail、Outlook 或 iCloud 时，通常需要“应用密码”（当启用了双因素认证时），而不是你的常规账户密码。 iCloud 使用 smtp.mail.me.com 并启用 STARTTLS（端口 587）。GMX、web.de 或 mailbox.org 等传统服务商则只需使用用户名和密码即可登录。"
 }

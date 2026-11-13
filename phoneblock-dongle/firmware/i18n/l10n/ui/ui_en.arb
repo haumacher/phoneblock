@@ -27,6 +27,8 @@
   "status.token.testing": "Checking token…",
   "status.token.test.ok": "Token valid — PhoneBlock reachable.",
   "status.token.test.fail": "Token was rejected. Please request a new one.",
+  "status.token.test.unreachable": "PhoneBlock is unavailable. Please check your Internet connection.",
+  "status.token.test.server": "PhoneBlock is reporting an error. Please try again later.",
   "status.token.test.none": "No token configured.",
   "status.counters.total": "Total",
   "status.counters.spam": "Spam blocked",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "stored — leave blank to keep it",
   "status.mail.from": "Sender (email, blank = user name)",
   "status.mail.to": "Recipients (email; separate multiple recipients with \";\")",
-  "status.mail.help": "Tip: Gmail and Outlook usually need an \"app password\" (when two-factor sign-in is on), not your normal account password. Classic providers such as GMX, web.de or mailbox.org work with user name and password.",
   "status.mail.on_error": "Email on errors and crashes",
   "status.mail.on_error.help": "Sends one email a day when an error has appeared in the log since the last notification — this includes a reboot after a crash.",
   "status.mail.on_spam": "Report Calls via Email",
@@ -515,6 +516,5 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "status.token.test.unreachable": "PhoneBlock is unavailable. Please check your Internet connection.",
-  "status.token.test.server": "PhoneBlock is reporting an error. Please try again later."
+  "status.mail.help": "Tip: For Gmail, Outlook, or iCloud, you usually need an “app password” (if two-factor authentication is enabled), not your regular account password. iCloud uses smtp.mail.me.com with STARTTLS (port 587). Traditional providers like GMX, web.de, or mailbox.org work with a username and password."
 }

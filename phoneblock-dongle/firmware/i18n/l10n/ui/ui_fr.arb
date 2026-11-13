@@ -27,6 +27,8 @@
   "status.token.testing": "Vérification du jeton…",
   "status.token.test.ok": "Jeton valide — PhoneBlock joignable.",
   "status.token.test.fail": "Jeton rejeté. Veuillez en demander un nouveau.",
+  "status.token.test.unreachable": "PhoneBlock est inaccessible. Veuillez vérifier votre connexion Internet.",
+  "status.token.test.server": "PhoneBlock signale une erreur. Veuillez réessayer plus tard.",
   "status.token.test.none": "Aucun jeton configuré.",
   "status.counters.total": "Total",
   "status.counters.spam": "Spam bloqué",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "enregistré — laisser vide pour le conserver",
   "status.mail.from": "Expéditeur (e-mail, vide = nom d’utilisateur)",
   "status.mail.to": "Destinataires (adresse e-mail, séparer les destinataires multiples par « ; »)",
-  "status.mail.help": "Astuce : pour Gmail ou Outlook, il faut généralement un « mot de passe d’application » (si la connexion à deux facteurs est activée), pas ton mot de passe habituel. Les fournisseurs classiques comme GMX, web.de ou mailbox.org fonctionnent avec le nom d’utilisateur et le mot de passe.",
   "status.mail.on_error": "E-mail en cas d’erreurs et de plantages",
   "status.mail.on_error.help": "Envoie un e-mail par jour si une erreur est apparue dans le journal depuis la dernière notification — y compris un redémarrage après un plantage.",
   "status.mail.on_spam": "Signaler les appels par e-mail",
@@ -515,6 +516,5 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "status.token.test.unreachable": "PhoneBlock est inaccessible. Veuillez vérifier votre connexion Internet.",
-  "status.token.test.server": "PhoneBlock signale une erreur. Veuillez réessayer plus tard."
+  "status.mail.help": "Astuce : avec Gmail, Outlook ou iCloud, tu as généralement besoin d'un « mot de passe d'application » (lorsque l'authentification à deux facteurs est activée), et non de ton mot de passe de compte habituel. iCloud utilise smtp.mail.me.com avec STARTTLS (port 587). Les fournisseurs classiques tels que GMX, web.de ou mailbox.org fonctionnent avec un nom d'utilisateur et un mot de passe."
 }

@@ -27,6 +27,8 @@
   "status.token.testing": "Verifica il token…",
   "status.token.test.ok": "Token valido — PhoneBlock raggiungibile.",
   "status.token.test.fail": "Il token è stato rifiutato. Si prega di richiederlo nuovamente.",
+  "status.token.test.unreachable": "PhoneBlock non raggiungibile. Verificare la connessione a Internet.",
+  "status.token.test.server": "PhoneBlock segnala un errore. Si prega di riprovare più tardi.",
   "status.token.test.none": "Nessun token impostato.",
   "status.counters.total": "Totale",
   "status.counters.spam": "Spam bloccato",
@@ -199,7 +201,6 @@
   "status.mail.pass.keep": "salvato — lasciare vuoto per mantenerlo",
   "status.mail.from": "Mittente (e-mail, vuoto = nome utente)",
   "status.mail.to": "Destinatari (e-mail, separare più destinatari con “;”)",
-  "status.mail.help": "Suggerimento: con Gmail o Outlook, di solito è necessaria una “password dell’app” (se è attivata l’autenticazione a due fattori), non la normale password dell’account. I provider tradizionali come GMX, web.de o mailbox.org funzionano con nome utente e password.",
   "status.mail.on_error": "E-mail in caso di errori e arresti anomali",
   "status.mail.on_error.help": "Invia un'e-mail una volta al giorno se, dall'ultimo messaggio, si è verificato un errore nel log — tra questi rientra anche un riavvio a seguito di un crash.",
   "status.mail.on_spam": "Segnalare le chiamate tramite e-mail",
@@ -515,6 +516,5 @@
   "status.rec.delete": "Elimina registrazione",
   "status.rec.delete.confirm": "Elimina questa registrazione? La chiamata rimane nell'elenco.",
   "status.rec.failed": "Non è stato possibile caricare il file.",
-  "status.token.test.unreachable": "PhoneBlock non raggiungibile. Verificare la connessione a Internet.",
-  "status.token.test.server": "PhoneBlock segnala un errore. Si prega di riprovare più tardi."
+  "status.mail.help": "Suggerimento: con Gmail, Outlook o iCloud, solitamente è necessaria una \"password dell'app\" (se è attivata l'autenticazione a due fattori), non la normale password dell'account. iCloud utilizza smtp.mail.me.com con STARTTLS (porta 587). I provider tradizionali come GMX, web.de o mailbox.org funzionano con nome utente e password."
 }
