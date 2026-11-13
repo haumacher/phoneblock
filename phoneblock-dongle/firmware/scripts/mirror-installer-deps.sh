@@ -70,5 +70,21 @@ scp "${WORK}"/package/dist/web/* "${CDN_HOST}:${REMOTE_DIR}/"
 # install-button.js as an ES module and the manifest/firmware bins via fetch().
 scp "${SCRIPT_DIR}/htaccess.cors" "${CDN_HOST}:${CDN_BASE}/.htaccess"
 
+# The phoneblock.net Content-Security-Policy allows the one inline <style>
+# block of the installer's log viewer (ewt-console) by its hash. Print it, so a
+# version bump that changes it is noticed.
+CONSOLE_STYLE_HASH="$(python3 -I - "${WORK}"/package/dist/web/install-dialog-*.js <<'PY'
+import base64, hashlib, re, sys
+s = open(sys.argv[1], encoding="utf-8").read()
+i = s.index("innerHTML=`") + len("innerHTML=`")
+tpl = s[i:s.index("`", i)]
+raw = tpl.encode("utf-8").decode("unicode_escape").encode("latin-1").decode("utf-8")
+css = re.search(r"<style>(.*?)</style>", raw, re.S).group(1)
+print("sha256-" + base64.b64encode(hashlib.sha256(css.encode()).digest()).decode())
+PY
+)"
+
 echo "Mirrored esp-web-tools ${VERSION}."
 echo "  https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js"
+echo "Log viewer style hash: ${CONSOLE_STYLE_HASH}"
+echo "  must equal INSTALLER_CONSOLE_STYLE in phoneblock/src/main/java/de/haumacher/phoneblock/app/ContentSecurityPolicyFilter.java"
