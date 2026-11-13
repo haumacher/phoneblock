@@ -27,11 +27,17 @@ static const char *TAG = "report_q";
 // Worker stack, most of it for the TLS handshake of the report POST. On the
 // ESP32-S3 the POST peaked at 4228 B (measured with 8 KB: 3964 B free), so
 // 4 KB overflowed on the first reported spam call and rebooted the dongle.
-// The C3 fits into 4 KB (RISC-V frames are smaller), and the ESP32 fleet's
-// heap is too tight to give more where it is not needed; the S3 has more
-// than 100 KB free.
+// The classic ESP32 (also Xtensa) peaked at 4184 B since the POST runs
+// through pb_http_request (#613): with 4 KB, 2.0.x rebooted on nearly every
+// reported spam call, and the overflow also smashed the heap block below the
+// stack (the api mutex, seen as pb_mutex_lock faults, and heap_guard hits).
+// 6 KB leaves ~2 KB headroom without taking more of its tight heap than
+// needed; the S3 has more than 100 KB free. The C3 fits into 4 KB (RISC-V
+// frames are smaller). The worker logs its headroom after every report.
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #define REPORT_TASK_STACK 8192
+#elif defined(CONFIG_IDF_TARGET_ESP32)
+#define REPORT_TASK_STACK 6144
 #else
 #define REPORT_TASK_STACK 4096
 #endif
@@ -100,6 +106,8 @@ static void report_worker_task(void *arg)
         // phoneblock_report_call logs its own failures (ERROR), which the
         // log hook mirrors to the web UI — nothing to do here on failure.
         phoneblock_report_call(e.phone);
+        pb_log_info(TAG, "report done (stack headroom %d B of %d)",
+                    pb_task_stack_free(), REPORT_TASK_STACK);
     }
 }
 
