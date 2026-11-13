@@ -15,6 +15,16 @@
 <p data-tx="t0003:f83d3ee2"><b>注意：</b>由于 Fritz!Box 的技术限制，无法将整个阻止列表加载到电话簿中。因此，只有 <a th:href="@{/dongle}">PhoneBlock 加密狗</a> 才能对垃圾电话提供最佳保护。</p>
 </div>
 
+<div class="pb-video" data-video-id="NKgjM34fwb0">
+	<div class="pb-video-stage">
+		<button class="pb-video-play" data-tx="t0089:c9a28e7d" title="播放视频" type="button">
+			<img alt="视频：在Fritz!Box中设置屏蔽列表" data-tx="t0090:1193a8c6" height="720" th:src="@{/assets/img/video/setup-install.jpg}" width="1280"/>
+			<span class="pb-video-icon"><i class="fa-solid fa-play"></i></span>
+		</button>
+	</div>
+	<p class="pb-video-note has-text-grey" data-tx="t0091:4c7117b9">视频中将分步演示如何设置屏蔽列表。该视频只有在点击YouTube链接后才会加载；此时，您的浏览器会向YouTube/Google传输数据（参见<a th:href="@{/datenschutz#video}">隐私政策</a>）。或者：<a href="https://www.youtube.com/watch?v=NKgjM34fwb0" rel="noopener" target="_blank">在YouTube上打开视频</a>。</p>
+</div>
+
 <p data-tx="t0052:818cc317">使用以下步骤设置拦截列表：</p>
 
 <ol>
@@ -189,6 +199,8 @@
 		</div>
 	</div>
 </section>
+
+<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

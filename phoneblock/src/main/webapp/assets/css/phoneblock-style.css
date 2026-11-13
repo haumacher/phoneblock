@@ -231,3 +231,68 @@ button.showaddr:after {
 .card .card-footer {
 	border-top: 0;
 }
+
+/* Two-click video (assets/js/video.js): preview image first, YouTube player only after a click. */
+.pb-video {
+	max-width: 800px;
+	margin: 1.5rem auto;
+}
+
+.pb-video-stage {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	border-radius: 6px;
+	overflow: hidden;
+	background: #000;
+}
+
+.pb-video-stage iframe,
+.pb-video-play {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.pb-video-play {
+	padding: 0;
+	cursor: pointer;
+	background: #000;
+}
+
+.pb-video-play img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0.85;
+	transition: opacity 0.2s;
+}
+
+.pb-video-play:hover img,
+.pb-video-play:focus-visible img {
+	opacity: 1;
+}
+
+.pb-video-icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 4.5rem;
+	height: 3.2rem;
+	border-radius: 0.8rem;
+	background: #e00;
+	color: #fff;
+	font-size: 1.6rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.pb-video-note {
+	margin-top: 0.5rem;
+	font-size: 0.85rem;
+}

@@ -11,9 +11,15 @@
 
 		<p class="subtitle" data-tx="t0095:dab19814">Una segreteria telefonica intelligente sotto forma di telefono IP. Grande come un pollice, si collega alla porta USB del router, si registra come telefono SIP aggiuntivo e intercetta le chiamate commerciali prima che squilli il telefono vero e proprio. Funziona indipendentemente dal modello di router, anche senza Fritz!</p>
 		
-		<p class="container">
-			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
-		</p>		
+		<div class="pb-video" data-video-id="vudH7Qgo1P8">
+			<div class="pb-video-stage">
+				<button class="pb-video-play" data-tx="t0250:c9a28e7d" title="Riproduci video" type="button">
+					<img alt="Video: Configurazione del dongle PhoneBlock" data-tx="t0251:d87dcc" height="720" th:src="@{/assets/img/video/dongle-install.jpg}" width="1280"/>
+					<span class="pb-video-icon"><i class="fa-solid fa-play"></i></span>
+				</button>
+			</div>
+			<p class="pb-video-note has-text-grey" data-tx="t0252:b1b60732">Nel video vedrai in pochi minuti come ordinare, installare, collegare e configurare il dongle PhoneBlock. Il video verrà caricato solo quando cliccherai su YouTube; in tal caso, il tuo browser trasmetterà dati a YouTube/Google (vedi <a th:href="@{/datenschutz#video}">Informativa sulla privacy</a>). In alternativa: <a href="https://www.youtube.com/watch?v=vudH7Qgo1P8" rel="noopener" target="_blank">apri il video su YouTube</a>.</p>
+		</div>		
 
 		<h2 data-tx="t0004:6b104c7a">L'idea in una frase</h2>
 
@@ -317,6 +323,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/video.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>
