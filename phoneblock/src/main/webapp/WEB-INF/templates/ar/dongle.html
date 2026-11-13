@@ -59,6 +59,8 @@
 		
 		<p data-tx="t0236:25f15369">إذا واجهتك مشكلة ما أثناء الإعداد أو كان لديك سؤال، فستجد <a href="#hilfe">أدناه</a> جهة الاتصال المناسبة.</p>
 
+		<p data-tx="t0244:ced6da04">هل تستخدم «Home Assistant» بالفعل أو جهازًا يعمل بنظام لينكس مثل «Raspberry Pi»؟ إذاً فلن تحتاج إلى جهاز دونجل: يمكنك أيضًا <a href="#selber-hosten">استضافة البرنامج بنفسك</a>.</p>
+
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">هنا يصبح الأمر عملياً: ترشدك التعليمات خطوة بخطوة خلال الطلب والإعداد - حوالي 10 يورو للأجهزة، وهو جهد لمرة واحدة يستغرق بضع دقائق.</p>
 
 		<noscript>
@@ -269,6 +271,15 @@
 		<hr class="my-5"/>
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">هل هناك شيء ما لا يعمل، هل تستخدم فايرفوكس/سفاري أو لينكس بخصائص معينة أو لوحة أخرى؟ يمكن العثور على الإرشادات التفصيلية مع جميع الخيارات ومزالق لينكس وسلسلة أدوات ESP-IDF في الريبو: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></p>
+
+		<h2 data-tx="t0245:a0d65f94" id="selber-hosten">بدون جهاز دونجل: الاستضافة الذاتية</h2>
+
+		<p data-tx="t0246:c6e9dea5">يعمل برنامج دونجل PhoneBlock أيضًا كخدمة Linux على جهاز Raspberry Pi أو جهاز كمبيوتر صغير أو جهاز تخزين شبكي (NAS) الذي تعمل عليه بالفعل. واجهة الويب والإعدادات والإصدار هي نفسها الموجودة في دونجل ESP32، ولا تحتاج إلى طلب أي أجهزة إضافية لهذا الغرض. يتم إعداد كل شيء عبر المتصفح، تمامًا كما هو موضح في <a href="#schritt-7">الخطوة 5</a>.</p>
+		<ul>
+			<li data-tx="t0247:75bb7dc3"><strong>Home Assistant:</strong> يقوم <a href="https://yaannntech.github.io/HA-Apps/phoneblock_dongle/" rel="noopener" target="_blank">تطبيق PhoneBlock لـ Home Assistant</a> بتثبيت البرنامج نفسه كتطبيق (ملحق) على أنظمة التشغيل amd64 و aarch64. وهو مشروع مجتمعي.</li>
+			<li data-tx="t0248:66d40507"><strong>Docker:</strong> الصورة <a href="https://hub.docker.com/r/phoneblock/answerbot2" rel="noopener" target="_blank"><code>phoneblock/answerbot2</code></a> متوفرة لنظامي amd64 و arm64 و arm/v7. تتوفر ملف <code>compose.yaml</code> جاهز على صفحة <a th:href="@{/anrufbeantworter#experts}">جهاز الرد الآلي</a>.</li>
+			<li data-tx="t0249:4e46548e"><strong>حزمة ديبيان:</strong> يوفر <a href="https://haumacher.github.io/phoneblock/apt/" rel="noopener" target="_blank">مستودع APT</a> حزمًا لـ Bookworm و Trixie على أنظمة amd64 و arm64 و armhf.</li>
+		</ul>
 
 		<h2 data-tx="t0237:f99f48f3" id="hilfe">المساعدة وتقارير الأخطاء</h2>
 

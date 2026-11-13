@@ -59,6 +59,8 @@
 		
 		<p data-tx="t0236:25f15369">如果在设置过程中遇到问题或有任何疑问，你可以在<a href="#hilfe">下方</a>找到相应的联系渠道。</p>
 
+		<p data-tx="t0244:ced6da04">你已经安装了 Home Assistant，或者正在使用 Raspberry Pi 之类的 Linux 计算机吗？如果是这样，你就不需要使用 Dongle 了：你也可以<a href="#selber-hosten">自行托管</a>同一套软件。</p>
+
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">这就是它的实用之处：说明书一步一步地指导你进行订购和设置--大约 10 欧元的硬件，只需几分钟的一次性努力。</p>
 
 		<noscript>
@@ -93,7 +95,7 @@
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0233:64e4a4af">&lt;X1&gt;无需自行改装："LILYGO T-Dongle-S3"。&lt;/X1&gt; 从固件 2.0 版本开始，PhoneBlock 也可在 T-Dongle-S3（配备 16MB 闪存的 ESP32-S3）上运行。 该设备配有USB-A插头，可直接插入Fritz!Box的USB接口。彩色LED指示灯显示设备状态，小屏幕则显示PhoneBlock徽标，接听电话时会显示来电者信息。<strong></strong></p>
+			<p data-tx="t0233:64e4a4af"><strong>无需自行改装："LILYGO T-Dongle-S3"。</strong> 从固件 2.0 版本开始，PhoneBlock 也可在 T-Dongle-S3（配备 16MB 闪存的 ESP32-S3）上运行。 该设备配有USB-A插头，可直接插入Fritz!Box的USB接口。彩色LED指示灯显示设备状态，小屏幕则显示PhoneBlock徽标，接听电话时会显示来电者信息。</p>
 			<p class="mt-2" data-tx="t0234:c0d1b5f5">此外，还支持搭载ESP32-C3且USB接口直接连接在芯片上的开发板，例如“C3 Super Mini”，以及固件版本2.0.1及更高版本的“ESP32-S3 Super Mini”（16MB闪存版本） (N16R8)的“ESP32-S3 Super Mini”（固件版本2.0.1及以上）也支持；而配备4MB闪存的型号则不兼容。 所有其他型号（例如 ESP32-S2、-C2、-C5、-C6、-H2 或 -P4）均不支持：在这些型号上，浏览器安装程序会因“Your … board is not supported”的提示而中断。</p>
 			<p class="mt-2" data-tx="t0235:75c00e28">因此，请务必确认商品描述中注明<strong>“ESP32”（无后缀）、“ESP32-C3”或“ESP32-S3”（配备16MB闪存）</strong>。虽然闪存容量较小的ESP32-S3可以刷写固件，但无法启动。</p>
 		</div>
@@ -269,6 +271,15 @@
 		<hr class="my-5"/>
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">有什么问题吗？您使用的是 Firefox/Safari，Linux 有特殊问题，还是另一块板子？详细说明包括所有选项、Linux 漏洞和 ESP-IDF 工具链，请参阅软件仓库：<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>。</p>
+
+		<h2 data-tx="t0245:a0d65f94" id="selber-hosten">无需Dongle：自行托管</h2>
+
+		<p data-tx="t0246:c6e9dea5">PhoneBlock Dongle 的软件也可作为 Linux 服务在树莓派、迷你电脑或 NAS 上运行——这些设备你本来就在使用。其网页界面、设置和版本与 ESP32 Dongle 完全相同，无需为此订购任何硬件。 所有设置均在浏览器中完成，与<a href="#schritt-7">步骤 5</a>完全相同。</p>
+		<ul>
+			<li data-tx="t0247:75bb7dc3"><strong>Home Assistant：</strong> <a href="https://yaannntech.github.io/HA-Apps/phoneblock_dongle/" rel="noopener" target="_blank">适用于 Home Assistant 的 PhoneBlock 应用</a> 会在 amd64 和 aarch64 系统上将同一套软件作为应用（插件）进行安装。这是一个社区项目。</li>
+			<li data-tx="t0248:66d40507"><strong>Docker：</strong> 镜像 <a href="https://hub.docker.com/r/phoneblock/answerbot2" rel="noopener" target="_blank"><code>phoneblock/answerbot2</code></a> 提供 amd64、arm64 和 arm/v7 版本。 在 <code>自动应答器</code> 页面上提供了一个现成的 <a th:href="@{/anrufbeantworter#experts}">compose.yaml</a> 文件。</li>
+			<li data-tx="t0249:4e46548e"><strong>Debian 软件包：</strong> <a href="https://haumacher.github.io/phoneblock/apt/" rel="noopener" target="_blank">APT 软件源</a> 提供了适用于 amd64、arm64 和 armhf 架构的 Bookworm 和 Trixie 软件包。</li>
+		</ul>
 
 		<h2 data-tx="t0237:f99f48f3" id="hilfe">帮助与错误报告</h2>
 

@@ -271,7 +271,7 @@
 		
 		<h2 data-tx="t0079:b65f7797" id="experts">供专家使用：自助托管</h2>
 		
-		<p data-tx="t0080:c455f3db">你对电脑非常在行，家里正好有一台树莓派或其他迷你电脑在运行吗？那么不妨自己动手安装这个语音信箱。最好使用预先准备好的<a href="https://hub.docker.com/r/phoneblock/answerbot2">Docker镜像</a>。 这能提供最佳的数据保护，因为所有的来电处理都在你本地进行。它与&lt;X2&gt;PhoneBlock Dongle&lt;/X2&gt;中使用的软件相同：所有设置都可在浏览器中轻松完成，答录机会在 Fritz!Box 中自动创建 IP 电话。<a th:href="@{/dongle}"></a></p>
+		<p data-tx="t0080:c455f3db">你对电脑非常在行，家里正好有一台树莓派或其他迷你电脑在运行吗？那么不妨自己动手安装这个语音信箱。最好使用预先准备好的<a href="https://hub.docker.com/r/phoneblock/answerbot2">Docker镜像</a>。 这能提供最佳的数据保护，因为所有的来电处理都在你本地进行。它与<a th:href="@{/dongle}">PhoneBlock Dongle</a>中使用的软件相同：所有设置都可在浏览器中轻松完成，答录机会在 Fritz!Box 中自动创建 IP 电话。</p>
 		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>自主托管时的注意事项：</strong> 与云语音信箱不同，上述操作指南中的两个步骤可以省略：<ul> <li><strong>无需使用DynDNS。</strong> 答录机与 Fritz!Box 位于同一网络中，并通过本地方式登录。</li> <li><strong>“允许从互联网登录”选项保持禁用状态。</strong> 为此，Fritz!Box 无需对互联网开放——请有意保留该选项的禁用状态，以免不必要地开放路由器。</li> </ul></div>
 		
 		<h3 data-tx="t0087:7a14d1db">1. 创建 <code>compose.yaml</code> 文件</h3>

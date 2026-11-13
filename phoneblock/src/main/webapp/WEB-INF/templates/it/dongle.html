@@ -59,6 +59,8 @@
 		
 		<p data-tx="t0236:25f15369">Se durante la configurazione qualcosa non funziona o hai una domanda, <a href="#hilfe">qui sotto</a> troverai il punto di riferimento giusto.</p>
 
+		<p data-tx="t0244:ced6da04">Hai già Home Assistant in esecuzione o un computer Linux come un Raspberry Pi? Allora non ti serve alcun dongle: puoi <a href="#selber-hosten">ospitare tu stesso</a> lo stesso software.</p>
+
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Le istruzioni guidano l'utente passo dopo passo nell'ordinazione e nell'installazione - circa 10 euro di hardware, uno sforzo una tantum di pochi minuti.</p>
 
 		<noscript>
@@ -269,6 +271,15 @@
 		<hr class="my-5"/>
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">Qualcosa non funziona, state usando Firefox/Safari, Linux con delle particolarità o un'altra scheda? Le istruzioni dettagliate con tutte le opzioni, le insidie di Linux e la toolchain ESP-IDF si trovano nel repo: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
+
+		<h2 data-tx="t0245:a0d65f94" id="selber-hosten">Senza dongle: hosting autonomo</h2>
+
+		<p data-tx="t0246:c6e9dea5">Il software del dongle PhoneBlock funziona anche come servizio Linux su un Raspberry Pi, un mini-PC o un NAS che hai già in funzione. L'interfaccia web, le impostazioni e la versione sono le stesse del dongle ESP32; non è necessario ordinare alcun hardware aggiuntivo. La configurazione avviene interamente nel browser, esattamente come nel <a href="#schritt-7">passaggio 5</a>.</p>
+		<ul>
+			<li data-tx="t0247:75bb7dc3"><strong>Home Assistant:</strong> L'<a href="https://yaannntech.github.io/HA-Apps/phoneblock_dongle/" rel="noopener" target="_blank">app PhoneBlock per Home Assistant</a> installa lo stesso software come app (componente aggiuntivo) sulle installazioni amd64 e aarch64. Si tratta di un progetto della community.</li>
+			<li data-tx="t0248:66d40507"><strong>Docker:</strong> L'immagine <a href="https://hub.docker.com/r/phoneblock/answerbot2" rel="noopener" target="_blank"><code>phoneblock/answerbot2</code></a> è disponibile per amd64, arm64 e arm/v7. Un file <code>compose.yaml</code> già pronto è disponibile nella pagina dedicata alla <a th:href="@{/anrufbeantworter#experts}">segreteria telefonica</a>.</li>
+			<li data-tx="t0249:4e46548e"><strong>Pacchetto Debian:</strong> Il <a href="https://haumacher.github.io/phoneblock/apt/" rel="noopener" target="_blank">repository APT</a> fornisce pacchetti per Bookworm e Trixie su amd64, arm64 e armhf.</li>
+		</ul>
 
 		<h2 data-tx="t0237:f99f48f3" id="hilfe">Assistenza e segnalazione di errori</h2>
 

@@ -59,6 +59,8 @@
 		
 		<p data-tx="t0236:25f15369">Якщо під час налаштування щось не виходить або у тебе виникло питання, <a href="#hilfe">нижче</a> ти знайдеш відповідну службу підтримки.</p>
 
+		<p data-tx="t0244:ced6da04">У тебе вже працює Home Assistant або комп’ютер на базі Linux, наприклад Raspberry Pi? Тоді тобі не потрібен донгл: це саме програмне забезпечення ти можеш також <a href="#selber-hosten">розмістити самостійно</a>.</p>
+
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Саме тут починається практична частина: інструкції крок за кроком допоможуть вам замовити та налаштувати обладнання вартістю близько 10 євро, що займе кілька хвилин.</p>
 
 		<noscript>
@@ -93,7 +95,7 @@
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0233:64e4a4af">&lt;X1&gt;Навіть без саморобних модифікацій: «LILYGO T-Донгл-S3».&lt;/X1&gt; Починаючи з прошивки 2.0, PhoneBlock також працює на T-Донгл-S3 (ESP32-S3 з 16 МБ флеш-пам’яті). Він має роз’єм USB-A і підключається безпосередньо до USB-роз’єму Fritz!Box. Кольоровий світлодіод показує стан, а на невеликому дисплеї відображається логотип PhoneBlock, а під час дзвінка — номер абонента.<strong></strong></p>
+			<p data-tx="t0233:64e4a4af"><strong>Навіть без саморобних модифікацій: «LILYGO T-Донгл-S3».</strong> Починаючи з прошивки 2.0, PhoneBlock також працює на T-Донгл-S3 (ESP32-S3 з 16 МБ флеш-пам’яті). Він має роз’єм USB-A і підключається безпосередньо до USB-роз’єму Fritz!Box. Кольоровий світлодіод показує стан, а на невеликому дисплеї відображається логотип PhoneBlock, а під час дзвінка — номер абонента.</p>
 			<p class="mt-2" data-tx="t0234:c0d1b5f5">Також підтримуються плати на базі ESP32-C3, у яких USB-роз’єм підключений безпосередньо до мікросхеми, наприклад «C3 Super Mini», а також, починаючи з версії прошивки 2.0.1, «ESP32-S3 Super Mini» у варіанті з 16 МБ флеш-пам’яті (N16R8); варіанти з 4 МБ флеш-пам’яті не підходять. Усі інші варіанти (наприклад, ESP32-S2, -C2, -C5, -C6, -H2 або -P4) не підтримуються: у цьому випадку інсталятор браузера завершує роботу з повідомленням «Your … board is not supported».</p>
 			<p class="mt-2" data-tx="t0235:75c00e28">Тому переконайтеся, що в описі товару вказано <strong>«ESP32» без додаткових позначень, «ESP32-C3» або «ESP32-S3» з 16 МБ флеш-пам’яті</strong>. ESP32-S3 з меншим об’ємом флеш-пам’яті можна прошити, але він не запуститься.</p>
 		</div>
@@ -269,6 +271,15 @@
 		<hr class="my-5"/>
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">Щось не працює, ви використовуєте Firefox/Safari, Linux з особливостями або іншу плату? Детальну інструкцію з усіма параметрами, підводними каменями Linux та інструментарієм ESP-IDF можна знайти в репозиторії: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
+
+		<h2 data-tx="t0245:a0d65f94" id="selber-hosten">Без донгла: самостійне розміщення</h2>
+
+		<p data-tx="t0246:c6e9dea5">Програмне забезпечення донгла PhoneBlock також працює як служба Linux на Raspberry Pi, міні-ПК або NAS, які у вас і так вже встановлені. Веб-інтерфейс, налаштування та версія такі самі, як і у донгла ESP32, тому вам не потрібно замовляти додаткове обладнання. Налаштування здійснюється повністю у браузері, точно так само, як у <a href="#schritt-7">кроці 5</a>.</p>
+		<ul>
+			<li data-tx="t0247:75bb7dc3"><strong>Home Assistant:</strong> <a href="https://yaannntech.github.io/HA-Apps/phoneblock_dongle/" rel="noopener" target="_blank">Додаток PhoneBlock для Home Assistant</a> встановлює те саме програмне забезпечення як додаток (доповнення) на системах amd64 та aarch64. Це проект спільноти.</li>
+			<li data-tx="t0248:66d40507"><strong>Docker:</strong> Образ <a href="https://hub.docker.com/r/phoneblock/answerbot2" rel="noopener" target="_blank"><code>phoneblock/answerbot2</code></a> доступний для архітектур amd64, arm64 та arm/v7. Готовий файл <code>compose.yaml</code> розміщено на сторінці, присвяченій <a th:href="@{/anrufbeantworter#experts}">автовідповідачу</a>.</li>
+			<li data-tx="t0249:4e46548e"><strong>Пакет Debian:</strong> У <a href="https://haumacher.github.io/phoneblock/apt/" rel="noopener" target="_blank">репозиторії APT</a> доступні пакети для Bookworm і Trixie на архітектурах amd64, arm64 та armhf.</li>
+		</ul>
 
 		<h2 data-tx="t0237:f99f48f3" id="hilfe">Допомога та повідомлення про помилки</h2>
 
