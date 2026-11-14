@@ -443,6 +443,7 @@ static void add_system_load(cJSON *root)
         cJSON_AddNumberToObject(sys, "wifi_connected_s", link.connected_s);
     }
     if (link.tx_dbm > 0) cJSON_AddNumberToObject(sys, "wifi_tx_dbm", link.tx_dbm);
+    cJSON_AddNumberToObject(sys, "wifi_tx_power_dbm", config_wifi_tx_power_dbm());
     cJSON_AddNumberToObject(sys, "wifi_drops", link.drops);
 
 #if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
@@ -1069,6 +1070,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char pb_url[128],  pb_token[64];
     char sip_port_s[8] = "", sip_exp_s[8] = "";
     char sip_lport_s[8] = "", rtp_port_s[8] = "";
+    char tx_power_s[4] = "";
     char min_direct_s[8] = "", min_range_s[8] = "";
     char sip_transp[8]    = "";
     char sip_authuser[32] = "";
@@ -1132,6 +1134,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_sip_port  = form_get(body, "sip_port",  sip_port_s, sizeof(sip_port_s));
     bool have_sip_lport = form_get(body, "sip_local_port", sip_lport_s, sizeof(sip_lport_s));
     bool have_rtp_port  = form_get(body, "rtp_port",  rtp_port_s, sizeof(rtp_port_s));
+    bool have_tx_power  = form_get(body, "wifi_tx_power_dbm", tx_power_s, sizeof(tx_power_s));
     bool have_sip_exp   = form_get(body, "sip_expires", sip_exp_s, sizeof(sip_exp_s));
     bool have_sip_trans = form_get(body, "sip_transport", sip_transp, sizeof(sip_transp));
     bool have_sip_auth  = form_get(body, "sip_auth_user", sip_authuser, sizeof(sip_authuser));
@@ -1195,7 +1198,6 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_rec_en     = form_get(body, "rec_enabled",        rec_en_s,   sizeof(rec_en_s));
 #endif
     free(body);
-
     // Phonebook selection for new contacts: only a decimal ID is stored, so
     // a malformed value can't reach the SOAP argument later. An empty field
     // clears the selection (back to "ask on the next add").
@@ -1317,6 +1319,23 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     // An empty numeric field means "unchanged".
     char rejected[160] = "";
     strbuf_t rej = sb_init(rejected, sizeof(rejected));
+    int tx_power = 0;
+    if (have_tx_power && tx_power_s[0]) {
+        bool numeric = true;
+        for (const char *p = tx_power_s; *p; p++) {
+            if (*p < '0' || *p > '9') {
+                numeric = false;
+                break;
+            }
+        }
+        int value = atoi(tx_power_s);
+        if (numeric && config_wifi_tx_power_dbm_valid(value)) {
+            tx_power = value;
+        } else {
+            sb_appendf(&rej, "%swifi_tx_power_dbm (%d..%d)", rej.len ? ", " : "",
+                       CONFIG_WIFI_TX_POWER_MIN_DBM, CONFIG_WIFI_TX_POWER_MAX_DBM);
+        }
+    }
     const char *ab_mode = NULL;
     if (have_ab_mode) {
         if (config_ab_mode_valid(ab_mode_s)) ab_mode = ab_mode_s;
@@ -1391,6 +1410,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .sip_local_port     = have_sip_lport && sip_lport_s[0] ? atoi(sip_lport_s) : 0,
         .has_rtp_port       = have_rtp_port,
         .rtp_port           = have_rtp_port && rtp_port_s[0] ? atoi(rtp_port_s) : 0,
+        .wifi_tx_power_dbm  = tx_power,
         .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
         // Password resolution, in order:
         //   - "anonymous" box ticked → "" : explicitly clear the stored
@@ -1502,6 +1522,17 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     if (timezone) time_sync_set_timezone(config_timezone());
 
 #ifdef ESP_PLATFORM
+    if (u.wifi_tx_power_dbm) {
+        esp_err_t tx_power_err = wifi_apply_tx_power();
+        if (tx_power_err != ESP_OK) {
+            ESP_LOGE(TAG, "Wi-Fi TX power saved but not applied: %s",
+                     esp_err_to_name(tx_power_err));
+            web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                                "Wi-Fi TX power saved but not applied");
+            return WEB_HTTP_OK;
+        }
+    }
+
     // A new host name: mDNS switches now, DHCP carries it from the next
     // request on. Nothing is restarted for it (#714).
     if (hostname && strcmp(old_hostname, config_hostname()) != 0) {
