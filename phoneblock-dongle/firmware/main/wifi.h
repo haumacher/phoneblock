@@ -34,6 +34,9 @@ esp_err_t wifi_connect(void);
 // Call only after mDNS is up (setup_mdns() in main.c).
 void wifi_apply_hostname(void);
 
+// Apply config_wifi_tx_power_dbm() to a started Wi-Fi driver.
+esp_err_t wifi_apply_tx_power(void);
+
 // True while WPS-PBC is active (either the initial run on a
 // credential-less first boot or an auto-restart after timeout).
 // Used by the status LED to show the "press the router button"

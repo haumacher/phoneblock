@@ -119,6 +119,15 @@ bool        config_led_quiet(void);
 // satisfies hostname_valid(), so both users can take it as is.
 const char *config_hostname(void);
 
+// Maximum Wi-Fi transmit power in dBm. Defaults to 15 dBm and is clamped to
+// the supported user range.
+#define CONFIG_WIFI_TX_POWER_MIN_DBM 8
+#define CONFIG_WIFI_TX_POWER_MAX_DBM 20
+// Returns the configured maximum Wi-Fi transmit power, or the default.
+int         config_wifi_tx_power_dbm(void);
+// Whether a maximum Wi-Fi transmit power is in the supported user range.
+bool        config_wifi_tx_power_dbm_valid(int dbm);
+
 // Whether the T-Dongle-S3 display is rotated by 180°. Depending on how the
 // Fritz!Box's USB port is oriented, the stick sits upside down; this turns
 // the logo the right way up. Default off; only meaningful on the S3 build
@@ -407,6 +416,8 @@ typedef struct {
     int         sip_local_port;
     bool        has_rtp_port;
     int         rtp_port;
+    // Maximum Wi-Fi transmit power in dBm. 0 means unchanged.
+    int         wifi_tx_power_dbm;
     const char *sip_user;
     const char *sip_pass;
     int         sip_expires;        // 0 = keep current
