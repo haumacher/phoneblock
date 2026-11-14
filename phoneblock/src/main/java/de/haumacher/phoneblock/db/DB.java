@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -3719,6 +3720,121 @@ public class DB {
 		}
 
 		return new Object[] { labels, perAgentData, registeredBotData };
+	}
+
+	/** A dongle token's last user agent and access time. */
+	public record DongleAccess(String userAgent, long lastAccess) {
+	}
+
+	/** Platform tags in the order used on the statistics page. */
+	public enum DonglePlatform {
+		ESP32("ESP32"),
+		ESP32_C3("ESP32-C3"),
+		ESP32_S3("ESP32-S3"),
+		LINUX("Linux"),
+		LINUX_HA("Linux; HA"),
+		OTHER(null),
+		UNKNOWN(null);
+
+		private final String _tag;
+
+		DonglePlatform(String tag) {
+			_tag = tag;
+		}
+
+		/** The known platform tag, or {@code null} for the aggregate buckets. */
+		public String tag() {
+			return _tag;
+		}
+
+		static DonglePlatform fromTag(String tag) {
+			for (DonglePlatform platform : values()) {
+				if (platform._tag != null && platform._tag.equals(tag)) {
+					return platform;
+				}
+			}
+			return OTHER;
+		}
+	}
+
+	/** Distinct active dongles on a platform. */
+	public record DonglePlatformCounts(DonglePlatform platform, int days30, int days60, int days90) {
+	}
+
+	record DongleAgent(DonglePlatform platform, String deviceId) {
+	}
+
+	/**
+	 * Counts distinct dongles by platform in the last 30, 60 and 90 days.
+	 */
+	public List<DonglePlatformCounts> getActiveDonglesByPlatform() {
+		return getActiveDonglesByPlatform(System.currentTimeMillis());
+	}
+
+	List<DonglePlatformCounts> getActiveDonglesByPlatform(long now) {
+		// Rolling windows end at now, including accesses made today.
+		long since90 = now - 90 * MILLIS_PER_DAY;
+		List<DongleAccess> accesses;
+		try (SqlSession session = openSession()) {
+			accesses = session.getMapper(Users.class).getRecentDongleAccesses(since90);
+		}
+
+		Set<String> seenDevices = new HashSet<>();
+		Map<DonglePlatform, int[]> counts = new EnumMap<>(DonglePlatform.class);
+		for (DongleAccess access : accesses) {
+			DongleAgent agent = parseDongleAgent(access.userAgent());
+			if (agent.deviceId() != null && !seenDevices.add(agent.deviceId())) {
+				continue;
+			}
+			int[] count = counts.computeIfAbsent(agent.platform(), k -> new int[3]);
+			if (access.lastAccess() >= now - 30 * MILLIS_PER_DAY) {
+				count[0]++;
+			}
+			if (access.lastAccess() >= now - 60 * MILLIS_PER_DAY) {
+				count[1]++;
+			}
+			count[2]++;
+		}
+
+		List<DonglePlatformCounts> result = new ArrayList<>();
+		for (DonglePlatform platform : DonglePlatform.values()) {
+			int[] count = counts.get(platform);
+			if (count != null) {
+				result.add(new DonglePlatformCounts(platform, count[0], count[1], count[2]));
+			}
+		}
+		return result;
+	}
+
+	static DongleAgent parseDongleAgent(String userAgent) {
+		if (userAgent == null || !userAgent.startsWith("PhoneBlock-Dongle/")) {
+			return new DongleAgent(DonglePlatform.UNKNOWN, null);
+		}
+		int first = userAgent.indexOf('(');
+		if (first < 0) {
+			return new DongleAgent(DonglePlatform.UNKNOWN, null);
+		}
+		List<String> groups = new ArrayList<>();
+		int pos = first;
+		while (pos < userAgent.length()) {
+			if (userAgent.charAt(pos) != '(') {
+				return new DongleAgent(DonglePlatform.UNKNOWN, null);
+			}
+			int end = userAgent.indexOf(')', pos + 1);
+			int nested = userAgent.indexOf('(', pos + 1);
+			if (end < 0 || nested >= 0 && nested < end) {
+				return new DongleAgent(DonglePlatform.UNKNOWN, null);
+			}
+			groups.add(userAgent.substring(pos + 1, end));
+			pos = end + 1;
+			while (pos < userAgent.length() && userAgent.charAt(pos) == ' ') {
+				pos++;
+			}
+		}
+		String id = groups.get(groups.size() - 1);
+		String platformTag = groups.size() > 1 ? groups.get(0) : "";
+		DonglePlatform platform = platformTag.isBlank() ? DonglePlatform.UNKNOWN : DonglePlatform.fromTag(platformTag);
+		return new DongleAgent(id.isBlank() ? DonglePlatform.UNKNOWN : platform, id.isBlank() ? null : id);
 	}
 
 	/**

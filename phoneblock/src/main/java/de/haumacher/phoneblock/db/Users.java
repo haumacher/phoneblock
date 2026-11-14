@@ -586,6 +586,14 @@ public interface Users {
 		+ "COUNT(1) AS cnt FROM TOKENS WHERE NOT IMPLICIT AND CREATED < #{before} AND LASTACCESS >= #{before} GROUP BY dial")
 	List<DailyCount> getTokenCountBeforeByAgent(long before);
 
+	/**
+	 * Reads recent explicit dongle token accesses for platform statistics.
+	 */
+	@Select("SELECT USERAGENT, LASTACCESS FROM TOKENS "
+		+ "WHERE NOT IMPLICIT AND USERAGENT LIKE 'PhoneBlock-Dongle/%' AND LASTACCESS >= #{since} "
+		+ "ORDER BY LASTACCESS DESC, USERAGENT ASC")
+	List<DB.DongleAccess> getRecentDongleAccesses(long since);
+
 	@Select("SELECT CAST(CREATED / 86400000 AS BIGINT) AS dayEpoch, COUNT(1) AS cnt "
 		+ "FROM ANSWERBOT_SIP WHERE REGISTERED = true AND CREATED >= #{since} AND CREATED < #{before} "
 		+ "GROUP BY dayEpoch ORDER BY dayEpoch")
