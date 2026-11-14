@@ -135,6 +135,7 @@ public class StatsController extends DefaultController {
 			"SpamBlocker", "SpamBlocker",
 			"FRITZOS_CardDAV_Client", "Fritz!Box",
 			"PhoneBlockMobile", "PhoneBlock Mobile",
+			"PhoneBlock-Dongle", "PhoneBlock Dongle",
 			"PhoneSpamBlocker", "PhoneSpamBlocker",
 			"kallm", "Kallm",
 			"Rufnummernsperre", "Rufnummernsperre");
