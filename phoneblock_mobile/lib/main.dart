@@ -22,6 +22,7 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:phoneblock_mobile/blocklist_sync_service.dart';
+import 'package:phoneblock_mobile/wildcard_sync_service.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/logging/crash_handler.dart';
 import 'package:phoneblock_mobile/logging/log_viewer_screen.dart';
@@ -1160,7 +1161,21 @@ class _MainScreenState extends State<MainScreen> {
     _setupCallScreeningListener();
     _checkPendingSharedNumber();
     _loadAnswerbotEnabled();
+    _syncPersonalWildcards();
     _initFritzBox();
+  }
+
+  /// Brings the personal wildcard rules (#377) up to date with the server.
+  ///
+  /// Rules created on phoneblock.net or on another device only reached the native screening
+  /// service when the blacklist screen was opened, so they did not block (#487). Running it
+  /// here means opening the app is enough.
+  Future<void> _syncPersonalWildcards() async {
+    final token = await getAuthToken();
+    if (token == null || token.isEmpty) {
+      return;
+    }
+    await WildcardSyncService.instance.sync(token);
   }
 
   /// Initializes Fritz!Box service and syncs calls.
@@ -2889,9 +2904,18 @@ Future<void> registerBlocklistSync() async {
 }
 
 /// Syncs wildcard prefixes from SQLite to SharedPreferences for CallChecker access.
+///
+/// Best-effort: the MethodChannel is unavailable in a background isolate (no Activity), so a
+/// background sync only updates the local store and the next foreground run pushes the
+/// prefixes on. Same limitation — and same handling — as [getAuthToken].
 Future<void> syncWildcardPrefixesToNative() async {
   final prefixes = await ScreenedCallsDatabase.instance.getWildcardPrefixes();
-  await platform.invokeMethod('setWildcardPrefixes', {'prefixes': prefixes});
+  try {
+    await platform.invokeMethod('setWildcardPrefixes', {'prefixes': prefixes});
+  } catch (e) {
+    AppLogger.instance.info('sync',
+        'wildcard prefixes not handed to the screening service (no Activity): $e');
+  }
 }
 
 Future<bool> checkPermission() async {
@@ -3955,8 +3979,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
         List<WildcardBlock> wildcards = [];
         if (_isBlacklist) {
-          await _syncWildcards(serverWildcards);
-          wildcards = await ScreenedCallsDatabase.instance.getAllWildcardBlocks();
+          wildcards = await WildcardSyncService.instance
+              .reconcile(serverWildcards, widget.authToken);
         }
 
         setState(() {
@@ -3977,51 +4001,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         _isLoading = false;
       });
     }
-  }
-
-  /// Reconciles local wildcard blocks with the server (#377).
-  ///
-  /// The server is the source of truth; the local copy exists only so the native
-  /// CallScreeningService can block offline. The app's pre-existing local-only wildcards are
-  /// lifted to the server once (migration); afterwards the local set mirrors the server, so
-  /// wildcards added or removed on any of the user's devices propagate here.
-  Future<void> _syncWildcards(List<api.PersonalizedNumber> serverWildcards) async {
-    final db = ScreenedCallsDatabase.instance;
-    final prefs = await SharedPreferences.getInstance();
-
-    // One-time migration of the app's existing local-only wildcards to the server.
-    if (!(prefs.getBool('wildcards_migrated') ?? false)) {
-      final onServer = serverWildcards.map((w) => w.phone).toSet();
-      for (final local in await db.getAllWildcardBlocks()) {
-        if (!onServer.contains(local.prefix) && await addWildcardToServer(local.prefix, widget.authToken)) {
-          serverWildcards.add(api.PersonalizedNumber(
-              phone: local.prefix, wildcard: true, created: local.created.millisecondsSinceEpoch));
-        }
-      }
-      await prefs.setBool('wildcards_migrated', true);
-    }
-
-    // Mirror the server set into the local store: add server-only, drop local-only.
-    final serverPrefixes = serverWildcards.map((w) => w.phone).toSet();
-    final local = await db.getAllWildcardBlocks();
-    final localPrefixes = local.map((w) => w.prefix).toSet();
-
-    for (final sw in serverWildcards) {
-      if (!localPrefixes.contains(sw.phone)) {
-        await db.insertWildcardBlock(WildcardBlock(
-          prefix: sw.phone,
-          comment: null,
-          created: sw.created > 0 ? DateTime.fromMillisecondsSinceEpoch(sw.created) : DateTime.now(),
-        ));
-      }
-    }
-    for (final lw in local) {
-      if (!serverPrefixes.contains(lw.prefix)) {
-        await db.deleteWildcardBlock(lw.id!);
-      }
-    }
-
-    await syncWildcardPrefixesToNative();
   }
 
   /// Edit the comment for a number in the list.
@@ -4285,6 +4264,13 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
   /// Returns null if the input cannot be normalized.
   Future<String?> _normalizeWildcardPrefix(String input) async {
     var cleaned = input.replaceAll(RegExp(r'[\s\-\(\)\/]'), '');
+
+    // A user who types the rule the way it is written ("+49900*") means the prefix "+49900" —
+    // the '*' is the notation for the range, not a digit of it. Rejecting such input as
+    // unparseable is what produced the misleading "too short" complaint in #487.
+    if (cleaned.endsWith('*')) {
+      cleaned = cleaned.substring(0, cleaned.length - 1);
+    }
 
     // Handle 00XX format → +XX
     if (cleaned.startsWith('00') && cleaned.length >= 4) {
