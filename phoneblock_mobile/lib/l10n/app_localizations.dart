@@ -122,6 +122,114 @@ abstract class AppLocalizations {
     Locale('zh')
   ];
 
+  /// Title of the busy forwarding help screen
+  ///
+  /// In de, this message translates to:
+  /// **'Mailbox bei blockierten Anrufen'**
+  String get mailboxForwardingTitle;
+
+  /// Settings subtitle for busy forwarding help
+  ///
+  /// In de, this message translates to:
+  /// **'Weiterleitung bei besetzt prüfen oder ändern'**
+  String get mailboxForwardingSubtitle;
+
+  /// Why blocked calls may reach voicemail
+  ///
+  /// In de, this message translates to:
+  /// **'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.'**
+  String get mailboxForwardingExplanation;
+
+  /// Consequences of disabling busy forwarding
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.'**
+  String get mailboxForwardingTradeoff;
+
+  /// Reminder to check and save the mailbox number before disabling forwarding
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.'**
+  String get mailboxForwardingReminder;
+
+  /// Button to check busy forwarding
+  ///
+  /// In de, this message translates to:
+  /// **'Status prüfen'**
+  String get mailboxCheckStatus;
+
+  /// Button to disable busy forwarding
+  ///
+  /// In de, this message translates to:
+  /// **'Mailbox bei besetzt abschalten'**
+  String get mailboxDisableBusy;
+
+  /// Button to enable busy forwarding again
+  ///
+  /// In de, this message translates to:
+  /// **'Wieder einschalten (rückgängig)'**
+  String get mailboxEnableBusy;
+
+  /// Heading for the explicit mailbox number fallback
+  ///
+  /// In de, this message translates to:
+  /// **'Falls das Einschalten nicht klappt'**
+  String get mailboxFallbackTitle;
+
+  /// Hint for the mailbox number field
+  ///
+  /// In de, this message translates to:
+  /// **'Mailboxnummer aus „Status prüfen“'**
+  String get mailboxNumberHint;
+
+  /// Validation error for a mailbox number
+  ///
+  /// In de, this message translates to:
+  /// **'Geben Sie nur Ziffern und optional ein führendes + ein.'**
+  String get mailboxNumberInvalid;
+
+  /// Button to register and enable busy forwarding with a number
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Mailboxnummer einschalten'**
+  String get mailboxEnableWithNumber;
+
+  /// Carrier compatibility advice for the busy-forwarding codes
+  ///
+  /// In de, this message translates to:
+  /// **'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.'**
+  String get mailboxCarrierHint;
+
+  /// Tip to turn off the carrier's missed-call SMS
+  ///
+  /// In de, this message translates to:
+  /// **'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.'**
+  String get mailboxSmsHint;
+
+  /// Link to mailbox FAQ
+  ///
+  /// In de, this message translates to:
+  /// **'Weitere Informationen auf PhoneBlock'**
+  String get mailboxFaq;
+
+  /// Error when no dialer can be opened
+  ///
+  /// In de, this message translates to:
+  /// **'Die Telefon-App konnte nicht geöffnet werden.'**
+  String get mailboxDialerError;
+
+  /// Error when the mailbox FAQ cannot be opened
+  ///
+  /// In de, this message translates to:
+  /// **'Die Webseite konnte nicht geöffnet werden.'**
+  String get mailboxLinkError;
+
+  /// Error reading or saving the mailbox number
+  ///
+  /// In de, this message translates to:
+  /// **'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.'**
+  String get mailboxStorageError;
+
   /// Application title
   ///
   /// In de, this message translates to:

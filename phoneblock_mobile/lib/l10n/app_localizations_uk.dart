@@ -9,6 +9,69 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => 'Mailbox bei blockierten Anrufen';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Weiterleitung bei besetzt prüfen oder ändern';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+
+  @override
+  String get mailboxCheckStatus => 'Status prüfen';
+
+  @override
+  String get mailboxDisableBusy => 'Mailbox bei besetzt abschalten';
+
+  @override
+  String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
+
+  @override
+  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+
+  @override
+  String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Geben Sie nur Ziffern und optional ein führendes + ein.';
+
+  @override
+  String get mailboxEnableWithNumber => 'Mit Mailboxnummer einschalten';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.';
+
+  @override
+  String get mailboxFaq => 'Weitere Informationen auf PhoneBlock';
+
+  @override
+  String get mailboxDialerError =>
+      'Die Telefon-App konnte nicht geöffnet werden.';
+
+  @override
+  String get mailboxLinkError => 'Die Webseite konnte nicht geöffnet werden.';
+
+  @override
+  String get mailboxStorageError =>
+      'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override
