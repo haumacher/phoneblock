@@ -155,6 +155,7 @@ class _MailboxForwardingScreenState extends State<MailboxForwardingScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.mailboxNumberHint,
                   errorText: _invalidNumber ? l10n.mailboxNumberInvalid : null,
+                  errorMaxLines: 3,
                 ),
                 onChanged: (value) => _saveNumber(context, value),
               ),
