@@ -518,6 +518,12 @@ abstract class AppLocalizations {
   /// **'Fehler beim Melden: {error}'**
   String reportError(String error);
 
+  /// Error when the server rejects an exact personalized-list number
+  ///
+  /// In de, this message translates to:
+  /// **'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.'**
+  String get numberRejectedByServer;
+
   /// Successfully reported as spam
   ///
   /// In de, this message translates to:
@@ -1801,6 +1807,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Nummernbereich sperren'**
   String get wildcardToggle;
+
+  /// Validation error when a wildcard is entered on the whitelist
+  ///
+  /// In de, this message translates to:
+  /// **'Platzhalter (*) sind nur in der Sperrliste möglich.'**
+  String get wildcardOnlyBlacklist;
 
   /// Help text shown when wildcard toggle is on
   ///

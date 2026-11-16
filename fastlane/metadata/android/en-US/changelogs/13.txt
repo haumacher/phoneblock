@@ -1,0 +1,3 @@
+Version 1.3.2:
+* Adding a number ending in * to the blocklist creates a range rule instead of failing with "Error 400"; invalid input is shown in the dialog (#481)
+* The add button no longer covers the last entry of the lists (#487)

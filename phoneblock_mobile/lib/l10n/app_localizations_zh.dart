@@ -219,6 +219,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get numberRejectedByServer =>
+      'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.';
+
+  @override
   String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber被报告为垃圾邮件';
   }
@@ -906,6 +910,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get wildcardToggle => '区块编号范围';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Platzhalter (*) sind nur in der Sperrliste möglich.';
 
   @override
   String get wildcardHint => '屏蔽以此前缀开头的所有号码';
