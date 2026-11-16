@@ -25,6 +25,7 @@ import 'package:phoneblock_mobile/blocklist_sync_service.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/logging/crash_handler.dart';
 import 'package:phoneblock_mobile/logging/log_viewer_screen.dart';
+import 'package:phoneblock_mobile/mailbox_forwarding_screen.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
@@ -3572,6 +3573,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                   ),
+                const Divider(),
+                ListTile(
+                  title: Text(context.l10n.mailboxForwardingTitle),
+                  subtitle: Text(context.l10n.mailboxForwardingSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MailboxForwardingScreen()),
+                  ),
+                ),
                 const Divider(),
                 // Retention period setting
                 ListTile(
