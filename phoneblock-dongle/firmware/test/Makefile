@@ -172,8 +172,9 @@ test_link_watchdog_probe: test_link_watchdog_probe.c ../main/link_watchdog.c ../
 test_smtp_body: test_smtp_body.c ../main/smtp_body.c ../main/smtp_body.h
 	$(CC) $(CFLAGS) test_smtp_body.c ../main/smtp_body.c -o $@
 
-test_mail_html: test_mail_html.c ../main/mail_html.c ../main/mail_html.h
-	$(CC) $(CFLAGS) test_mail_html.c ../main/mail_html.c -o $@
+test_mail_html: test_mail_html.c ../main/mail_html.c ../main/mail_html.h \
+                ../main/smtp_body.c ../main/smtp_body.h
+	$(CC) $(CFLAGS) test_mail_html.c ../main/mail_html.c ../main/smtp_body.c -o $@
 
 test_mail_rcpt: test_mail_rcpt.c ../main/mail_rcpt.c ../main/mail_rcpt.h ../main/strbuf.h
 	$(CC) $(CFLAGS) test_mail_rcpt.c ../main/mail_rcpt.c -o $@
@@ -299,7 +300,7 @@ test_platform_linux_net: test_platform_linux_net.c linux_test_util.h \
 # The library of the firmware modules that the Linux tests link, and the
 # service itself, come from ../linux/Makefile, shared with debian/rules
 # (#624). Its dependency check applies to these goals.
-LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_sip_digest_linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
+LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_sip_digest_linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux test_mail_status_linux
 include ../linux/Makefile
 
 # The SIP digest response (sip_register.c) against RFC 2617 and long nonces.
@@ -357,6 +358,16 @@ test_webhook_linux: test_webhook_linux.c linux_test_util.h \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
 
+test_mail_status_linux: test_mail_status_linux.c ../main/mail_status.c \
+                        ../main/mail_status.h ../main/mail_calls.c \
+                        ../main/mail_html.c ../main/mail_i18n.c ../main/smtp_body.c \
+                        $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -Ilfs_host -pthread $(LINUX_PKG_CFLAGS) \
+	  test_mail_status_linux.c ../main/mail_status.c ../main/mail_calls.c \
+	  ../main/mail_html.c ../main/mail_i18n.c ../main/smtp_body.c \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
+
 test_web_http_linux: test_web_http_linux.c linux_test_util.h ../main/web_http.h \
                      ../main/web_http_linux.c
 	$(CC) $(CFLAGS) -pthread $(shell pkg-config --cflags libmicrohttpd) \
@@ -403,7 +414,7 @@ test: $(BINS)
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
-LINUX_BINS = test_platform_linux_net test_sip_digest_linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux
+LINUX_BINS = test_platform_linux_net test_sip_digest_linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux test_web_i18n_linux test_mail_status_linux
 
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done
