@@ -8,8 +8,37 @@
 #include <string.h>
 
 #include "mail_html.h"
+#include "stats.h"
+#include "smtp_body.h"
 
 #define CAP 256
+#define STATUS_CALLS 200
+#define STATUS_BODY_CAP (512 * 1024)
+
+static struct {
+    char data[STATUS_BODY_CAP];
+    size_t len;
+    size_t line_len;
+    size_t max_line;
+} s_wire;
+
+static int wire_sink(void *ctx, const char *data, size_t len)
+{
+    (void)ctx;
+    assert(s_wire.len + len < sizeof(s_wire.data));
+    memcpy(s_wire.data + s_wire.len, data, len);
+    s_wire.len += len;
+    for (size_t i = 0; i < len; i++) {
+        if (data[i] == '\n') {
+            size_t line_len = s_wire.line_len - 1; // exclude CR
+            if (line_len > s_wire.max_line) s_wire.max_line = line_len;
+            s_wire.line_len = 0;
+        } else {
+            s_wire.line_len++;
+        }
+    }
+    return 0;
+}
 
 // Escape `in` into a fresh buffer and assert it equals `want`.
 static void check_escape(const char *in, const char *want)
@@ -116,6 +145,62 @@ int main(void)
         assert(len % 3 == 0);
         for (size_t i = 0; i < len; i += 3)
             assert(strncmp(buf + i, "%2B", 3) == 0);
+    }
+
+    // --- status-mail call table: full capacity and maximum escaped fields
+    // stay under the SMTP line limit after LF->CRLF conversion. This uses
+    // the same row builder as mail_status.c, with every call rendered on its own
+    // lines, including a maximal base URL and URL-escaped synthetic number.
+    {
+        static char html[STATUS_BODY_CAP];
+        size_t len = append_str(html, sizeof(html), 0,
+            "<html><body>\n<table>\n"
+            "<tr><th>time</th><th>number</th><th>name</th><th>rating</th></tr>\n");
+        char base[128];
+        memset(base, 'x', sizeof(base) - 1);
+        base[sizeof(base) - 1] = '\0';                 // config URL max: 127 bytes
+        char url_number[STATS_NUMBER_LEN];
+        memcpy(url_number, "030", 3);
+        memset(url_number + 3, '/', sizeof(url_number) - 4);
+        url_number[sizeof(url_number) - 1] = '\0';
+        char label[STATS_LABEL_LEN], name[STATS_LOCATION_LEN], verdict[64];
+        memset(label, '"', sizeof(label) - 1);
+        label[sizeof(label) - 1] = '\0';
+        memset(name, '"', sizeof(name) - 1);
+        name[sizeof(name) - 1] = '\0';
+        memset(verdict, '"', sizeof(verdict) - 1);
+        verdict[sizeof(verdict) - 1] = '\0';
+        char when[24];
+        memset(when, '9', sizeof(when) - 1);
+        when[sizeof(when) - 1] = '\0';
+
+        for (int i = 0; i < STATUS_CALLS; i++) {
+            len = mail_html_append_call_row(html, sizeof(html), len, when, base,
+                                            url_number, true, label, name, verdict);
+        }
+        len = append_str(html, sizeof(html), len, "</table>\n</body></html>\n");
+        assert(len < sizeof(html));
+
+        memset(&s_wire, 0, sizeof(s_wire));
+        assert(smtp_encode_body(html, wire_sink, NULL) == 0);
+        assert(s_wire.line_len == 0 && s_wire.max_line <= 998);
+        s_wire.data[s_wire.len] = '\0';
+        int rows = 0;
+        const char *row_tag = "<tr style=\"border-bottom:1px solid #eee\">";
+        for (char *p = s_wire.data; (p = strstr(p, row_tag)) != NULL; p++) {
+            assert(p > s_wire.data && p[-1] == '\n');
+            rows++;
+        }
+        assert(rows == STATUS_CALLS);
+        char *p = s_wire.data;
+        int row_ends = 0;
+        while ((p = strstr(p, "</tr>\r\n")) != NULL) {
+            row_ends++;
+            p++;
+        }
+        assert(row_ends == STATUS_CALLS + 1);           // call rows plus header
+        printf("status mail: %d call rows, max SMTP line %zu bytes\n",
+               rows, s_wire.max_line);
     }
 
     // --- regression: the builders must NUL-terminate, so a body assembled
