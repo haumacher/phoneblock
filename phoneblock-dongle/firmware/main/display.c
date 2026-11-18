@@ -87,13 +87,17 @@ static const board_t k_board = {
 #else
 #define BL_PWM        0
 #endif
+// The backlight dims this long after boot or after a call ended. The caller
+// screen of an ended call stays until then, and the logo is drawn right
+// before dimming, so a call that ended at once can still be read.
 #define BL_DIM_AFTER_US (60LL * 1000 * 1000)
 
-// The caller screen's fallback: a legitimate call is declined by the dongle
+// The call's fallback end: a legitimate call is declined by the dongle
 // after a few seconds (#380) while the other phones keep ringing, and the
-// Fritz!Box tells the dongle nothing more about it — so the screen ends on
-// this timeout unless a CANCEL, the spam call's teardown or the next call
-// ends it first. Long enough to cover the ringing phase.
+// Fritz!Box tells the dongle nothing more about it — so the call counts as
+// ended on this timeout unless a CANCEL, the spam call's teardown or the
+// next call ends it first. Long enough to cover the ringing phase. Ending
+// a call only starts the BL_DIM_AFTER_US hold: the caller screen stays.
 #define CALL_TIMEOUT_US (60LL * 1000 * 1000)
 
 // Frames are composed and sent in horizontal strips from one transient
@@ -156,9 +160,12 @@ static esp_timer_handle_t s_call_timer;
 // job for the esp_timer task the drawing runs on (3.5 KB stack, and every
 // other timer waits meanwhile).
 static int          s_badge;
-static bool         s_call_active;
+static bool         s_call_active;       // a call is going on
+static bool         s_call_shown;        // the caller screen is wanted: during
+                                         // the call and until the dim timer
 static uint32_t     s_call_gen;          // bumped per call
 static int64_t      s_call_started_us;
+static int64_t      s_dim_due_us;        // when the latest dim timer fires
 
 // What is on the panel (the scratch space is in s_mem). All under s_lock.
 static bool             s_drawn_valid;
@@ -211,20 +218,36 @@ static void set_backlight(bool full)
 #endif
 }
 
+static void redraw(void *arg);
+
 static void dim_backlight(void *arg)
 {
     (void)arg;
     xSemaphoreTake(s_state, portMAX_DELAY);
+    // A callback that was already running when a newer timer was armed
+    // (brighten_for_a_while) must not cut that hold short.
+    bool stale = esp_timer_get_time() < s_dim_due_us - 1000;
     bool calling = s_call_active;
+    bool held = s_call_shown && !calling && !stale;
+    if (held) s_call_shown = false;
+    xSemaphoreGive(s_state);
+    if (calling || stale) return;
+    // The dimmed screen shows the logo, not the held caller.
+    if (held) redraw(NULL);
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    calling = s_call_shown;   // a call may have started meanwhile
     xSemaphoreGive(s_state);
     if (!calling) set_backlight(false);
 }
 
 // Full brightness now, dimmed BL_DIM_AFTER_US later (unless a call is on
-// screen by then).
+// screen by then); a held caller screen goes back to the logo then.
 static void brighten_for_a_while(void)
 {
     set_backlight(true);
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    s_dim_due_us = esp_timer_get_time() + BL_DIM_AFTER_US;
+    xSemaphoreGive(s_state);
     esp_timer_stop(s_dim_timer);
     esp_timer_start_once(s_dim_timer, BL_DIM_AFTER_US);
 }
@@ -486,7 +509,7 @@ static bool send_frame(bool call, int badge)
 static bool draw_screen(bool force)
 {
     xSemaphoreTake(s_state, portMAX_DELAY);
-    bool call = s_call_active;
+    bool call = s_call_shown;
     uint32_t gen = s_call_gen;
     if (call) s_mem->draw_call = s_mem->call;
     int badge = call ? 0 : s_badge;
@@ -541,6 +564,7 @@ void display_call_started(const stats_call_t *call)
     xSemaphoreTake(s_state, portMAX_DELAY);
     s_mem->call = *call;
     s_call_active = true;
+    s_call_shown = true;
     s_call_gen++;
     s_call_started_us = esp_timer_get_time();
     xSemaphoreGive(s_state);

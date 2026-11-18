@@ -23,9 +23,11 @@
 //           list in the web UI clears it).
 //   call  — the incoming caller, like a phone in the room: name and number,
 //           or the number with its PhoneBlock rating. Shown from the
-//           screening decision until the call ends for the dongle (CANCEL,
-//           the spam call's teardown) or a 60 s fallback timeout, whichever
-//           comes first; a new call replaces it.
+//           screening decision on. When the call ends for the dongle
+//           (CANCEL, the spam call's teardown) or a 60 s fallback timeout
+//           runs out, it stays, so a call that ended at once (a fax, another
+//           phone picking up) can still be read; it goes back to the logo
+//           when the backlight dims a minute later. A new call replaces it.
 // The backlight is full while a call is shown and for a minute after boot
 // or a call, dimmed otherwise (off on the T-Display, which switches it by
 // GPIO). Drawing runs from an esp_timer callback, so
@@ -83,7 +85,8 @@ bool display_was_started(void);
 // would show it (copied). Replaces any call on screen.
 void display_call_started(const stats_call_t *call);
 
-// The call on screen ended for the dongle. Back to the idle screen.
+// The call on screen ended for the dongle. Its caller screen stays, with
+// the backlight full, until the backlight dims.
 void display_call_ended(void);
 
 // The call list changed (entry added or dropped, re-rated, cleared): the
