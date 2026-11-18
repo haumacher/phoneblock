@@ -174,17 +174,17 @@ static uint32_t         s_drawn_gen;
 static int              s_drawn_badge;
 static bool             s_draw_failure_logged;
 
-#if CONFIG_IDF_TARGET_ESP32S3
-// ST7735 power and gamma setup. The panel is driven through ESP-IDF's
-// ST7789 driver (reset, sleep-out, pixel format, address window, MADCTL
-// are the same commands); these registers are ST7735-specific. Values from
-// LilyGO's T-Dongle-S3 init (esp_lcd_st7735.c, MIT).
 typedef struct {
     uint8_t cmd;
     uint8_t len;
     uint8_t data[16];
 } lcd_cmd_t;
 
+#if CONFIG_IDF_TARGET_ESP32S3
+// ST7735 power and gamma setup. The panel is driven through ESP-IDF's
+// ST7789 driver (reset, sleep-out, pixel format, address window, MADCTL
+// are the same commands); these registers are ST7735-specific. Values from
+// LilyGO's T-Dongle-S3 init (esp_lcd_st7735.c, MIT).
 static const lcd_cmd_t k_st7735_init[] = {
     { 0xB1, 3,  { 0x05, 0x3A, 0x3A } },                          // FRMCTR1
     { 0xB2, 3,  { 0x05, 0x3A, 0x3A } },                          // FRMCTR2
@@ -200,6 +200,36 @@ static const lcd_cmd_t k_st7735_init[] = {
                   0x0A, 0x12, 0x27, 0x37, 0x00, 0x0D, 0x0E, 0x10 } }, // GMCTRP1
     { 0xE1, 16, { 0x10, 0x0E, 0x03, 0x03, 0x0F, 0x06, 0x02, 0x08,
                   0x0A, 0x13, 0x26, 0x36, 0x00, 0x0D, 0x0E, 0x10 } }, // GMCTRN1
+};
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32
+// ST7789V power and gamma setup for the LilyGO T-Display V1.1 (135x240).
+// ESP-IDF's ST7789 driver only sets reset, sleep-out, pixel format, address
+// window, MADCTL and display-on; with only that, the colours came out
+// washed out in the hardware test on #727. Values from the ST7789_Init.h that LilyGO ships for the
+// T-Display (TFT_eSPI by Bodmer, FreeBSD licence, i.e. BSD-2-Clause):
+// (github.com/Xinyuan-LilyGO/TTGO-T-Display, commit
+// 6f89cddcde7152b84f7afc1831b6a1dee1fc3206,
+// TFT_eSPI/TFT_Drivers/ST7789_Init.h).
+// Copyright (c) 2020 Bodmer (https://github.com/Bodmer). SLPOUT, NORON,
+// MADCTL, COLMOD, INVON (see invert_color below), CASET/RASET and DISPON
+// are left to the ESP-IDF driver.
+static const lcd_cmd_t k_st7789_tdisplay_init[] = {
+    { 0xB6, 2,  { 0x0A, 0x82 } },                                // DFC
+    { 0xB2, 5,  { 0x0C, 0x0C, 0x00, 0x33, 0x33 } },              // PORCTRL
+    { 0xB7, 1,  { 0x35 } },                                      // GCTRL
+    { 0xBB, 1,  { 0x28 } },                                      // VCOMS
+    { 0xC0, 1,  { 0x0C } },                                      // LCMCTRL
+    { 0xC2, 2,  { 0x01, 0xFF } },                                // VDVVRHEN
+    { 0xC3, 1,  { 0x10 } },                                      // VRHS
+    { 0xC4, 1,  { 0x20 } },                                      // VDVS
+    { 0xC6, 1,  { 0x0F } },                                      // FRCTRL2
+    { 0xD0, 2,  { 0xA4, 0xA1 } },                                // PWCTRL1
+    { 0xE0, 14, { 0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x32, 0x44,
+                  0x42, 0x06, 0x0E, 0x12, 0x14, 0x17 } },        // PVGAMCTRL
+    { 0xE1, 14, { 0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x31, 0x54,
+                  0x47, 0x0E, 0x1C, 0x17, 0x1B, 0x1E } },        // NVGAMCTRL
 };
 #endif
 
@@ -702,6 +732,13 @@ void display_start(void)
         err = esp_lcd_panel_io_tx_param(io, k_st7735_init[i].cmd,
                                         k_st7735_init[i].data,
                                         k_st7735_init[i].len);
+    }
+#elif CONFIG_IDF_TARGET_ESP32
+    size_t n = sizeof(k_st7789_tdisplay_init) / sizeof(k_st7789_tdisplay_init[0]);
+    for (size_t i = 0; err == ESP_OK && i < n; i++) {
+        err = esp_lcd_panel_io_tx_param(io, k_st7789_tdisplay_init[i].cmd,
+                                        k_st7789_tdisplay_init[i].data,
+                                        k_st7789_tdisplay_init[i].len);
     }
 #endif
     if (err == ESP_OK) err = esp_lcd_panel_invert_color(panel, true);
