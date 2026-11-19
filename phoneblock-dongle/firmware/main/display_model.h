@@ -47,6 +47,11 @@ typedef struct {
     int band_y, band_text_y;
     int name_y, name_number_y;
     int number_large_y, number_small_y;
+    // The fonts are drawn with every pixel as a text_scale x text_scale
+    // block: 2 on the 240x135 panel, where the 160x80 fonts are too small
+    // to read, 1 otherwise. The text positions above and the dm_*_scaled()
+    // measurements below are for this scale. The badge stays at scale 1.
+    int text_scale;
 } dm_layout_t;
 
 void dm_layout(int width, int height, dm_layout_t *out);
@@ -73,11 +78,18 @@ bool dm_renderable(const char *s);
 // as one cell; display.c draws it as '?').
 int dm_text_width(const lcd_font_t *font, const char *s);
 
+// The same for text drawn at `scale` (dm_layout_t.text_scale).
+int dm_text_width_scaled(const lcd_font_t *font, int scale, const char *s);
+
 // Copies `s` into `out`, cut at a code point boundary and ended with "…"
 // (U+2026) if it would be wider than `max_px` or longer than `cap`.
 // Returns the width of the copy in pixels.
 int dm_fit_text(const lcd_font_t *font, const char *s, int max_px,
                 char *out, size_t cap);
+
+// The same for text drawn at `scale`: a cell is font->w * scale wide.
+int dm_fit_text_scaled(const lcd_font_t *font, int scale, const char *s,
+                       int max_px, char *out, size_t cap);
 
 // --- spam badge -----------------------------------------------------
 
@@ -108,8 +120,8 @@ int  dm_count_listed_spam(const stats_call_t *calls, int n);
 
 // --- caller screen --------------------------------------------------
 
-// Bytes per line: the widest panel holds 33 small-font cells, each up to
-// three UTF-8 bytes.
+// Bytes per line: 33 small-font cells (the 240 px panel at scale 1, the
+// widest line possible), each up to three UTF-8 bytes.
 #define DM_LINE_CAP 104
 
 typedef struct {
@@ -133,3 +145,9 @@ typedef struct {
 // colour follows dm_class_of(); spam and suspected spam carry the direct
 // vote count. Lines are fitted to a panel `width` pixels wide.
 void dm_call_screen(const stats_call_t *call, int width, dm_call_screen_t *out);
+
+// The same with the text drawn at `scale` (dm_layout_t.text_scale): the
+// fit and the large/small decision use the scaled cell widths, and the
+// lines' widths are in scaled pixels. dm_call_screen() is scale 1.
+void dm_call_screen_scaled(const stats_call_t *call, int width, int scale,
+                           dm_call_screen_t *out);

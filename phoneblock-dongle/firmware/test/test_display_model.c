@@ -270,28 +270,45 @@ static void test_glyphs(void)
           "text width within the panel");
 }
 
-// The wider panel (#708): the same fonts, more cells per line.
+// The wider panel (#708): the same fonts drawn at twice the size, so a line
+// holds 13 large or 16 small cells and a number fits the large font only up
+// to 13 characters.
 static void test_call_screen_wide(void)
 {
-    printf("caller screen, 240 px:\n");
+    printf("caller screen, 240 px at scale 2:\n");
     dm_call_screen_t s;
     stats_call_t c = make_call("+4930123456", "Maximilian Mustermann-Lüdenscheid",
                                PB_ASSESS_LEGITIMATE, 0);
-    dm_call_screen(&c, DM_TDISPLAY_W, &s);
-    // 234 px / 9 px = 26 cells: 25 code points and the ellipsis.
-    CHECK(DM_TEXT_MAX_PX(DM_TDISPLAY_W) / lcd_font_large.w == 26,
-          "large font: 26 cells per line");
-    CHECK(strcmp(s.main.text, "Maximilian Mustermann-Lüd" ELLIPSIS) == 0,
-          "long name cut later than on 160 px");
-    CHECK(s.main.width == 26 * lcd_font_large.w
+    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    // 234 px / 18 px = 13 cells: 12 code points and the ellipsis.
+    CHECK(DM_TEXT_MAX_PX(DM_TDISPLAY_W) / (lcd_font_large.w * 2) == 13,
+          "large font at 2x: 13 cells per line");
+    CHECK(strcmp(s.main.text, "Maximilian M" ELLIPSIS) == 0,
+          "long name cut at the scaled cell width");
+    CHECK(s.main.width == 13 * lcd_font_large.w * 2
           && s.main.width <= DM_TEXT_MAX_PX(DM_TDISPLAY_W),
-          "truncated name fits the 240 px panel");
+          "truncated name fits the 240 px panel at 2x");
+    CHECK(s.sub.font == &lcd_font_small && s.sub.width == 11 * lcd_font_small.w * 2,
+          "number below the name measured at 2x");
 
-    c = make_call("+49301234567890123", "", PB_ASSESS_UNKNOWN, 0);
-    dm_call_screen(&c, DM_TDISPLAY_W, &s);
-    CHECK(s.main.font == &lcd_font_large
-          && strcmp(s.main.text, "+49301234567890123") == 0,
-          "a number too wide for 160 px stays large on 240 px");
+    c = make_call("+493012345678", "", PB_ASSESS_UNKNOWN, 0);
+    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    CHECK(s.main.font == &lcd_font_large && s.main.width == 13 * lcd_font_large.w * 2
+          && strcmp(s.main.text, "+493012345678") == 0,
+          "a number that fits at 2x large stays large");
+
+    c = make_call("+493012345678901", "", PB_ASSESS_UNKNOWN, 0);
+    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    CHECK(s.main.font == &lcd_font_small
+          && strcmp(s.main.text, "+493012345678901") == 0
+          && s.main.width == 16 * lcd_font_small.w * 2,
+          "a number too wide for 2x large falls back to 2x small");
+
+    c = make_call("+49301234567890123456789012", "", PB_ASSESS_UNKNOWN, 0);
+    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    CHECK(s.main.font == &lcd_font_small && s.main.width == 16 * lcd_font_small.w * 2
+          && strcmp(s.main.text, "+49301234567890" ELLIPSIS) == 0,
+          "an over-long number is cut with the ellipsis at 2x small");
 
     // The longest line the buffers must hold: 33 small cells of 3-byte
     // UTF-8 (the euro sign), 32 of them and the ellipsis.
@@ -323,7 +340,8 @@ static void test_layout(void)
           && l.badge_text_y == 3, "160x80: badge as before");
     CHECK(l.band_y == 58 && l.band_text_y == 62, "160x80: band as before");
     CHECK(l.name_y == 10 && l.name_number_y == 35
-          && l.number_large_y == 20 && l.number_small_y == 22,
+          && l.number_large_y == 20 && l.number_small_y == 22
+          && l.text_scale == 1,
           "160x80: name and number as before");
 
     // The T-Display: the logo by 3/2, centred; the text centred above the
@@ -333,10 +351,12 @@ static void test_layout(void)
           && l.logo_x == 0 && l.logo_y == 7, "240x135: logo 240x120 at row 7");
     CHECK(l.badge_top == 8 && l.badge_right == 238 && l.badge_text_y == 10,
           "240x135: badge in the logo's top-right corner");
-    CHECK(l.band_y == 113 && l.band_text_y == 117, "240x135: band at the bottom");
-    CHECK(l.name_y == 37 && l.name_number_y == 62
-          && l.number_large_y == 47 && l.number_small_y == 50,
-          "240x135: text centred above the band");
+    CHECK(l.text_scale == 2, "240x135: text at twice the size");
+    CHECK(l.band_y == 91 && l.band_text_y == 91 + (44 - 26) / 2,
+          "240x135: double-height band at the bottom");
+    CHECK(l.name_y == 7 && l.name_number_y == 57
+          && l.number_large_y == 27 && l.number_small_y == 32,
+          "240x135: scaled text centred above the band");
 
     // Everything inside the panel, for both sizes.
     int sizes[][2] = { { DM_TDONGLE_W, DM_TDONGLE_H }, { DM_TDISPLAY_W, DM_TDISPLAY_H } };
@@ -345,9 +365,9 @@ static void test_layout(void)
         bool inside = l.logo_x >= 0 && l.logo_x + l.logo_w <= l.width
             && l.logo_y >= 0 && l.logo_y + l.logo_h <= l.height
             && l.badge_top + l.badge_h <= l.height && l.badge_right < l.width
-            && l.name_number_y + lcd_font_small.h <= l.band_y
-            && l.number_large_y + lcd_font_large.h <= l.band_y
-            && l.band_text_y + lcd_font_small.h <= l.height;
+            && l.name_number_y + lcd_font_small.h * l.text_scale <= l.band_y
+            && l.number_large_y + lcd_font_large.h * l.text_scale <= l.band_y
+            && l.band_text_y + lcd_font_small.h * l.text_scale <= l.height;
         CHECK(inside, i == 0 ? "160x80: all inside the panel"
                              : "240x135: all inside the panel");
     }

@@ -404,36 +404,39 @@ static bool compose_logo(uint16_t *strip, int y0, int rows, logo_cursor_t *c)
 }
 
 // Draws the set pixels of glyph `index` with its cell's top-left corner at
-// (x, y), clipped to the strip holding rows y0 .. y0 + STRIP_ROWS - 1.
+// (x, y), each as a scale x scale block, clipped per row to the strip
+// holding rows y0 .. y0 + STRIP_ROWS - 1 (a scaled glyph may span strips).
 static void draw_glyph(uint16_t *strip, int y0, const lcd_font_t *font,
-                       int index, int x, int y, uint16_t fg)
+                       int scale, int index, int x, int y, uint16_t fg)
 {
     const uint8_t *bits = font->bits + (size_t)index * font->bytes_per_glyph;
-    for (int gy = 0; gy < font->h; gy++) {
-        int sy = y + gy - y0;
-        if (sy < 0 || sy >= STRIP_ROWS) continue;
-        for (int gx = 0; gx < font->w; gx++) {
-            int sx = x + gx;
-            if (sx < 0 || sx >= W) continue;
-            int bit = gy * font->w + gx;
+    for (int sy = 0; sy < font->h * scale; sy++) {
+        int row = y + sy - y0;
+        if (row < 0 || row >= STRIP_ROWS) continue;
+        int gy = sy / scale;
+        for (int sx = 0; sx < font->w * scale; sx++) {
+            int col = x + sx;
+            if (col < 0 || col >= W) continue;
+            int bit = gy * font->w + sx / scale;
             if (bits[bit >> 3] & (0x80 >> (bit & 7))) {
-                strip[sy * W + sx] = fg;
+                strip[row * W + col] = fg;
             }
         }
     }
 }
 
-// Draws UTF-8 `text` from (x, y); a code point the fonts lack shows as '?'.
+// Draws UTF-8 `text` from (x, y) at `scale`; a code point the fonts lack
+// shows as '?'.
 static void draw_text(uint16_t *strip, int y0, const lcd_font_t *font,
-                      const char *text, int x, int y, uint16_t fg)
+                      int scale, const char *text, int x, int y, uint16_t fg)
 {
-    if (y + font->h <= y0 || y >= y0 + STRIP_ROWS) return;
+    if (y + font->h * scale <= y0 || y >= y0 + STRIP_ROWS) return;
     uint32_t cp;
     while ((cp = dm_utf8_next(&text)) != 0) {
         int index = cp == DM_UTF8_INVALID ? -1 : dm_glyph_index(cp);
         if (index < 0) index = dm_glyph_index('?');
-        draw_glyph(strip, y0, font, index, x, y, fg);
-        x += font->w;
+        draw_glyph(strip, y0, font, scale, index, x, y, fg);
+        x += font->w * scale;
     }
 }
 
@@ -442,7 +445,7 @@ static void draw_line(uint16_t *strip, int y0, const dm_line_t *line,
                       int y, uint16_t fg)
 {
     if (!line->font || !line->text[0]) return;
-    draw_text(strip, y0, line->font, line->text,
+    draw_text(strip, y0, line->font, s_mem->layout.text_scale, line->text,
               (W - line->width) / 2, y, fg);
 }
 
@@ -471,7 +474,7 @@ static void draw_badge(uint16_t *strip, int y0, const char *text)
             if (dx * dx + dy * dy <= r2 * r2) strip[sy * W + x] = C_BADGE;
         }
     }
-    draw_text(strip, y0, font, text, x0 + (w - text_w) / 2, l->badge_text_y, C_WHITE);
+    draw_text(strip, y0, font, 1, text, x0 + (w - text_w) / 2, l->badge_text_y, C_WHITE);
 }
 
 static uint16_t band_colour(dm_class_t cls)
@@ -551,7 +554,8 @@ static bool draw_screen(bool force)
         && (call ? s_drawn_gen == gen : s_drawn_badge == badge)) {
         return true;
     }
-    if (call) dm_call_screen(&s_mem->draw_call, W, &s_mem->screen);
+    if (call) dm_call_screen_scaled(&s_mem->draw_call, W, s_mem->layout.text_scale,
+                              &s_mem->screen);
     if (!send_frame(call, badge)) {
         s_drawn_valid = false;
         if (!s_draw_failure_logged) {
