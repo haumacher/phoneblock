@@ -61,13 +61,15 @@ static const board_t k_board = {
 #else
 // LilyGO T-Display V1.1: ST7789V, 135x240. The window offsets
 // (40/53 normal, 40/52 rotated) are TFT_eSPI's for this panel in landscape.
+// BGR: with RGB, red and blue came out swapped in the hardware test on #727
+// (the red logo showed blue, the navy background grey).
 static const board_t k_board = {
     .name = "T-Display", .host = SPI3_HOST,
     .mosi = PIN_MOSI, .sclk = PIN_SCLK, .cs = PIN_CS, .dc = PIN_DC, .rst = PIN_RST,
     .backlight = PIN_BACKLIGHT, .backlight_active_low = false,
     .width = DM_TDISPLAY_W, .height = DM_TDISPLAY_H,
     .gap_normal_x = 40, .gap_normal_y = 53, .gap_flipped_x = 40, .gap_flipped_y = 52,
-    .mirror_x = true, .rgb_order = LCD_RGB_ELEMENT_ORDER_RGB,
+    .mirror_x = true, .rgb_order = LCD_RGB_ELEMENT_ORDER_BGR,
 };
 #endif
 #define LCD_PCLK_HZ   (40 * 1000 * 1000)
