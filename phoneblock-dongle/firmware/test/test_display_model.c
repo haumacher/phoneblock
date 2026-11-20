@@ -327,6 +327,72 @@ static void test_call_screen_wide(void)
           "33 small cells of 3-byte UTF-8 fit the line buffer");
 }
 
+static void wrap_screen(const char *name, dm_call_screen_t *s)
+{
+    dm_layout_t l;
+    dm_layout(DM_TDISPLAY_W, DM_TDISPLAY_H, &l);
+    stats_call_t c = make_call("+4930123456", name, PB_ASSESS_LEGITIMATE, 0);
+    dm_call_screen_laid_out(&c, &l, s);
+}
+
+// A long name over two lines on the 240x135 panel (13 large cells a line).
+static void test_name_wrap(void)
+{
+    printf("name over two lines:\n");
+    dm_call_screen_t s;
+    int cell = lcd_font_large.w * 2;
+
+    wrap_screen("Maximilian Mustermann-Lüdenscheid", &s);
+    CHECK(strcmp(s.main.text, "Maximilian") == 0 && s.main.width == 10 * cell
+          && s.name2.font == &lcd_font_large
+          && strcmp(s.name2.text, "Mustermann-L" ELLIPSIS) == 0
+          && s.name2.width == 13 * cell,
+          "wrap at the last space that fits, second line cut with the ellipsis");
+    CHECK(s.sub.font == &lcd_font_small && strcmp(s.sub.text, "+4930123456") == 0,
+          "number stays below the name");
+
+    wrap_screen("Abcdefghijklm Nop", &s);
+    CHECK(strcmp(s.main.text, "Abcdefghijklm") == 0 && s.main.width == 13 * cell
+          && strcmp(s.name2.text, "Nop") == 0,
+          "a space right after the 13th cell is a break point");
+
+    wrap_screen("Abcdefghijklmnopqrst", &s);
+    CHECK(strcmp(s.main.text, "Abcdefghijklm") == 0 && s.main.width == 13 * cell
+          && strcmp(s.name2.text, "nopqrst") == 0 && s.name2.width == 7 * cell,
+          "no space: hard break where line 1 is full");
+
+    wrap_screen("Mustermann", &s);
+    CHECK(strcmp(s.main.text, "Mustermann") == 0 && s.name2.font == NULL
+          && s.main.width == 10 * cell, "a name that fits stays on one line");
+    wrap_screen("Abcdefghijklm", &s);
+    CHECK(s.name2.font == NULL && strcmp(s.main.text, "Abcdefghijklm") == 0,
+          "exactly 13 cells stays on one line");
+
+    wrap_screen("ÄÖÜäöüßÄÖÜäöüßÄÖ", &s);
+    CHECK(strcmp(s.main.text, "ÄÖÜäöüßÄÖÜäöü") == 0 && s.main.width == 13 * cell
+          && strcmp(s.name2.text, "ßÄÖ") == 0 && dm_renderable(s.main.text),
+          "hard break never splits an umlaut");
+    wrap_screen("Müller Lüdenscheid-Ärzte", &s);
+    CHECK(strcmp(s.main.text, "Müller") == 0 && s.main.width == 6 * cell
+          && strcmp(s.name2.text, "Lüdenscheid-" ELLIPSIS) == 0,
+          "wrap at a space between umlaut words");
+
+    // Scale 1 keeps one line: the T-Dongle-S3.
+    stats_call_t c = make_call("+4930123456", "Maximilian Mustermann-Lüdenscheid",
+                               PB_ASSESS_LEGITIMATE, 0);
+    dm_layout_t l;
+    dm_layout(DM_TDONGLE_W, DM_TDONGLE_H, &l);
+    dm_call_screen_laid_out(&c, &l, &s);
+    CHECK(s.name2.font == NULL, "160x80: long name is cut, not wrapped");
+
+    // Without a name the number screen is unchanged.
+    stats_call_t n = make_call("+493012345678", "", PB_ASSESS_UNKNOWN, 0);
+    dm_layout(DM_TDISPLAY_W, DM_TDISPLAY_H, &l);
+    dm_call_screen_laid_out(&n, &l, &s);
+    CHECK(!s.named && s.name2.font == NULL && s.main.font == &lcd_font_large,
+          "number only: no second line");
+}
+
 static void test_layout(void)
 {
     printf("layout:\n");
@@ -343,6 +409,8 @@ static void test_layout(void)
           && l.number_large_y == 20 && l.number_small_y == 22
           && l.text_scale == 1,
           "160x80: name and number as before");
+    CHECK(l.name_lines == 1 && l.wrap_y1 == 0 && l.wrap_y2 == 0
+          && l.wrap_number_y == 0, "160x80: one name line");
 
     // The T-Display: the logo by 3/2, centred; the text centred above the
     // band at the bottom.
@@ -352,11 +420,14 @@ static void test_layout(void)
     CHECK(l.badge_top == 8 && l.badge_right == 238 && l.badge_text_y == 10,
           "240x135: badge in the logo's top-right corner");
     CHECK(l.text_scale == 2, "240x135: text at twice the size");
-    CHECK(l.band_y == 91 && l.band_text_y == 91 + (44 - 26) / 2,
-          "240x135: double-height band at the bottom");
-    CHECK(l.name_y == 7 && l.name_number_y == 57
-          && l.number_large_y == 27 && l.number_small_y == 32,
+    CHECK(l.band_y == 105 && l.band_text_y == 105 + (30 - 26) / 2,
+          "240x135: thin band (small font cell + 4 px) at the bottom");
+    CHECK(l.name_y == 14 && l.name_number_y == 64
+          && l.number_large_y == 34 && l.number_small_y == 39,
           "240x135: scaled text centred above the band");
+    CHECK(l.name_lines == 2 && l.wrap_y1 == 2 && l.wrap_y2 == 38
+          && l.wrap_number_y == 76,
+          "240x135: two name lines, 100 px block centred in 105 px");
 
     // Everything inside the panel, for both sizes.
     int sizes[][2] = { { DM_TDONGLE_W, DM_TDONGLE_H }, { DM_TDISPLAY_W, DM_TDISPLAY_H } };
@@ -380,6 +451,7 @@ int main(void)
     test_badge();
     test_call_screen();
     test_call_screen_wide();
+    test_name_wrap();
     test_layout();
     test_utf8();
     test_glyphs();

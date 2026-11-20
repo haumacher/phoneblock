@@ -496,7 +496,11 @@ static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
         uint16_t *row = strip + r * W;
         for (int x = 0; x < W; x++) row[x] = c;
     }
-    if (scr->named) {
+    if (scr->named && scr->name2.font) {
+        draw_line(strip, y0, &scr->main, l->wrap_y1, C_WHITE);
+        draw_line(strip, y0, &scr->name2, l->wrap_y2, C_WHITE);
+        draw_line(strip, y0, &scr->sub, l->wrap_number_y, C_NUMBER);
+    } else if (scr->named) {
         draw_line(strip, y0, &scr->main, l->name_y, C_WHITE);
         draw_line(strip, y0, &scr->sub, l->name_number_y, C_NUMBER);
     } else {
@@ -554,8 +558,8 @@ static bool draw_screen(bool force)
         && (call ? s_drawn_gen == gen : s_drawn_badge == badge)) {
         return true;
     }
-    if (call) dm_call_screen_scaled(&s_mem->draw_call, W, s_mem->layout.text_scale,
-                              &s_mem->screen);
+    if (call) dm_call_screen_laid_out(&s_mem->draw_call, &s_mem->layout,
+                                      &s_mem->screen);
     if (!send_frame(call, badge)) {
         s_drawn_valid = false;
         if (!s_draw_failure_logged) {

@@ -46,6 +46,11 @@ typedef struct {
     // tops for a name with the number below, or the number alone.
     int band_y, band_text_y;
     int name_y, name_number_y;
+    // 2 where a name may take two lines (then the band is thin and the
+    // wrap_* positions below apply to a name that needs both), else 1.
+    // wrap_y1/wrap_y2: the lines' cell tops; wrap_number_y: the number's.
+    int name_lines;
+    int wrap_y1, wrap_y2, wrap_number_y;
     int number_large_y, number_small_y;
     // The fonts are drawn with every pixel as a text_scale x text_scale
     // block: 2 on the 240x135 panel, where the 160x80 fonts are too small
@@ -134,6 +139,7 @@ typedef struct {
     dm_class_t cls;
     bool       named;         // `main` is the caller's name, `sub` the number
     dm_line_t  main;          // name, or the number
+    dm_line_t  name2;         // second name line, font NULL if none
     dm_line_t  sub;           // number below the name
     dm_line_t  band;          // rating band text: "SPAM 12×", "SPAM? 2×", ...
     char       votes[12];     // vote count shown in the band, "" if none
@@ -151,3 +157,15 @@ void dm_call_screen(const stats_call_t *call, int width, dm_call_screen_t *out);
 // lines' widths are in scaled pixels. dm_call_screen() is scale 1.
 void dm_call_screen_scaled(const stats_call_t *call, int width, int scale,
                            dm_call_screen_t *out);
+
+// The same with `name_lines` (dm_layout_t.name_lines): with 2, a name wider
+// than one line breaks at the last space that fits on the first line (the
+// space is dropped), or after the code point that fills it if there is no
+// space; `main` is the first line, `name2` the rest, cut with the ellipsis
+// if still too long. dm_call_screen_scaled() is name_lines 1.
+void dm_call_screen_wrapped(const stats_call_t *call, int width, int scale,
+                            int name_lines, dm_call_screen_t *out);
+
+// The same, all parameters taken from the layout.
+void dm_call_screen_laid_out(const stats_call_t *call, const dm_layout_t *l,
+                             dm_call_screen_t *out);

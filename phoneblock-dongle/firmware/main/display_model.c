@@ -125,6 +125,11 @@ int dm_fit_text_scaled(const lcd_font_t *font, int scale, const char *s,
 // at scale 1; they grow with the text scale.
 #define BAND_H       22
 #define NAME_TO_NUMBER 25
+// Two-line name (scale 2 only): the band is just the small font's cell plus
+// this padding (px, in total), and the number sits this far below the
+// bottom of the second name line (px).
+#define BAND_PAD_WRAP    4
+#define NUMBER_GAP_WRAP  2
 // The text doubles on panels at least this large.
 #define SCALE2_W     240
 #define SCALE2_H     135
@@ -159,6 +164,17 @@ void dm_layout(int width, int height, dm_layout_t *out)
     int small_h = lcd_font_small.h * s;
     int large_h = lcd_font_large.h * s;
     int band_h  = BAND_H * s;
+    // Two name lines and the number: 2 x large + gap + small. Only at scale
+    // 2 and up, where the band can shrink to the small font's cell; a name
+    // of two large lines fits above the 160x80 band too, but that panel
+    // keeps its one line and its band.
+    int wrap_block = 2 * large_h + NUMBER_GAP_WRAP + small_h;
+    if (s >= 2 && height - (small_h + BAND_PAD_WRAP) >= wrap_block) {
+        band_h = small_h + BAND_PAD_WRAP;
+        out->name_lines = 2;
+    } else {
+        out->name_lines = 1;
+    }
     out->band_y      = height - band_h;
     out->band_text_y = out->band_y + (band_h - small_h) / 2;
     // From the name's top to the number's bottom.
@@ -167,6 +183,11 @@ void dm_layout(int width, int height, dm_layout_t *out)
     out->name_number_y  = out->name_y + NAME_TO_NUMBER * s;
     out->number_large_y = (out->band_y - large_h) / 2;
     out->number_small_y = (out->band_y - small_h) / 2;
+    if (out->name_lines == 2) {
+        out->wrap_y1       = (out->band_y - wrap_block) / 2;
+        out->wrap_y2       = out->wrap_y1 + large_h;
+        out->wrap_number_y = out->wrap_y2 + large_h + NUMBER_GAP_WRAP;
+    }
 }
 
 dm_class_t dm_class_of(pb_assessment_t assessment)
@@ -222,6 +243,54 @@ void dm_call_screen(const stats_call_t *call, int width, dm_call_screen_t *out)
 void dm_call_screen_scaled(const stats_call_t *call, int width, int scale,
                            dm_call_screen_t *out)
 {
+    dm_call_screen_wrapped(call, width, scale, 1, out);
+}
+
+void dm_call_screen_laid_out(const stats_call_t *call, const dm_layout_t *l,
+                             dm_call_screen_t *out)
+{
+    dm_call_screen_wrapped(call, l->width, l->text_scale, l->name_lines, out);
+}
+
+// Splits a name that is too long for one line over two (see dm_layout_t).
+static void wrap_name(dm_call_screen_t *out, const char *name, int scale,
+                      int width)
+{
+    int cell = lcd_font_large.w * scale;
+    int fits = DM_TEXT_MAX_PX(width) / cell;
+    // Break at the last space within the first line's cells (dropped), else
+    // after the code point that fills the line.
+    const char *p = name, *end = name, *rest = name;
+    int brk = 0;
+    bool spaced = false;
+    for (int i = 0; i <= fits; i++) {
+        const char *q = p;
+        uint32_t cp = dm_utf8_next(&q);
+        if (cp == 0) return;
+        if (i == fits && !spaced) {
+            end = rest = p;
+            brk = fits;
+        }
+        if (cp == ' ' && i > 0) {
+            end = p;
+            rest = q;
+            brk = i;
+            spaced = true;
+        }
+        p = q;
+    }
+    while (*rest == ' ') rest++;
+    size_t bytes = (size_t)(end - name);
+    if (!*rest || bytes >= sizeof(out->main.text)) return;
+    memcpy(out->main.text, name, bytes);
+    out->main.text[bytes] = '\0';
+    out->main.width = brk * cell;
+    set_line(&out->name2, &lcd_font_large, scale, rest, width);
+}
+
+void dm_call_screen_wrapped(const stats_call_t *call, int width, int scale,
+                            int name_lines, dm_call_screen_t *out)
+{
     memset(out, 0, sizeof(*out));
     out->cls = dm_class_of(call->assessment);
     const char *number = call->number[0] ? call->number : "?";
@@ -230,6 +299,11 @@ void dm_call_screen_scaled(const stats_call_t *call, int width, int scale,
     if (out->named) {
         set_line(&out->main, &lcd_font_large, scale, call->display, width);
         set_line(&out->sub, &lcd_font_small, scale, number, width);
+        if (name_lines >= 2
+            && dm_text_width_scaled(&lcd_font_large, scale, call->display)
+               > DM_TEXT_MAX_PX(width)) {
+            wrap_name(out, call->display, scale, width);
+        }
     } else if (dm_text_width_scaled(&lcd_font_large, scale, number)
                <= DM_TEXT_MAX_PX(width)) {
         set_line(&out->main, &lcd_font_large, scale, number, width);
