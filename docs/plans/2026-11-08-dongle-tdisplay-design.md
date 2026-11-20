@@ -35,9 +35,9 @@ carries no display code, as before.
   stays at scale 1. The 160x80 logo is scaled by 3/2 (nearest neighbour) to
   240x120, so no second bitmap is needed.
 - **Backlight:** the S3 keeps its LEDC dimming. The ESP32 build switches the
-  T-Display's backlight by GPIO instead (off a minute after boot or a
-  call), which keeps the LEDC driver out of its app slot. On both boards the
-  caller stays on the screen after a call until then, so a short call can
+  T-Display's backlight by GPIO instead (off a minute after boot or after a
+  call ends), which keeps the LEDC driver out of its app slot. On both boards
+  the caller stays on the screen after a call until then, so a short call can
   still be read; the logo is drawn right before the backlight goes down.
 - **On and off at run time** through `display_set_enabled()` from #733, as
   on the S3. Once started, the display's pins stay reserved until the next

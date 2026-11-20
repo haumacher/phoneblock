@@ -267,17 +267,20 @@ static void dim_backlight(void *arg)
     // The dimmed screen shows the logo, not the held caller.
     if (held) redraw(NULL);
     xSemaphoreTake(s_state, portMAX_DELAY);
-    calling = s_call_shown;   // a call may have started meanwhile
+    // A call or a new hold may have arrived while drawing the logo.
+    if (!s_call_shown && esp_timer_get_time() >= s_dim_due_us - 1000) {
+        set_backlight(false);
+    }
     xSemaphoreGive(s_state);
-    if (!calling) set_backlight(false);
 }
 
 // Full brightness now, dimmed BL_DIM_AFTER_US later (unless a call is on
 // screen by then); a held caller screen goes back to the logo then.
 static void brighten_for_a_while(void)
 {
-    set_backlight(true);
     xSemaphoreTake(s_state, portMAX_DELAY);
+    // Publish the hold with the light so a dim callback cannot undo it.
+    set_backlight(true);
     s_dim_due_us = esp_timer_get_time() + BL_DIM_AFTER_US;
     xSemaphoreGive(s_state);
     esp_timer_stop(s_dim_timer);
@@ -604,11 +607,12 @@ void display_call_started(const stats_call_t *call)
     s_mem->call = *call;
     s_call_active = true;
     s_call_shown = true;
+    // Keep the light on with the caller state against a dim callback.
+    set_backlight(true);
     s_call_gen++;
     s_call_started_us = esp_timer_get_time();
     xSemaphoreGive(s_state);
     esp_timer_stop(s_dim_timer);
-    set_backlight(true);
     esp_timer_stop(s_call_timer);
     esp_timer_start_once(s_call_timer, CALL_TIMEOUT_US);
     schedule_redraw();

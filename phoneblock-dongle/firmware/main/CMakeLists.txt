@@ -1,8 +1,8 @@
 # Board extras: the logo, spam badge and caller screen on the TFT of the
 # LilyGO T-Dongle-S3 (ESP32-S3) and the T-Display V1.1 (classic ESP32),
-# each switched on by the "display" setting (board.h). Kept out of the C3's
-# source list, so its image does not change (display.h turns the
-# notifications into empty inline functions there).
+# each switched on by the "display" setting (board.h). The display renderer
+# stays out of the C3's source list (display.h turns the notifications into
+# empty inline functions there).
 set(_board_srcs)
 set(_board_requires)
 idf_build_get_property(_target IDF_TARGET)
