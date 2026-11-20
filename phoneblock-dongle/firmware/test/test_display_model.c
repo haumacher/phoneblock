@@ -107,9 +107,11 @@ static void test_call_screen(void)
 {
     printf("caller screen:\n");
     dm_call_screen_t s;
+    dm_layout_t l;
+    dm_layout(DM_TDONGLE_W, DM_TDONGLE_H, &l);
 
     stats_call_t c = make_call("+4930123456", "Max Müller", PB_ASSESS_LEGITIMATE, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.named, "name present → named screen");
     CHECK(strcmp(s.main.text, "Max Müller") == 0, "name on the main line");
     CHECK(s.main.font == &lcd_font_large, "name in the large font");
@@ -120,7 +122,7 @@ static void test_call_screen(void)
     CHECK(s.band.text[0] == '\0', "no band text for a contact");
 
     c = make_call("+4930123456", "", PB_ASSESS_SPAM, 12);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(!s.named, "no name → number screen");
     CHECK(strcmp(s.main.text, "+4930123456") == 0, "number on the main line");
     CHECK(s.main.font == &lcd_font_large, "short number in the large font");
@@ -130,50 +132,50 @@ static void test_call_screen(void)
     CHECK(s.band.width == 8 * lcd_font_small.w, "band width: 8 cells");
 
     c = make_call("+4930123456", "", PB_ASSESS_SUSPECT, 2);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.cls == DM_CLASS_SUSPECT, "suspected → suspect class");
     CHECK(strcmp(s.votes, "2") == 0, "suspect vote text \"2\"");
     CHECK(strcmp(s.band.text, "SPAM? 2\xC3\x97") == 0, "band \"SPAM? 2×\"");
 
     c = make_call("+4930123456", "", PB_ASSESS_SPAM_LIST, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.votes[0] == '\0' && strcmp(s.band.text, "SPAM") == 0,
           "list spam without counts → plain \"SPAM\"");
 
     c = make_call("**622", "", PB_ASSESS_TEST, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.cls == DM_CLASS_NEUTRAL && strcmp(s.band.text, "TEST") == 0,
           "test call → neutral, \"TEST\"");
 
     c = make_call("+4930123456", "", PB_ASSESS_UNKNOWN, 0);
     snprintf(c.location, sizeof(c.location), "%s", "Berlin");
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.cls == DM_CLASS_NEUTRAL && strcmp(s.band.text, "Berlin") == 0,
           "unknown caller → neutral, location in the band");
 
     c = make_call("+4930123456", "\xE7\x8E\x8B\xE5\xB0\x8F\xE6\x98\x8E",
                   PB_ASSESS_LEGITIMATE, 0);                     // CJK
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(!s.named && strcmp(s.main.text, "+4930123456") == 0,
           "CJK name → falls back to the number");
 
     c = make_call("+4930123456", "\xD0\x98\xD0\xB2\xD0\xB0\xD0\xBD",
                   PB_ASSESS_LEGITIMATE, 0);                     // Иван
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(!s.named && strcmp(s.main.text, "+4930123456") == 0,
           "Cyrillic name → falls back to the number");
 
     c = make_call("+4930123456", "Max \xC3", PB_ASSESS_LEGITIMATE, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(!s.named, "invalid UTF-8 name → falls back to the number");
 
     c = make_call("030123456", "030123456", PB_ASSESS_UNKNOWN, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(!s.named, "digits-only display name is not a name");
 
     c = make_call("+4930123456", "Maximilian Mustermann-Lüdenscheid",
                   PB_ASSESS_LEGITIMATE, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     // 154 px / 9 px = 17 cells: 16 code points and the ellipsis.
     CHECK(DM_TEXT_MAX_PX(DM_TDONGLE_W) / lcd_font_large.w == 17,
           "large font: 17 cells per line");
@@ -184,19 +186,19 @@ static void test_call_screen(void)
           "truncated name fits the 160 px panel");
 
     c = make_call("+4930123456", "Müller-Lüdenscheidtäöü", PB_ASSESS_LEGITIMATE, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(strcmp(s.main.text, "Müller-Lüdensche" ELLIPSIS) == 0
-          && dm_text_width(&lcd_font_large, s.main.text) == s.main.width,
+          && dm_text_width(&lcd_font_large, 1, s.main.text) == s.main.width,
           "truncation counts code points, not bytes");
 
     c = make_call("+49301234567890123", "", PB_ASSESS_UNKNOWN, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.main.font == &lcd_font_small
           && strcmp(s.main.text, "+49301234567890123") == 0,
           "number too wide for the large font → small font, complete");
 
     c = make_call("", "", PB_ASSESS_UNKNOWN, 0);
-    dm_call_screen(&c, DM_TDONGLE_W, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(strcmp(s.main.text, "?") == 0, "no number → \"?\"");
 }
 
@@ -238,16 +240,16 @@ static void test_utf8(void)
     CHECK(all, "malformed sequences: invalid, advance one byte, loop ends at NUL");
 
     char out[8];
-    int w = dm_fit_text(&lcd_font_small, "\xC3\xA4\xC3\xB6\xC3\xBC\xC3\xA4\xC3\xB6",
+    int w = dm_fit_text(&lcd_font_small, 1, "\xC3\xA4\xC3\xB6\xC3\xBC\xC3\xA4\xC3\xB6",
                         DM_TEXT_MAX_PX(DM_TDONGLE_W), out, sizeof(out));
     CHECK(strlen(out) < sizeof(out) && strcmp(out, "\xC3\xA4\xC3\xB6" ELLIPSIS) == 0
           && w == 3 * lcd_font_small.w,
           "byte capacity: cut at a code point boundary, ellipsis kept");
 
-    w = dm_fit_text(&lcd_font_small, "ab\x80" "cd", DM_TEXT_MAX_PX(DM_TDONGLE_W),
+    w = dm_fit_text(&lcd_font_small, 1, "ab\x80" "cd", DM_TEXT_MAX_PX(DM_TDONGLE_W),
                     out, sizeof(out));
     CHECK(w == 5 * lcd_font_small.w, "a malformed byte counts as one cell");
-    CHECK(dm_fit_text(&lcd_font_small, "abc", DM_TEXT_MAX_PX(DM_TDONGLE_W), out, 3) == 0
+    CHECK(dm_fit_text(&lcd_font_small, 1, "abc", DM_TEXT_MAX_PX(DM_TDONGLE_W), out, 3) == 0
           && out[0] == '\0', "no room for the ellipsis → empty");
 }
 
@@ -277,9 +279,13 @@ static void test_call_screen_wide(void)
 {
     printf("caller screen, 240 px at scale 2:\n");
     dm_call_screen_t s;
+    // One name line: the two-line wrap has its own test below.
+    dm_layout_t l;
+    dm_layout(DM_TDISPLAY_W, DM_TDISPLAY_H, &l);
+    l.name_lines = 1;
     stats_call_t c = make_call("+4930123456", "Maximilian Mustermann-Lüdenscheid",
                                PB_ASSESS_LEGITIMATE, 0);
-    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    dm_call_screen(&c, &l, &s);
     // 234 px / 18 px = 13 cells: 12 code points and the ellipsis.
     CHECK(DM_TEXT_MAX_PX(DM_TDISPLAY_W) / (lcd_font_large.w * 2) == 13,
           "large font at 2x: 13 cells per line");
@@ -292,20 +298,20 @@ static void test_call_screen_wide(void)
           "number below the name measured at 2x");
 
     c = make_call("+493012345678", "", PB_ASSESS_UNKNOWN, 0);
-    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.main.font == &lcd_font_large && s.main.width == 13 * lcd_font_large.w * 2
           && strcmp(s.main.text, "+493012345678") == 0,
           "a number that fits at 2x large stays large");
 
     c = make_call("+493012345678901", "", PB_ASSESS_UNKNOWN, 0);
-    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.main.font == &lcd_font_small
           && strcmp(s.main.text, "+493012345678901") == 0
           && s.main.width == 16 * lcd_font_small.w * 2,
           "a number too wide for 2x large falls back to 2x small");
 
     c = make_call("+49301234567890123456789012", "", PB_ASSESS_UNKNOWN, 0);
-    dm_call_screen_scaled(&c, DM_TDISPLAY_W, 2, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.main.font == &lcd_font_small && s.main.width == 16 * lcd_font_small.w * 2
           && strcmp(s.main.text, "+49301234567890" ELLIPSIS) == 0,
           "an over-long number is cut with the ellipsis at 2x small");
@@ -319,8 +325,8 @@ static void test_call_screen_wide(void)
     }
     text[n] = '\0';
     dm_line_t line;
-    line.width = dm_fit_text(&lcd_font_small, text, DM_TEXT_MAX_PX(DM_TDISPLAY_W),
-                             line.text, sizeof(line.text));
+    line.width = dm_fit_text(&lcd_font_small, 1, text,
+                             DM_TEXT_MAX_PX(DM_TDISPLAY_W), line.text, sizeof(line.text));
     CHECK(DM_TEXT_MAX_PX(DM_TDISPLAY_W) / lcd_font_small.w == 33
           && line.width == 33 * lcd_font_small.w
           && strlen(line.text) == 32 * 3 + 3,
@@ -332,7 +338,7 @@ static void wrap_screen(const char *name, dm_call_screen_t *s)
     dm_layout_t l;
     dm_layout(DM_TDISPLAY_W, DM_TDISPLAY_H, &l);
     stats_call_t c = make_call("+4930123456", name, PB_ASSESS_LEGITIMATE, 0);
-    dm_call_screen_laid_out(&c, &l, s);
+    dm_call_screen(&c, &l, s);
 }
 
 // A long name over two lines on the 240x135 panel (13 large cells a line).
@@ -382,13 +388,13 @@ static void test_name_wrap(void)
                                PB_ASSESS_LEGITIMATE, 0);
     dm_layout_t l;
     dm_layout(DM_TDONGLE_W, DM_TDONGLE_H, &l);
-    dm_call_screen_laid_out(&c, &l, &s);
+    dm_call_screen(&c, &l, &s);
     CHECK(s.name2.font == NULL, "160x80: long name is cut, not wrapped");
 
     // Without a name the number screen is unchanged.
     stats_call_t n = make_call("+493012345678", "", PB_ASSESS_UNKNOWN, 0);
     dm_layout(DM_TDISPLAY_W, DM_TDISPLAY_H, &l);
-    dm_call_screen_laid_out(&n, &l, &s);
+    dm_call_screen(&n, &l, &s);
     CHECK(!s.named && s.name2.font == NULL && s.main.font == &lcd_font_large,
           "number only: no second line");
 }

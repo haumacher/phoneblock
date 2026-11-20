@@ -455,7 +455,7 @@ static void draw_badge(uint16_t *strip, int y0, const char *text)
 {
     const dm_layout_t *l = &s_mem->layout;
     const lcd_font_t *font = &lcd_font_small;
-    int text_w = dm_text_width(font, text);
+    int text_w = dm_text_width(font, 1, text);
     int w = text_w + 8 > l->badge_h ? text_w + 8 : l->badge_h;
     int x0 = l->badge_right + 1 - w;
     // In doubled coordinates, so the cap centres and the radius (half the
@@ -558,8 +558,7 @@ static bool draw_screen(bool force)
         && (call ? s_drawn_gen == gen : s_drawn_badge == badge)) {
         return true;
     }
-    if (call) dm_call_screen_laid_out(&s_mem->draw_call, &s_mem->layout,
-                                      &s_mem->screen);
+    if (call) dm_call_screen(&s_mem->draw_call, &s_mem->layout, &s_mem->screen);
     if (!send_frame(call, badge)) {
         s_drawn_valid = false;
         if (!s_draw_failure_logged) {

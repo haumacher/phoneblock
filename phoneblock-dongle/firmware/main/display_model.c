@@ -65,24 +65,13 @@ static int glyph_count(const char *s)
     return n;
 }
 
-int dm_text_width_scaled(const lcd_font_t *font, int scale, const char *s)
+int dm_text_width(const lcd_font_t *font, int scale, const char *s)
 {
     return glyph_count(s) * font->w * scale;
 }
 
-int dm_text_width(const lcd_font_t *font, const char *s)
-{
-    return dm_text_width_scaled(font, 1, s);
-}
-
-int dm_fit_text(const lcd_font_t *font, const char *s, int max_px,
-                char *out, size_t cap)
-{
-    return dm_fit_text_scaled(font, 1, s, max_px, out, cap);
-}
-
-int dm_fit_text_scaled(const lcd_font_t *font, int scale, const char *s,
-                       int max_px, char *out, size_t cap)
+int dm_fit_text(const lcd_font_t *font, int scale, const char *s,
+                int max_px, char *out, size_t cap)
 {
     if (cap == 0) return 0;
     out[0] = '\0';
@@ -231,25 +220,8 @@ static void set_line(dm_line_t *line, const lcd_font_t *font, int scale,
                      const char *text, int width)
 {
     line->font  = font;
-    line->width = dm_fit_text_scaled(font, scale, text, DM_TEXT_MAX_PX(width),
-                                     line->text, sizeof(line->text));
-}
-
-void dm_call_screen(const stats_call_t *call, int width, dm_call_screen_t *out)
-{
-    dm_call_screen_scaled(call, width, 1, out);
-}
-
-void dm_call_screen_scaled(const stats_call_t *call, int width, int scale,
-                           dm_call_screen_t *out)
-{
-    dm_call_screen_wrapped(call, width, scale, 1, out);
-}
-
-void dm_call_screen_laid_out(const stats_call_t *call, const dm_layout_t *l,
-                             dm_call_screen_t *out)
-{
-    dm_call_screen_wrapped(call, l->width, l->text_scale, l->name_lines, out);
+    line->width = dm_fit_text(font, scale, text, DM_TEXT_MAX_PX(width),
+                              line->text, sizeof(line->text));
 }
 
 // Splits a name that is too long for one line over two (see dm_layout_t).
@@ -288,9 +260,10 @@ static void wrap_name(dm_call_screen_t *out, const char *name, int scale,
     set_line(&out->name2, &lcd_font_large, scale, rest, width);
 }
 
-void dm_call_screen_wrapped(const stats_call_t *call, int width, int scale,
-                            int name_lines, dm_call_screen_t *out)
+void dm_call_screen(const stats_call_t *call, const dm_layout_t *l,
+                    dm_call_screen_t *out)
 {
+    const int width = l->width, scale = l->text_scale;
     memset(out, 0, sizeof(*out));
     out->cls = dm_class_of(call->assessment);
     const char *number = call->number[0] ? call->number : "?";
@@ -299,12 +272,12 @@ void dm_call_screen_wrapped(const stats_call_t *call, int width, int scale,
     if (out->named) {
         set_line(&out->main, &lcd_font_large, scale, call->display, width);
         set_line(&out->sub, &lcd_font_small, scale, number, width);
-        if (name_lines >= 2
-            && dm_text_width_scaled(&lcd_font_large, scale, call->display)
+        if (l->name_lines >= 2
+            && dm_text_width(&lcd_font_large, scale, call->display)
                > DM_TEXT_MAX_PX(width)) {
             wrap_name(out, call->display, scale, width);
         }
-    } else if (dm_text_width_scaled(&lcd_font_large, scale, number)
+    } else if (dm_text_width(&lcd_font_large, scale, number)
                <= DM_TEXT_MAX_PX(width)) {
         set_line(&out->main, &lcd_font_large, scale, number, width);
     } else {
