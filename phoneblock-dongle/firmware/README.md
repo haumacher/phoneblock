@@ -118,7 +118,9 @@ Firmware rät nur den Vorgabewert (S3 ohne PSRAM → T-Dongle-S3 mit APA102 an
 40/39 und Display, S3 mit PSRAM → WS2812 an GPIO 48, kein Display). Das
 Display zeigt das PhoneBlock-Logo mit
 Spam-Zähler und während eines Anrufs den Anrufer (`main/display.c`,
-`main/display_model.c`, nur im S3-Build; Logo neu erzeugen mit
+`main/display_model.c`, im S3- und ESP32-Build; auf dem ESP32 ist das
+Display standardmäßig aus und kann für das LilyGO T-Display V1.1 unter
+System ▸ Board eingeschaltet werden; Logo neu erzeugen mit
 `scripts/gen-lcd-logo.py`, braucht Inkscape und Pillow; Schriften mit
 `scripts/gen-lcd-font.py`, braucht Pillow und xfonts-base):
 

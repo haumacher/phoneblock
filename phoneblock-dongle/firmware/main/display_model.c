@@ -65,25 +65,26 @@ static int glyph_count(const char *s)
     return n;
 }
 
-int dm_text_width(const lcd_font_t *font, const char *s)
+int dm_text_width(const lcd_font_t *font, int scale, const char *s)
 {
-    return glyph_count(s) * font->w;
+    return glyph_count(s) * font->w * scale;
 }
 
-int dm_fit_text(const lcd_font_t *font, const char *s, int max_px,
-                char *out, size_t cap)
+int dm_fit_text(const lcd_font_t *font, int scale, const char *s,
+                int max_px, char *out, size_t cap)
 {
     if (cap == 0) return 0;
     out[0] = '\0';
     if (!s || cap < sizeof(k_ellipsis)) return 0;
 
-    int fits = max_px / font->w;          // whole cells that fit
+    int cell = font->w * scale;
+    int fits = max_px / cell;             // whole cells that fit
     if (fits <= 0) return 0;
     size_t bytes = strlen(s);
     int glyphs = glyph_count(s);
     if (glyphs <= fits && bytes < cap) {
         memcpy(out, s, bytes + 1);
-        return glyphs * font->w;
+        return glyphs * cell;
     }
 
     // Keep as many leading code points as leave room for the ellipsis, in
@@ -101,7 +102,81 @@ int dm_fit_text(const lcd_font_t *font, const char *s, int max_px,
     }
     memcpy(out, s, keep);
     memcpy(out + keep, k_ellipsis, sizeof(k_ellipsis));   // includes NUL
-    return (kept + 1) * font->w;
+    return (kept + 1) * cell;
+}
+
+// The 160x80 logo and the heights of the fonts' cells, which the layout
+// centres (lcd_logo.h, lcd_font.h).
+#define LOGO_W       160
+#define LOGO_H       80
+// The rating band's height and, for a name (large font) over its number
+// (small font), how far the number's cell top sits below the name's, both
+// at scale 1; they grow with the text scale.
+#define BAND_H       22
+#define NAME_TO_NUMBER 25
+// Two-line name (scale 2 only): the band is just the small font's cell plus
+// this padding (px, in total), and the number sits this far below the
+// bottom of the second name line (px).
+#define BAND_PAD_WRAP    4
+#define NUMBER_GAP_WRAP  2
+// The text doubles on panels at least this large.
+#define SCALE2_W     240
+#define SCALE2_H     135
+
+void dm_layout(int width, int height, dm_layout_t *out)
+{
+    memset(out, 0, sizeof(*out));
+    out->width  = width;
+    out->height = height;
+
+    // The logo grows by 3/2 where that fits (240x120 on the T-Display),
+    // and stays 1:1 otherwise.
+    bool grow = width >= LOGO_W * 3 / 2 && height >= LOGO_H * 3 / 2;
+    out->logo_num = grow ? 3 : 1;
+    out->logo_den = grow ? 2 : 1;
+    out->logo_w   = LOGO_W * out->logo_num / out->logo_den;
+    out->logo_h   = LOGO_H * out->logo_num / out->logo_den;
+    out->logo_x   = (width - out->logo_w) / 2;
+    out->logo_y   = (height - out->logo_h) / 2;
+
+    // The badge sits in the logo's empty top-right corner, above the word
+    // mark, one pixel in from the logo's top and the panel's right edge.
+    out->badge_h      = 17;
+    out->badge_top    = out->logo_y + 1;
+    out->badge_right  = width - 2;
+    out->badge_text_y = out->badge_top + (out->badge_h - lcd_font_small.h) / 2;
+
+    // The rating band at the bottom, its text centred in it; the caller's
+    // name and number, or the number alone, centred in the space above.
+    int s = width >= SCALE2_W && height >= SCALE2_H ? 2 : 1;
+    out->text_scale  = s;
+    int small_h = lcd_font_small.h * s;
+    int large_h = lcd_font_large.h * s;
+    int band_h  = BAND_H * s;
+    // Two name lines and the number: 2 x large + gap + small. Only at scale
+    // 2 and up, where the band can shrink to the small font's cell; a name
+    // of two large lines fits above the 160x80 band too, but that panel
+    // keeps its one line and its band.
+    int wrap_block = 2 * large_h + NUMBER_GAP_WRAP + small_h;
+    if (s >= 2 && height - (small_h + BAND_PAD_WRAP) >= wrap_block) {
+        band_h = small_h + BAND_PAD_WRAP;
+        out->name_lines = 2;
+    } else {
+        out->name_lines = 1;
+    }
+    out->band_y      = height - band_h;
+    out->band_text_y = out->band_y + (band_h - small_h) / 2;
+    // From the name's top to the number's bottom.
+    int block = NAME_TO_NUMBER * s + small_h;
+    out->name_y         = (out->band_y - block) / 2;
+    out->name_number_y  = out->name_y + NAME_TO_NUMBER * s;
+    out->number_large_y = (out->band_y - large_h) / 2;
+    out->number_small_y = (out->band_y - small_h) / 2;
+    if (out->name_lines == 2) {
+        out->wrap_y1       = (out->band_y - wrap_block) / 2;
+        out->wrap_y2       = out->wrap_y1 + large_h;
+        out->wrap_number_y = out->wrap_y2 + large_h + NUMBER_GAP_WRAP;
+    }
 }
 
 dm_class_t dm_class_of(pb_assessment_t assessment)
@@ -141,27 +216,72 @@ static bool is_name(const char *display)
     return false;
 }
 
-static void set_line(dm_line_t *line, const lcd_font_t *font, const char *text)
+static void set_line(dm_line_t *line, const lcd_font_t *font, int scale,
+                     const char *text, int width)
 {
     line->font  = font;
-    line->width = dm_fit_text(font, text, DM_TEXT_MAX_PX,
+    line->width = dm_fit_text(font, scale, text, DM_TEXT_MAX_PX(width),
                               line->text, sizeof(line->text));
 }
 
-void dm_call_screen(const stats_call_t *call, dm_call_screen_t *out)
+// Splits a name that is too long for one line over two (see dm_layout_t).
+static void wrap_name(dm_call_screen_t *out, const char *name, int scale,
+                      int width)
 {
+    int cell = lcd_font_large.w * scale;
+    int fits = DM_TEXT_MAX_PX(width) / cell;
+    // Break at the last space within the first line's cells (dropped), else
+    // after the code point that fills the line.
+    const char *p = name, *end = name, *rest = name;
+    int brk = 0;
+    bool spaced = false;
+    for (int i = 0; i <= fits; i++) {
+        const char *q = p;
+        uint32_t cp = dm_utf8_next(&q);
+        if (cp == 0) return;
+        if (i == fits && !spaced) {
+            end = rest = p;
+            brk = fits;
+        }
+        if (cp == ' ' && i > 0) {
+            end = p;
+            rest = q;
+            brk = i;
+            spaced = true;
+        }
+        p = q;
+    }
+    while (*rest == ' ') rest++;
+    size_t bytes = (size_t)(end - name);
+    if (!*rest || bytes >= sizeof(out->main.text)) return;
+    memcpy(out->main.text, name, bytes);
+    out->main.text[bytes] = '\0';
+    out->main.width = brk * cell;
+    set_line(&out->name2, &lcd_font_large, scale, rest, width);
+}
+
+void dm_call_screen(const stats_call_t *call, const dm_layout_t *l,
+                    dm_call_screen_t *out)
+{
+    const int width = l->width, scale = l->text_scale;
     memset(out, 0, sizeof(*out));
     out->cls = dm_class_of(call->assessment);
     const char *number = call->number[0] ? call->number : "?";
 
     out->named = is_name(call->display) && dm_renderable(call->display);
     if (out->named) {
-        set_line(&out->main, &lcd_font_large, call->display);
-        set_line(&out->sub, &lcd_font_small, number);
-    } else if (dm_text_width(&lcd_font_large, number) <= DM_TEXT_MAX_PX) {
-        set_line(&out->main, &lcd_font_large, number);
+        set_line(&out->main, &lcd_font_large, scale, call->display, width);
+        set_line(&out->sub, &lcd_font_small, scale, number, width);
+        if (l->name_lines >= 2
+            && dm_text_width(&lcd_font_large, scale, call->display)
+               > DM_TEXT_MAX_PX(width)) {
+            wrap_name(out, call->display, scale, width);
+        }
+    } else if (dm_text_width(&lcd_font_large, scale, number)
+               <= DM_TEXT_MAX_PX(width)) {
+        set_line(&out->main, &lcd_font_large, scale, number, width);
     } else {
-        set_line(&out->main, &lcd_font_small, number);
+        set_line(&out->main, &lcd_font_small, scale, number, width);
     }
 
     if ((out->cls == DM_CLASS_SPAM || out->cls == DM_CLASS_SUSPECT)
@@ -182,5 +302,5 @@ void dm_call_screen(const stats_call_t *call, dm_call_screen_t *out)
         // reports it.
         sb_appendf(&sb, "%s", call->location);
     }
-    if (band[0]) set_line(&out->band, &lcd_font_small, band);
+    if (band[0]) set_line(&out->band, &lcd_font_small, scale, band, width);
 }

@@ -112,3 +112,8 @@ const char *board_led_check(const board_led_t *led, const board_pins_t *pins,
     if (led->clk == led->pin) return "APA102 data and clock must be different pins";
     return check_pin(led->clk, pins, display_on, display_switched_off);
 }
+
+bool board_display_fits(const board_pins_t *pins)
+{
+    return pins->display_pins != 0 && (pins->display_pins & pins->forbidden) == 0;
+}

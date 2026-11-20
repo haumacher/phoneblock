@@ -65,3 +65,8 @@ typedef struct {
 // reason naming the pin (static storage, for a log line or a 400 answer).
 const char *board_led_check(const board_led_t *led, const board_pins_t *pins,
                             bool display_on, bool display_switched_off);
+
+// Whether the chip can drive its build's display: there is one, and none of
+// its pins is forbidden. Refuses the T-Display on a chip with embedded flash
+// (EGBO PICO-D4), whose flash bus includes the display's DC pin, GPIO 16.
+bool board_display_fits(const board_pins_t *pins);
