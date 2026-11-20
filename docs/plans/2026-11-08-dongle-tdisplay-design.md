@@ -19,18 +19,26 @@ carries no display code, as before.
 
 - **Board table** (`display.c`): one `board_t` per build with the controller
   pins, SPI host, size, RAM window offsets per orientation, MADCTL mirroring,
-  colour order and backlight pin/polarity. The S3 entry holds the values the
-  T-Dongle-S3 code used before.
+  colour order (BGR on both boards) and backlight pin/polarity. The S3 entry
+  holds the values the T-Dongle-S3 code used before. The T-Display also gets
+  the ST7789V power and gamma registers from LilyGO's init, which ESP-IDF's
+  driver does not set.
 - **Layout from the panel size** (`dm_layout()` in `display_model.c`): the
   positions of logo, badge, name, number and rating band follow from width
   and height. For 160x80 they are exactly the T-Dongle-S3's previous
   positions (pinned in `test_display_model.c`). On 240x135 the same fonts are
-  centred in the larger space (26 large cells per line instead of 17) and
-  the 160x80 logo is scaled by 3/2 (nearest neighbour) to 240x120, so no
-  second bitmap is needed.
+  drawn at scale 2, every pixel a 2x2 block, because at their own size they
+  are too small to read there (13 large cells per line instead of 17). A
+  caller name wider than one line wraps onto a second line (at the last space
+  that fits, else after the code point that fills the line), and the rating
+  band shrinks to 30 px (instead of 44 at scale 2) to make room. The badge
+  stays at scale 1. The 160x80 logo is scaled by 3/2 (nearest neighbour) to
+  240x120, so no second bitmap is needed.
 - **Backlight:** the S3 keeps its LEDC dimming. The ESP32 build switches the
-  T-Display's backlight by GPIO instead (off a minute after boot or a call),
-  which keeps the LEDC driver out of its app slot.
+  T-Display's backlight by GPIO instead (off a minute after boot or a
+  call), which keeps the LEDC driver out of its app slot. On both boards the
+  caller stays on the screen after a call until then, so a short call can
+  still be read; the logo is drawn right before the backlight goes down.
 - **On and off at run time** through `display_set_enabled()` from #733, as
   on the S3. Once started, the display's pins stay reserved until the next
   restart (`display_was_started()`), so the status LED cannot take them.
@@ -48,7 +56,8 @@ and `display_start()` refuses with a warning in the log.
 
 ## Cost for ESP32 dongles without a display
 
-Measured against master, same toolchain and settings:
+Measured against master when the display was added, same toolchain and
+settings (the text scaling and the name wrap came later and add some code):
 
 - App image +52 KB (108 KB of the 1664 KB slot stay free).
 - The larger display state (layout, call, drawing scratch, ~1.3 KB) is
@@ -74,7 +83,10 @@ chip has embedded flash.
 
 ## Verification on hardware
 
-Neither the window offsets (40/53 normal, 40/52 rotated, from TFT_eSPI for
-this panel), the colour order nor the mirroring could be checked without the
-board; a tester with a T-Display uploads the ESP32 test image through the
-dongle's firmware upload and reports.
+The first test on #727 found washed-out colours with red and blue swapped
+(the colour order is BGR; LilyGO's power and gamma registers were added on
+the way), text too small (scale 2) and names cut after 12 characters (the
+second name line). The
+window offsets (40/53 normal, 40/52 rotated) and the mirroring are still
+TFT_eSPI's values for this panel; a tester with a T-Display uploads the ESP32
+test image through the dongle's firmware upload and reports.
