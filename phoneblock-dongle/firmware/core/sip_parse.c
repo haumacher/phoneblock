@@ -192,6 +192,36 @@ uint32_t parse_cseq(const char *req, int req_len)
     return n;
 }
 
+int parse_cseq_method(const char *msg, int msg_len, char *out, int cap)
+{
+    out[0] = '\0';
+    const char *p = find_header(msg, msg_len, "CSeq");
+    if (!p) return 0;
+    const char *end = msg + msg_len;
+    while (p < end && *p >= '0' && *p <= '9') p++;
+    while (p < end && (*p == ' ' || *p == '\t')) p++;
+    int n = 0;
+    while (p < end && *p != '\r' && *p != '\n' && *p != ' ' && *p != '\t'
+            && n < cap - 1) {
+        out[n++] = *p++;
+    }
+    out[n] = '\0';
+    return n;
+}
+
+bool sip_is_response_to(const char *msg, int msg_len, const char *call_id,
+                        uint32_t cseq, const char *method)
+{
+    if (msg_len < 7 || strncmp(msg, "SIP/2.0", 7) != 0) return false;
+    if (parse_cseq(msg, msg_len) != cseq) return false;
+    char m[16];
+    parse_cseq_method(msg, msg_len, m, sizeof(m));
+    if (strcasecmp(m, method) != 0) return false;
+    char id[128];
+    parse_call_id(msg, msg_len, id, sizeof(id));
+    return same_call_id(id, call_id);
+}
+
 void parse_call_id(const char *req, int req_len, char *out, int cap)
 {
     const char *p = find_header(req, req_len, "Call-ID");
