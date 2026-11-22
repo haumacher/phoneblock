@@ -201,6 +201,7 @@
   "status.mail.pass.keep": "stored — leave blank to keep it",
   "status.mail.from": "Sender (email, blank = user name)",
   "status.mail.to": "Recipients (email; separate multiple recipients with \";\")",
+  "status.mail.help": "Tip: For Gmail, Outlook, or iCloud, you usually need an “app password” (if two-factor authentication is enabled), not your regular account password. iCloud uses smtp.mail.me.com with STARTTLS (port 587). Traditional providers like GMX, web.de, or mailbox.org work with a username and password.",
   "status.mail.on_error": "Email on errors and crashes",
   "status.mail.on_error.help": "Sends one email a day when an error has appeared in the log since the last notification — this includes a reboot after a crash.",
   "status.mail.on_spam": "Report Calls via Email",
@@ -516,5 +517,10 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "status.mail.help": "Tip: For Gmail, Outlook, or iCloud, you usually need an “app password” (if two-factor authentication is enabled), not your regular account password. iCloud uses smtp.mail.me.com with STARTTLS (port 587). Traditional providers like GMX, web.de, or mailbox.org work with a username and password."
+  "status.system.wifi_power": "Maximum Wi-Fi transmit power (dBm)",
+  "status.system.wifi_power.hint": "Between 8 and 20 dBm. Takes effect immediately and is retained after a reboot.",
+  "status.system.wifi_power.save": "Apply transmission power",
+  "status.system.wifi_power.saved": "Transmit power saved and applied.",
+  "status.system.wifi_power.invalid": "Please enter an integer value between 8 and 20 dBm.",
+  "status.system.wifi_power.failed": "Transmit power not applied: {reason}"
 }

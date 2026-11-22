@@ -1409,6 +1409,18 @@ function renderStatus(){
     + '<p id="systemWifi" class="muted info-line" style="display:none"></p>'
     + '<p id="systemWifiLink" class="muted info-line" style="display:none"></p>'
     + '<p id="systemWifiHint" class="info-line" style="display:none;color:var(--warn)"></p>'
+    + '<div id="wifiPowerRow" style="display:none">'
+    + '<div class="form">'
+    + '  <label>' + esc(t('status.system.wifi_power'))
+    + '    <input id="wifiTxPower" type="number" min="8" max="20" step="1" class="w-num"></label>'
+    + '</div>'
+    + '<p class="hint">' + esc(t('status.system.wifi_power.hint')) + '</p>'
+    + '<p class="actions">'
+    + '  <button id="wifiPowerSave" class="btn-primary btn-sm">'
+    +     esc(t('status.system.wifi_power.save')) + '</button>'
+    + '  <span id="wifiPowerMsg" class="muted after"></span>'
+    + '</p>'
+    + '</div>'
     + '<p id="clockInfo" class="muted info-line"></p>'
     + '<p id="tzInfo" class="muted info-line">'
     +   '<span id="tzCurrent"></span>'
@@ -2761,6 +2773,50 @@ async function refreshAll(){
       $('systemWifi').style.display = 'none';
       $('systemWifiLink').style.display = 'none';
       wifiHint.style.display = 'none';
+    }
+    const powerRow = $('wifiPowerRow');
+    const powerInput = $('wifiTxPower');
+    const powerSave = $('wifiPowerSave');
+    const txPower = s.system.wifi_tx_power_dbm;
+    if (powerRow && powerInput && powerSave) {
+      const available = Number.isInteger(txPower);
+      powerRow.style.display = available ? '' : 'none';
+      if (available && document.activeElement !== powerInput) {
+        powerInput.value = String(txPower);
+      }
+      if (!powerSave.onclick) {
+        powerSave.onclick = async () => {
+          const msg = $('wifiPowerMsg');
+          const value = Number(powerInput.value);
+          if (!Number.isInteger(value) || value < 8 || value > 20) {
+            msg.textContent = t('status.system.wifi_power.invalid');
+            msg.style.color = 'var(--err)';
+            powerInput.focus();
+            return;
+          }
+          powerSave.disabled = true;
+          msg.textContent = '';
+          let r = null, d = {};
+          try {
+            r = await fetch('api/config', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+              body: new URLSearchParams({wifi_tx_power_dbm: String(value)}).toString(),
+            });
+            d = await r.json().catch(() => ({}));
+          } catch (_){}
+          powerSave.disabled = false;
+          if (!r || !r.ok) {
+            msg.textContent = t('status.system.wifi_power.failed',
+                {reason: d.message || (r ? r.status : '-')});
+            msg.style.color = 'var(--err)';
+            return;
+          }
+          await refreshAll();
+          msg.textContent = t('status.system.wifi_power.saved');
+          msg.style.color = 'var(--ok)';
+        };
+      }
     }
     const tb = $('systemTasks');
     tb.innerHTML = '';

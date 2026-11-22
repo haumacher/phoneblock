@@ -201,6 +201,7 @@
   "status.mail.pass.keep": "lagret — la feltet stå tomt for å beholde det",
   "status.mail.from": "Avsender (e-post, tomt felt = brukernavn)",
   "status.mail.to": "Mottaker (e-post, skille flere med «;»)",
+  "status.mail.help": "Tips: For Gmail, Outlook eller iCloud trenger du vanligvis et «app-passord» (hvis tofaktorautentisering er aktivert), ikke det vanlige passordet til kontoen din. iCloud bruker smtp.mail.me.com med STARTTLS (port 587). Tradisjonelle leverandører som GMX, web.de eller mailbox.org fungerer med brukernavn og passord.",
   "status.mail.on_error": "E-post ved feil og systemkrasj",
   "status.mail.on_error.help": "Sender en e-post én gang om dagen hvis det har oppstått en feil i loggen siden forrige melding — dette inkluderer også en omstart etter et krasj.",
   "status.mail.on_spam": "Rapportere anrop via e-post",
@@ -516,5 +517,10 @@
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
   "status.rec.failed": "Opptaket kunne ikke lastes inn.",
-  "status.mail.help": "Tips: For Gmail, Outlook eller iCloud trenger du vanligvis et «app-passord» (hvis tofaktorautentisering er aktivert), ikke det vanlige passordet til kontoen din. iCloud bruker smtp.mail.me.com med STARTTLS (port 587). Tradisjonelle leverandører som GMX, web.de eller mailbox.org fungerer med brukernavn og passord."
+  "status.system.wifi_power": "Maksimal WiFi-sendeeffekt (dBm)",
+  "status.system.wifi_power.hint": "Mellom 8 og 20 dBm. Innstillingen trer i kraft umiddelbart og beholdes etter en omstart.",
+  "status.system.wifi_power.save": "Bruk overføringsstyrken",
+  "status.system.wifi_power.saved": "Sendeeffekten er lagret og brukt.",
+  "status.system.wifi_power.invalid": "Vennligst oppgi et heltall mellom 8 og 20 dBm.",
+  "status.system.wifi_power.failed": "Sendeeffekten ble ikke lagret: {reason}"
 }
