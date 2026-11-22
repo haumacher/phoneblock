@@ -87,19 +87,21 @@ Before integrating, you need to register your app with PhoneBlock to receive an 
    - App identifier/package name (e.g., `com.yourcompany.yourapp`)
    - Proposed `appId` (short identifier, e.g., "YourAppName")
    - Redirect URI scheme (e.g., `yourapp://auth`)
+   - The product token your app sends in its `User-Agent` header (e.g., `YourAppName` in `YourAppName/1.0.0 (iOS 18.1)`, see [User-Agent Header](#1-user-agent-header))
    - Brief description of your app's purpose
    - Contact information for support
 
 3. **Receive your credentials:**
    - `appId`: Your registered app identifier
    - Configured redirect URI that PhoneBlock will use
+   - The registered `User-Agent` product token under which your app is shown in the [installation statistics](https://phoneblock.net/phoneblock/stats)
 
 **Current Registered Apps:**
-- `PhoneBlockMobile` → Redirects to `PhoneBlockMobile://auth`
-- `PhoneSpamBlocker` → Redirects to `PhoneSpamBlocker://auth`
-- `SpamBlocker` → Redirects to `spamblocker://auth`
-- `kallm` → Redirects to `kallm://phoneblock-auth` (iOS CallKit call blocker for Italy; `state` round-tripped for CSRF protection)
-- `rufnummernsperre` → Redirects to `rufnummernsperre://phoneblock-auth` (iOS CallKit call blocker; `state` round-tripped for CSRF protection)
+- `PhoneBlockMobile` → Redirects to `PhoneBlockMobile://auth` (User-Agent `PhoneBlockMobile/…`)
+- `PhoneSpamBlocker` → Redirects to `PhoneSpamBlocker://auth` (User-Agent `PhoneSpamBlocker/…`)
+- `SpamBlocker` → Redirects to `spamblocker://auth` (User-Agent `SpamBlocker/…`)
+- `kallm` → Redirects to `kallm://phoneblock-auth` (iOS CallKit call blocker for Italy; `state` round-tripped for CSRF protection; User-Agent `kallm/…`)
+- `rufnummernsperre` → Redirects to `rufnummernsperre://phoneblock-auth` (iOS CallKit call blocker; `state` round-tripped for CSRF protection; User-Agent `Rufnummernsperre/…`)
 
 ### Step 5: Token Reception
 
@@ -722,6 +724,16 @@ User-Agent: YourAppName/1.0.0 (Android 13; Model SM-G991B)
 ```
 
 Format: `AppName/Version (Platform; Device Info)`
+
+**Keep the product token stable and use the registered one.** PhoneBlock groups API tokens by the
+part of the User-Agent before the first `/` (case-sensitive, exact match) to count installations
+per app. A registered app appears in the public [installation statistics](https://phoneblock.net/phoneblock/stats)
+only if it sends exactly the product token agreed during registration (see
+[Current Registered Apps](#step-4-register-your-app-with-phoneblock)). Put version, platform and
+device details after the `/`, never into the product token itself. Set the header explicitly:
+platform defaults are not reliable (Flutter's `http` client sends `Dart/…`; iOS `URLSession`
+sends `<ExecutableName>/<build> CFNetwork/… Darwin/…`, which depends on the target name and
+percent-encodes non-ASCII characters).
 
 This helps PhoneBlock:
 - Track API usage by app
