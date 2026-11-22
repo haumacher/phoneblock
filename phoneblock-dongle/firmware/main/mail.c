@@ -443,9 +443,11 @@ static bool mail_send(const char *subject, const char *content_type, const char 
         goto done;
     }
 
-    ret = smtp_cmd(&c, "QUIT\r\n", deadline);             // best-effort
+    // Best-effort: the mail is already accepted, so a server that just
+    // closes the connection is no failure worth a user-visible warning.
+    ret = smtp_cmd(&c, "QUIT\r\n", deadline);
     if (ret < 200 || ret > 299)
-        ESP_LOGW(TAG, "SMTP QUIT failed (code %d)", ret);
+        ESP_LOGD(TAG, "SMTP QUIT failed (code %d)", ret);
     ok = true;
     ESP_LOGI(TAG, "status mail sent to %s (%d of %d recipient(s))",
              to_hdr, accepted, rcpts.count);
