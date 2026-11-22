@@ -308,5 +308,7 @@
   "blocklistSyncing": "同步...",
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
-  "personalizedAddedDate": "已添加：<x1>日期</x1"
+  "personalizedAddedDate": "已添加：<x1>日期</x1",
+  "numberRejectedByServer": "该号码未被服务器接受。请检查格式。",
+  "wildcardOnlyBlacklist": "通配符 (*) 仅可在黑名单中使用。"
 }

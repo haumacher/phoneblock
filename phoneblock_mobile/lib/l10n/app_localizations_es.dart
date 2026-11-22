@@ -231,7 +231,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get numberRejectedByServer =>
-      'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.';
+      'El servidor no ha aceptado el número. Compruebe el formato.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1011,7 +1011,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get wildcardOnlyBlacklist =>
-      'Platzhalter (*) sind nur in der Sperrliste möglich.';
+      'Los comodines (*) solo se pueden utilizar en la lista negra.';
 
   @override
   String get wildcardHint =>

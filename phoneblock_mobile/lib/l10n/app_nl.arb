@@ -308,5 +308,7 @@
   "blocklistSyncing": "Synchroniseren...",
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
-  "personalizedAddedDate": "Toegevoegd: {date}"
+  "personalizedAddedDate": "Toegevoegd: {date}",
+  "numberRejectedByServer": "Het nummer is niet geaccepteerd door de server. Controleer het formaat.",
+  "wildcardOnlyBlacklist": "Jokertekens (*) zijn alleen toegestaan in de blokkeerlijst."
 }

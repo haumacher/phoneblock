@@ -232,7 +232,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get numberRejectedByServer =>
-      'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.';
+      'Numer nie został zaakceptowany przez serwer. Proszę sprawdzić format.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1014,7 +1014,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get wildcardOnlyBlacklist =>
-      'Platzhalter (*) sind nur in der Sperrliste möglich.';
+      'Symbole wieloznaczne (*) są dozwolone wyłącznie na liście blokowanych.';
 
   @override
   String get wildcardHint =>

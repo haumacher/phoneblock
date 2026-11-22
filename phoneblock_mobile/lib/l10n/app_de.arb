@@ -362,7 +362,8 @@
   },
   "numberRejectedByServer": "Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.",
   "@numberRejectedByServer": {
-    "description": "Error when the server rejects an exact personalized-list number"
+    "description": "Error when the server rejects an exact personalized-list number",
+    "x-translated": "6672c120"
   },
   "reportedAsSpam": "{phoneNumber} als SPAM gemeldet",
   "@reportedAsSpam": {
@@ -1520,7 +1521,8 @@
   },
   "wildcardOnlyBlacklist": "Platzhalter (*) sind nur in der Sperrliste möglich.",
   "@wildcardOnlyBlacklist": {
-    "description": "Validation error when a wildcard is entered on the whitelist"
+    "description": "Validation error when a wildcard is entered on the whitelist",
+    "x-translated": "f78f67fa"
   },
   "wildcardHint": "Sperrt alle Nummern, die mit diesem Präfix beginnen",
   "@wildcardHint": {

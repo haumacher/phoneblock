@@ -308,5 +308,7 @@
   "blocklistSyncing": "Sincroniza...",
   "blocklistSyncSuccess": "Sincronización correcta de la lista de bloqueo",
   "blocklistSyncFailed": "Error de sincronización de la lista de bloqueo",
-  "personalizedAddedDate": "Añadido: {date}"
+  "personalizedAddedDate": "Añadido: {date}",
+  "numberRejectedByServer": "El servidor no ha aceptado el número. Compruebe el formato.",
+  "wildcardOnlyBlacklist": "Los comodines (*) solo se pueden utilizar en la lista negra."
 }

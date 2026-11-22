@@ -308,5 +308,7 @@
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
-  "personalizedAddedDate": "Tilføjet: {date}."
+  "personalizedAddedDate": "Tilføjet: {date}.",
+  "numberRejectedByServer": "Nummeret blev ikke accepteret af serveren. Kontroller venligst formatet.",
+  "wildcardOnlyBlacklist": "Jokertegn (*) er kun tilladt på sortlisten."
 }

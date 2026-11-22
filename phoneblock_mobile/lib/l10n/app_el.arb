@@ -308,5 +308,7 @@
   "blocklistSyncing": "Συγχρονισμός...",
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
   "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
-  "personalizedAddedDate": "Προστέθηκε: {date}"
+  "personalizedAddedDate": "Προστέθηκε: {date}",
+  "numberRejectedByServer": "Ο αριθμός δεν έγινε αποδεκτός από τον διακομιστή. Παρακαλώ ελέγξτε τη μορφή.",
+  "wildcardOnlyBlacklist": "Οι χαρακτήρες μπαλαντέρ (*) επιτρέπονται μόνο στη λίστα αποκλεισμού."
 }

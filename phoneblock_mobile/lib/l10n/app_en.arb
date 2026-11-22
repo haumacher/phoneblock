@@ -308,5 +308,7 @@
   "blocklistSyncing": "Synchronize...",
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
-  "personalizedAddedDate": "Added: {date}"
+  "personalizedAddedDate": "Added: {date}",
+  "numberRejectedByServer": "The number was not accepted by the server. Please check the format.",
+  "wildcardOnlyBlacklist": "Wildcards (*) are only allowed in the block list."
 }

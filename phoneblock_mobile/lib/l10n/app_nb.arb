@@ -308,5 +308,7 @@
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Synkronisering av blokkliste vellykket",
   "blocklistSyncFailed": "Synkronisering av blokkeringslisten mislyktes",
-  "personalizedAddedDate": "Lagt til: {date}"
+  "personalizedAddedDate": "Lagt til: {date}",
+  "numberRejectedByServer": "Nummeret ble ikke akseptert av serveren. Vennligst sjekk formatet.",
+  "wildcardOnlyBlacklist": "Jokertegn (*) kan kun brukes i svartelisten."
 }

@@ -231,7 +231,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get numberRejectedByServer =>
-      'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.';
+      'لم يقبل الخادم الرقم. يرجى التحقق من التنسيق.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -997,7 +997,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get wildcardOnlyBlacklist =>
-      'Platzhalter (*) sind nur in der Sperrliste möglich.';
+      'لا يُسمح باستخدام أحرف البدل (*) إلا في قائمة الحظر.';
 
   @override
   String get wildcardHint => 'يحظر جميع الأرقام التي تبدأ بهذه البادئة';

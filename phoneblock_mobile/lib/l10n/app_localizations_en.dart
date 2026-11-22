@@ -230,7 +230,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get numberRejectedByServer =>
-      'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.';
+      'The number was not accepted by the server. Please check the format.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1003,7 +1003,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wildcardOnlyBlacklist =>
-      'Platzhalter (*) sind nur in der Sperrliste möglich.';
+      'Wildcards (*) are only allowed in the block list.';
 
   @override
   String get wildcardHint => 'Blocks all numbers beginning with this prefix';

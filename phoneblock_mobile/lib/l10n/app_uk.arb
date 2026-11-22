@@ -308,5 +308,7 @@
   "blocklistSyncing": "Синхронізувати...",
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
-  "personalizedAddedDate": "Додано: {date}"
+  "personalizedAddedDate": "Додано: {date}",
+  "numberRejectedByServer": "Сервер не прийняв цей номер. Будь ласка, перевірте формат.",
+  "wildcardOnlyBlacklist": "Символ-замінник (*) можна використовувати лише у чорному списку."
 }
