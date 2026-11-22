@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">Si se suscribe a la libreta de direcciones de PhoneBlock, puede ver directamente si merece la pena responder a una llamada o devolver la llamada en caso de pérdida. Sin embargo, no es posible rechazar directamente las llamadas de spam.</p>
 		<p data-tx="t0060:f7ad0c77">Si instala <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, puede integrar allí la base de datos PhoneBlock. SpamBlocker puede entonces comparar el número con la base de datos PhoneBlock cuando se recibe una llamada y rechazar la llamada directamente si coincide. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> es una aplicación independiente, por favor contacte directamente con el desarrollador si tiene algún problema con ella.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">Mi móvil bloquea las llamadas no deseadas, pero aun así los que llaman acaban en mi buzón de voz. ¿Qué puedo hacer?</h2>
+		<p data-tx="t0066:2821c2e9">La aplicación PhoneBlock rechaza las llamadas no deseadas. Para la red móvil, parece como si tú mismo hubieras rechazado la llamada. Si tu operador tiene configurado el desvío de llamadas al buzón de voz cuando la línea está ocupada, la llamada se desviará allí.</p>
+		<p data-tx="t0067:a129bb9f">El desvío de llamadas cuando la línea está ocupada se puede desactivar por separado. Los desvíos de llamadas por no contestar y por no estar localizable siguen activos. Introduce los siguientes códigos en la aplicación del teléfono y pulsa el botón de llamada después de cada uno:</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Indica si el desvío de llamadas cuando la línea está ocupada está activado y a qué número (tu buzón de voz). Anota el número antes de realizar cualquier cambio.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Desactiva el desvío de llamadas cuando la línea está ocupada. El número guardado se mantiene.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: Vuelve a activar el desvío de llamadas cuando la línea está ocupada al número guardado.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*Número de buzón#</code>: Si no consigues reactivar el desvío de llamadas de esta forma, vuelve a configurarlo utilizando este código. Introduce el número que has anotado.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">La desventaja: si rechazas manualmente una llamada real, la persona que llama también oirá la señal de ocupado, en lugar de que la llamada se desvíe al buzón de voz. Los códigos siguen el estándar GSM y funcionan en la mayoría de las redes de telefonía móvil. Si no te funciona con tu operador, puedes recurrir a su aplicación o a su línea de atención al cliente.</p>
+		<p data-tx="t0073:4c1649f1">Independientemente de ello, en muchos proveedores puedes desactivar los SMS correspondientes a llamadas sin mensaje en la configuración del buzón de voz.</p>
+
 		<h2 data-tx="t0021:d7604318">¿Puedo utilizar PhoneBlock en un iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Sí, con el iPhone puedes hacerlo incluso sin instalar ninguna app adicional. Echa un vistazo a las <a th:href="@{/setup-iphone}">instrucciones de instalación</a> aquí.</p>
 
