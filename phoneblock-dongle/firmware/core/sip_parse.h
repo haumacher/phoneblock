@@ -66,6 +66,19 @@ int parse_register_expires(const char *resp, int resp_len, const char *instance)
 // Extract the numeric part of the CSeq header. 0 if absent or malformed.
 uint32_t parse_cseq(const char *req, int req_len);
 
+// Copy the method token of the CSeq header ("236 REGISTER" -> "REGISTER")
+// into out. out[0] = '\0' (and 0 returned) if the header is absent or has
+// no method; otherwise returns the method length.
+int parse_cseq_method(const char *msg, int msg_len, char *out, int cap);
+
+// Is msg the response to the request we sent with this Call-ID, CSeq
+// number and CSeq method? Used to pair a reply with our own transaction
+// instead of taking whatever datagram arrives next (#771): a registrar may
+// deliver a response twice, and an incoming request (INVITE, OPTIONS) can
+// arrive while we wait. False for requests and for any field mismatch.
+bool sip_is_response_to(const char *msg, int msg_len, const char *call_id,
+                        uint32_t cseq, const char *method);
+
 // Copy the Call-ID header value (trimmed of trailing whitespace) into
 // out. Writes at most cap-1 bytes + NUL; out[0] = '\0' if the header is
 // absent.
