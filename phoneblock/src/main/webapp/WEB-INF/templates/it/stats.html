@@ -106,6 +106,36 @@
 		<p class="is-size-7 has-text-grey" data-tx="t0014:7ebc3da6">Un utilizzo è considerato attivo finché recupera regolarmente i dati da PhoneBlock. Per il Fritz!Box, sono inclusi solo gli utilizzi registrati dopo il passaggio alle chiavi API.</p>
 	</div>
 
+	<h2 data-tx="t0016:be8aea62">Dongle PhoneBlock attivi per piattaforma</h2>
+
+	<div>
+		<div class="pb-chart-box">
+			<canvas aria-label="Dongle PhoneBlock attivi per piattaforma" data-tx="t0017:151e0aa9" dir="ltr" id="dongle-platforms" role="img"></canvas>
+		</div>
+		<pre class="chartjs-data" id="dongle-platforms-data">
+		{
+			"type": "bar",
+			"data": {
+				"labels": <th:block th:text="${dongleLabels}"></th:block>,
+				"datasets": <th:block th:text="${dongleDatasets}"></th:block>
+			},
+			"options": {
+				"responsive": true,
+				"maintainAspectRatio": false,
+				"scales": {
+					"y": {
+						"ticks": {
+							"precision": 0
+						}
+					}
+				}
+			}
+		}
+		</pre>
+		<script th:src="@{/assets/js/stats-dongle-platforms.js(v=${props.project.version})}" type="text/javascript"></script>
+		<p class="is-size-7 has-text-grey" data-tx="t0018:64458d8a">Dongle attivi negli ultimi 30, 60 o 90 giorni, per piattaforma; ogni dongle viene conteggiato una sola volta.</p>
+	</div>
+
 	<h2 data-tx="t0007:6adca729" th:text="#{page.stats.blockedByCountry}">Numeri bloccati per paese</h2>
 
 	<div class="pb-max-500">

@@ -3,6 +3,7 @@
  */
 package de.haumacher.phoneblock.app.render.controller;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,8 @@ import java.util.Map;
 import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.render.DefaultController;
+import de.haumacher.phoneblock.db.DB.DonglePlatform;
+import de.haumacher.phoneblock.db.DB.DonglePlatformCounts;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DailyCount;
 import de.haumacher.phoneblock.util.I18N;
@@ -135,6 +138,7 @@ public class StatsController extends DefaultController {
 			"SpamBlocker", "SpamBlocker",
 			"FRITZOS_CardDAV_Client", "Fritz!Box",
 			"PhoneBlockMobile", "PhoneBlock Mobile",
+			"PhoneBlock-Dongle", "PhoneBlock Dongle",
 			"PhoneSpamBlocker", "PhoneSpamBlocker",
 			"kallm", "Kallm",
 			"Rufnummernsperre", "Rufnummernsperre");
@@ -179,6 +183,38 @@ public class StatsController extends DefaultController {
 
 		request.setAttribute("installationLabels", installationLabels.toString());
 		request.setAttribute("installationDatasets", installationDatasets.toString());
+
+		// Active dongles by platform.
+		List<DonglePlatformCounts> dongles = DBService.getInstance().getActiveDonglesByPlatform();
+		StringBuilder dongleLabels = new StringBuilder("[");
+		List<Integer> dongles30 = new ArrayList<>();
+		List<Integer> dongles60 = new ArrayList<>();
+		List<Integer> dongles90 = new ArrayList<>();
+		for (DonglePlatformCounts platform : dongles) {
+			if (dongleLabels.length() > 1) {
+				dongleLabels.append(',');
+			}
+			String label = switch (platform.platform()) {
+				case OTHER -> otherLabel;
+				case UNKNOWN -> I18N.getMessage(request, "page.stats.dongleUnknown");
+				default -> platform.platform().tag();
+			};
+			jsString(dongleLabels, label);
+			dongles30.add(platform.days30());
+			dongles60.add(platform.days60());
+			dongles90.add(platform.days90());
+		}
+		dongleLabels.append(']');
+
+		StringBuilder dongleDatasets = new StringBuilder("[");
+		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongle30Days"), dongles30, DIAL_COLORS[0]);
+		dongleDatasets.append(',');
+		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongle60Days"), dongles60, DIAL_COLORS[1]);
+		dongleDatasets.append(',');
+		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongle90Days"), dongles90, DIAL_COLORS[2]);
+		dongleDatasets.append(']');
+		request.setAttribute("dongleLabels", dongleLabels.toString());
+		request.setAttribute("dongleDatasets", dongleDatasets.toString());
 
 		// Blocked numbers by country pie chart.
 		List<DailyCount> countryCounts = DBService.getInstance().getBlockedNumbersByCountry();
