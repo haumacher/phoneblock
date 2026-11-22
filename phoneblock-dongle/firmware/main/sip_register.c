@@ -652,9 +652,22 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
 // REGISTER round-trip helper
 // ---------------------------------------------------------------------------
 
-// Send a request to the registrar and block for the response. Returns
-// the response length (NUL-terminated in rx) or -1 on send/recv error
-// or timeout.
+static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
+                            const struct sockaddr_in *from);
+
+// Send a REGISTER (Call-ID c->call_id, CSeq c->cseq) to the registrar and
+// block for *its* final response. Returns the response length
+// (NUL-terminated in rx) or -1 on send/recv error or timeout.
+//
+// Only a response matching our Call-ID, CSeq number and method counts
+// (#771). Anything else that arrives in the meantime is not mistaken for
+// the answer:
+//   - a request (INVITE, OPTIONS, keep-alive ping) is dispatched to the
+//     normal handler right away, so a call arriving during a refresh is
+//     neither lost nor turned into "REGISTER rejected: -1";
+//   - a response to another transaction (a duplicate or late reply to an
+//     earlier REGISTER) is dropped;
+//   - a provisional 1xx to our own request just keeps us waiting.
 static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
                          char *rx, int rx_cap)
 {
@@ -701,10 +714,36 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
             note_registrar_silent();
             return -1;
         }
-        if (r > 0) break;       // complete message
-        // r == 0: slice expired or partial frame — keep waiting.
+        if (r == 0) continue;   // slice expired or partial frame — keep waiting
+        rx[r] = '\0';
+        if (sip_is_response_to(rx, r, c->call_id, c->cseq, "REGISTER")) {
+            int status = parse_status_code(rx, r);
+            if (status >= 100 && status < 200) {
+                pb_log_info(TAG, "← %d (provisional), waiting for final response",
+                         status);
+                continue;
+            }
+            break;              // our final response
+        }
+        if (strncmp(rx, "SIP/2.0", 7) == 0) {
+            char method[16];
+            parse_cseq_method(rx, r, method, sizeof(method));
+            pb_log_info(TAG, "← ignoring response %d to CSeq %lu %s "
+                          "(waiting for CSeq %lu REGISTER)",
+                     parse_status_code(rx, r),
+                     (unsigned long)parse_cseq(rx, r), method,
+                     (unsigned long)c->cseq);
+            continue;
+        }
+        // A request arrived while we wait: handle it now. Whatever time the
+        // handler spends (an INVITE runs the caller lookup) does not count
+        // against the REGISTER budget — our response stays queued meanwhile.
+        int64_t handler_start = (int64_t)pb_monotonic_us();
+        note_registrar_answered();
+        heap_guard_note("sip:rx");
+        handle_incoming(c, rx, r, &from);
+        deadline += (int64_t)pb_monotonic_us() - handler_start;
     }
-    rx[r] = '\0';
     // Any answer — even a rejection — proves the link to the registrar.
     note_registrar_answered();
     // Learn our public IP from the registrar's view (Via "received="), so
@@ -1789,9 +1828,19 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
              len, len, pkt);
 
     // Handle responses to our own out-of-dialog requests (BYE from us).
+    // REGISTER responses are consumed by sip_send_recv(); one landing here
+    // is a duplicate or a straggler after a timeout — routine (a Fritz!Box
+    // may send the 200 twice, #771), so INFO only. It must not close a
+    // dialog waiting for its BYE response either.
     if (is_response) {
         int status = parse_status_code(pkt, len);
-        if (c->dialog.state == DIALOG_BYE_SENT) {
+        char cseq_method[16];
+        parse_cseq_method(pkt, len, cseq_method, sizeof(cseq_method));
+        if (strcasecmp(cseq_method, "REGISTER") == 0) {
+            pb_log_info(TAG, "ignoring late/duplicate REGISTER response %d "
+                          "(CSeq %lu)", status,
+                     (unsigned long)parse_cseq(pkt, len));
+        } else if (c->dialog.state == DIALOG_BYE_SENT) {
             pb_log_info(TAG, "← %d on BYE → dialog closed", status);
             memset(&c->dialog, 0, sizeof(c->dialog));
             display_call_ended();

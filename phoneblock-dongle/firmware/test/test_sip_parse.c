@@ -105,6 +105,21 @@ static void expect_cseq(uint32_t expected, const char *req)
     report_int("parse_cseq", req, (long)expected, (long)got);
 }
 
+static void expect_cseq_method(const char *expected, const char *msg)
+{
+    char out[16] = {0};
+    parse_cseq_method(msg, (int)strlen(msg), out, sizeof(out));
+    report_str("parse_cseq_method", msg, expected, out);
+}
+
+static void expect_response_to(bool expected, const char *msg,
+                               const char *call_id, uint32_t cseq,
+                               const char *method)
+{
+    bool got = sip_is_response_to(msg, (int)strlen(msg), call_id, cseq, method);
+    report_int("sip_is_response_to", msg, expected, got);
+}
+
 static void expect_method(const char *expected, const char *pkt)
 {
     char out[32] = {0};
@@ -378,6 +393,50 @@ static void test_parse_cseq(void)
     expect_cseq(5,         SAMPLE_INVITE);
     expect_cseq(879113571, SAMPLE_401);
     expect_cseq(0,         "FOO sip:x SIP/2.0\r\n\r\n");  // no CSeq header
+}
+
+static void test_parse_cseq_method(void)
+{
+    expect_cseq_method("INVITE",   SAMPLE_INVITE);
+    expect_cseq_method("REGISTER", SAMPLE_401);
+    expect_cseq_method("",         "FOO sip:x SIP/2.0\r\n\r\n");  // no CSeq
+    expect_cseq_method("",         "SIP/2.0 200 OK\r\nCSeq: 7\r\n\r\n");
+    expect_cseq_method("BYE",      "SIP/2.0 200 OK\r\nCSeq:\t12  BYE \r\n\r\n");
+}
+
+// #771: a REGISTER exchange must only accept the response to its own
+// request — not a duplicate of an earlier one, nor an incoming request.
+#define REG_200_237 \
+    "SIP/2.0 200 OK\r\n" \
+    "Via: SIP/2.0/UDP 192.168.0.100:15060;branch=z9hG4bK9cf8;rport=15060\r\n" \
+    "From: <sip:phoneblock@192.168.0.1>;tag=be6e3acefb738266\r\n" \
+    "To: <sip:phoneblock@192.168.0.1>;tag=3C46296325E5263E\r\n" \
+    "Call-ID: 2f602ad5@phoneblock\r\n" \
+    "CSeq: 237 REGISTER\r\n" \
+    "Content-Length: 0\r\n\r\n"
+
+static void test_sip_is_response_to(void)
+{
+    expect_response_to(true,  REG_200_237, "2f602ad5@phoneblock", 237, "REGISTER");
+    // Duplicate of the previous transaction's response.
+    expect_response_to(false, REG_200_237, "2f602ad5@phoneblock", 238, "REGISTER");
+    // Other dialog / method.
+    expect_response_to(false, REG_200_237, "other@phoneblock",    237, "REGISTER");
+    expect_response_to(false, REG_200_237, "2f602ad5@phoneblock", 237, "BYE");
+    // Method compare is case-insensitive, like Call-ID.
+    expect_response_to(true,  REG_200_237, "2F602AD5@phoneblock", 237, "register");
+    // The challenge sample answers its own REGISTER.
+    expect_response_to(true,  SAMPLE_401, "cb9319c3@phoneblock", 879113571, "REGISTER");
+    // A request is never a response, even with matching headers.
+    expect_response_to(false,
+        "INVITE sip:phoneblock@192.168.0.100 SIP/2.0\r\n"
+        "Call-ID: 2f602ad5@phoneblock\r\n"
+        "CSeq: 237 REGISTER\r\n\r\n",
+        "2f602ad5@phoneblock", 237, "REGISTER");
+    expect_response_to(false, SAMPLE_INVITE, "4B8A3DA30AC9B91D@192.168.178.1", 5, "INVITE");
+    // No Call-ID never matches.
+    expect_response_to(false, "SIP/2.0 200 OK\r\nCSeq: 1 REGISTER\r\n\r\n",
+                       "", 1, "REGISTER");
 }
 
 static void test_parse_call_id(void)
@@ -747,6 +806,8 @@ int main(void)
     test_parse_reason_phrase();
     test_parse_register_expires();
     test_parse_cseq();
+    test_parse_cseq_method();
+    test_sip_is_response_to();
     test_parse_call_id();
     test_find_header();
     test_parse_via_received();
