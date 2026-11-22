@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">If you subscribe to the PhoneBlock address book, you can see directly from a call whether it is worth taking the call or calling back if you miss a call. However, it is not possible to reject spam calls directly.</p>
 		<p data-tx="t0060:f7ad0c77">If you install <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, you can integrate the PhoneBlock database there. SpamBlocker can then compare the number with the PhoneBlock database when a call is received and reject the call directly if it is a match. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> is an independent app, please contact the developer directly if you have any problems with it.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">My cell phone blocks spam calls, but the callers still end up on my voicemail. What can I do?</h2>
+		<p data-tx="t0066:2821c2e9">The PhoneBlock app blocks spam calls. To the cell phone network, it looks as if you rejected the call yourself. If your carrier has call forwarding set up to voicemail when the line is busy, the caller will be directed there.</p>
+		<p data-tx="t0067:a129bb9f">You can disable "Call Forwarding When Busy" individually. Call forwarding when a call is not answered and when you are unreachable will remain active. Enter the following codes in the Phone app and press the call button after each one:</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Shows whether call forwarding when the line is busy is active and to which number (your voicemail). Make a note of the number before you make any changes.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Turns off call forwarding when the line is busy. The stored number is retained.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: Re-enables call forwarding to the stored number when the line is busy.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*Mailbox Number#</code>: If you can't turn call forwarding back on this way, use this to set it up again. Be sure to enter the number you wrote down.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">The downside: If you manually reject a real call, that caller will also hear the busy signal instead of being directed to voicemail. The codes follow the GSM standard and work on most cellular networks. If it doesn't work with your carrier, try their app or call their customer service hotline.</p>
+		<p data-tx="t0073:4c1649f1">Regardless, many providers allow you to disable text messages for calls without a message in your voicemail settings.</p>
+
 		<h2 data-tx="t0021:d7604318">Can I use PhoneBlock on an iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Yes, with the iPhone you can even do this without installing any additional apps. Take a look at the <a th:href="@{/setup-iphone}">installation instructions</a> here.</p>
 
