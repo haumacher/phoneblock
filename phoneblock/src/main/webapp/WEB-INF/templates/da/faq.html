@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">Hvis du abonnerer på PhoneBlock-adressebogen, kan du se direkte på et opkald, om det er værd at besvare opkaldet eller ringe tilbage, hvis du går glip af et opkald. Det er dog ikke muligt at afvise spamopkald direkte.</p>
 		<p data-tx="t0060:f7ad0c77">Hvis du installerer <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, kan du integrere PhoneBlock-databasen der. SpamBlocker kan så sammenligne nummeret med PhoneBlock-databasen, når der modtages et opkald, og afvise opkaldet direkte, hvis der er et match. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> er en uafhængig app, kontakt venligst udvikleren direkte, hvis du har problemer med den.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">Min mobiltelefon blokerer spamopkald, men alligevel ender opkalderne på min telefonsvarer. Hvad kan jeg gøre?</h2>
+		<p data-tx="t0066:2821c2e9">PhoneBlock-appen afviser spamopkald. For mobilnetværket ser det ud, som om du selv har afvist opkaldet. Hvis din udbyder har indstillet, at opkald skal viderestilles til telefonsvareren, når linjen er optaget, bliver opkaldet derfor viderestillet dertil.</p>
+		<p data-tx="t0067:a129bb9f">Viderestilling ved optaget kan deaktiveres individuelt. Viderestillingerne ved ubesvaret opkald og ved utilgængelighed forbliver dog aktive. Indtast følgende koder i telefonappen, og tryk på opkaldsknappen efter hver kode:</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Viser, om viderestilling ved optaget er aktiveret, og til hvilket nummer (din telefonsvarer). Skriv nummeret ned, før du ændrer noget.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Deaktiverer viderestilling, når linjen er optaget. Det gemte nummer bevares.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: Aktiverer viderestilling ved optaget til det gemte nummer igen.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*postkassenummer#</code>: Hvis det ikke er muligt at genaktivere viderestillingen på denne måde, skal du konfigurere viderestillingen på ny ved hjælp af dette nummer. Indtast det nummer, du har noteret.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">Ulempen er, at hvis du manuelt afviser et rigtigt opkald, hører den pågældende også optaget-signalet i stedet for at blive omstillet til telefonsvareren. Koderne følger GSM-standarden og fungerer i de fleste mobilnetværk. Hvis det ikke virker hos din udbyder, kan du få hjælp via udbyderens app eller kundeservice.</p>
+		<p data-tx="t0073:4c1649f1">Uanset hvad kan du hos mange udbydere i indstillingerne for din mailboks deaktivere SMS-beskeder ved opkald uden besked.</p>
+
 		<h2 data-tx="t0021:d7604318">Kan jeg bruge PhoneBlock på en iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Ja, med iPhone kan du endda gøre det uden at installere yderligere apps. Se <a th:href="@{/setup-iphone}">installationsvejledningen</a> her.</p>
 
