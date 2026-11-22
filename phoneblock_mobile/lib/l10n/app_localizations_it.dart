@@ -9,6 +9,72 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle =>
+      'Casella vocale in caso di chiamate bloccate';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Verifica o modifica dell\'inoltro in caso di linea occupata';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock respinge le chiamate provenienti da numeri bloccati. La vostra rete mobile segnala quindi al chiamante che la linea è occupata e potrebbe inoltrare la chiamata alla vostra casella vocale.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Se si disattiva solo l\'inoltro in caso di linea occupata, gli inoltri in caso di mancata risposta e di irreperibilità rimangono invariati. Anche i chiamanti la cui chiamata viene rifiutata dall\'utente sentiranno il segnale di linea occupata e non potranno accedere alla casella vocale.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Prima di disattivare l\'inoltro, verifichi lo stato e prenda nota del numero di casella vocale visualizzato. Può salvarlo qui sotto per riattivarlo in seguito. I pulsanti aprono l\'app del telefono con il codice corrispondente; da lì, tocchi \"Chiama\".';
+
+  @override
+  String get mailboxCheckStatus => 'Verifica stato';
+
+  @override
+  String get mailboxDisableBusy =>
+      'Disattivare la casella vocale quando la linea è occupata';
+
+  @override
+  String get mailboxEnableBusy => 'Riattivare (annullare)';
+
+  @override
+  String get mailboxFallbackTitle => 'Se non è possibile riattivare l\'inoltro';
+
+  @override
+  String get mailboxNumberHint =>
+      'Numero della casella di posta da \"Verifica stato\"';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Inserire solo cifre e, facoltativamente, un segno + iniziale.';
+
+  @override
+  String get mailboxEnableWithNumber =>
+      'Attivare con il numero di casella vocale';
+
+  @override
+  String get mailboxCarrierHint =>
+      'I codici funzionano sulla maggior parte delle reti GSM e LTE. Alcuni operatori utilizzano codici diversi. Se necessario, si rivolga al proprio operatore per ulteriori informazioni.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Molti operatori consentono inoltre di disattivare gli SMS relativi alle chiamate perse senza messaggio nelle impostazioni della casella vocale.';
+
+  @override
+  String get mailboxFaq => 'Ulteriori informazioni su PhoneBlock';
+
+  @override
+  String get mailboxDialerError => 'Impossibile aprire l\'app Telefono.';
+
+  @override
+  String get mailboxLinkError => 'Impossibile aprire la pagina web.';
+
+  @override
+  String get mailboxStorageError =>
+      'Impossibile salvare o caricare il numero della casella vocale.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override

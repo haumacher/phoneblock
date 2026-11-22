@@ -9,6 +9,68 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => 'Mailbox for Blocked Calls';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Check or change call forwarding when busy';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock blocks calls from blocked numbers. Your mobile network then signals to the caller that the line is busy and may forward the call to your voicemail.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'If you disable busy forwarding only, call forwarding for unanswered calls and when you are unreachable remains unchanged. Callers whose calls you reject yourself will also hear a busy signal and will not be directed to your voicemail.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Before turning off forwarding, check the status and note the mailbox number displayed. You can save it below so you can turn it back on later. The buttons open the Phone app with the appropriate code; tap “Call” there.';
+
+  @override
+  String get mailboxCheckStatus => 'Check status';
+
+  @override
+  String get mailboxDisableBusy => 'Disable mailbox when busy';
+
+  @override
+  String get mailboxEnableBusy => 'Turn it back on (undo)';
+
+  @override
+  String get mailboxFallbackTitle => 'If forwarding cannot be reactivated';
+
+  @override
+  String get mailboxNumberHint => 'Mailbox number from \"Check Status\"';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Enter only digits and, optionally, a leading +.';
+
+  @override
+  String get mailboxEnableWithNumber => 'Activate with a mailbox number';
+
+  @override
+  String get mailboxCarrierHint =>
+      'The codes work on most GSM and LTE networks. Some carriers use different codes. If necessary, check with your carrier.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Many providers also allow you to disable text messages about missed calls without a message in your voicemail settings.';
+
+  @override
+  String get mailboxFaq => 'More information on PhoneBlock';
+
+  @override
+  String get mailboxDialerError => 'The Phone app could not be opened.';
+
+  @override
+  String get mailboxLinkError => 'The webpage could not be opened.';
+
+  @override
+  String get mailboxStorageError =>
+      'The mailbox number could not be saved or loaded.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override

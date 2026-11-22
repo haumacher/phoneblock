@@ -9,6 +9,71 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle =>
+      'Buzón de voz cuando las llamadas están bloqueadas';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Comprobar o modificar el reenvío cuando la línea está ocupada';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock rechaza las llamadas procedentes de números bloqueados. Tu red móvil indica entonces al llamante que la línea está ocupada y es posible que desvíe la llamada a tu buzón de voz.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Si solo desactiva el desvío cuando la línea está ocupada, los desvíos en caso de no contestar y de no estar localizable permanecerán sin cambios. Además, las personas a las que usted mismo rechace la llamada oirán que la línea está ocupada y no podrán acceder al buzón de voz.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Antes de desactivar el reenvío, compruebe el estado y anote el número de buzón que se muestra. Puede guardarlo más abajo para volver a activarlo más adelante. Los botones abren la aplicación de teléfono con el código correspondiente; pulse allí en «Llamar».';
+
+  @override
+  String get mailboxCheckStatus => 'Comprobar el estado';
+
+  @override
+  String get mailboxDisableBusy =>
+      'Desactivar el buzón cuando la línea está ocupada';
+
+  @override
+  String get mailboxEnableBusy => 'Reactivar (deshacer)';
+
+  @override
+  String get mailboxFallbackTitle => 'Si no es posible reactivar el reenvío';
+
+  @override
+  String get mailboxNumberHint => 'Número de buzón de «Comprobar estado»';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Introduzca solo números y, opcionalmente, un signo «+» al principio.';
+
+  @override
+  String get mailboxEnableWithNumber => 'Activar con el número de buzón de voz';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Los códigos funcionan en la mayoría de las redes GSM y LTE. Algunos operadores utilizan otros códigos. Si es necesario, consulte a su operador.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Además, muchos operadores permiten desactivar los SMS de llamadas perdidas sin mensaje en la configuración del buzón de voz.';
+
+  @override
+  String get mailboxFaq => 'Más información en PhoneBlock';
+
+  @override
+  String get mailboxDialerError =>
+      'No se ha podido abrir la aplicación de teléfono.';
+
+  @override
+  String get mailboxLinkError => 'No se ha podido abrir la página web.';
+
+  @override
+  String get mailboxStorageError =>
+      'No se ha podido guardar ni cargar el número de buzón.';
+
+  @override
   String get appTitle => 'PhoneBlock Móvil';
 
   @override

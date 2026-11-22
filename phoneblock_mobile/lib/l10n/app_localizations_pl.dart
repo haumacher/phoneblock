@@ -9,6 +9,74 @@ class AppLocalizationsPl extends AppLocalizations {
   AppLocalizationsPl([String locale = 'pl']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle =>
+      'Skrzynka pocztowa w przypadku zablokowanych połączeń';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Sprawdź lub zmień ustawienia przekierowania w przypadku zajętej linii';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock odrzuca połączenia z zablokowanych numerów. Operator komórkowy sygnalizuje wówczas dzwoniącemu, że linia jest zajęta, i może przekierować połączenie na pocztę głosową.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Jeśli wyłączysz tylko przekierowanie w przypadku zajętej linii, przekierowania w przypadku nieodebrania połączenia i niedostępności pozostaną bez zmian. Również dzwoniący, których połączenia odrzucisz samodzielnie, usłyszą sygnał zajętości i nie zostaną przekierowani do poczty głosowej.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Przed wyłączeniem funkcji sprawdź jej status i zapisz wyświetlony numer skrzynki pocztowej. Możesz go zapisać poniżej, aby później ponownie włączyć tę funkcję. Przyciski otwierają aplikację telefoniczną z odpowiednim kodem; naciśnij tam przycisk „Zadzwoń”.';
+
+  @override
+  String get mailboxCheckStatus => 'Sprawdź status';
+
+  @override
+  String get mailboxDisableBusy =>
+      'Wyłącz skrzynkę pocztową, gdy linia jest zajęta';
+
+  @override
+  String get mailboxEnableBusy => 'Włącz ponownie (cofnij)';
+
+  @override
+  String get mailboxFallbackTitle =>
+      'Jeśli nie da się ponownie włączyć przekierowania';
+
+  @override
+  String get mailboxNumberHint =>
+      'Numer skrzynki pocztowej z opcji „Sprawdź status”';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Należy wprowadzić wyłącznie cyfry oraz opcjonalnie znak + na początku.';
+
+  @override
+  String get mailboxEnableWithNumber =>
+      'Włącz za pomocą numeru skrzynki pocztowej';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Kody te działają w większości sieci GSM i LTE. Niektórzy operatorzy stosują inne kody. W razie potrzeby należy skontaktować się z operatorem.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Wielu operatorów umożliwia również wyłączenie wiadomości SMS o nieodebranych połączeniach bez wiadomości w ustawieniach poczty głosowej.';
+
+  @override
+  String get mailboxFaq => 'Więcej informacji na stronie PhoneBlock';
+
+  @override
+  String get mailboxDialerError =>
+      'Nie udało się otworzyć aplikacji telefonicznej.';
+
+  @override
+  String get mailboxLinkError => 'Nie udało się otworzyć strony internetowej.';
+
+  @override
+  String get mailboxStorageError =>
+      'Nie udało się zapisać ani wczytać numeru skrzynki pocztowej.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override

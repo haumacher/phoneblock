@@ -9,6 +9,69 @@ class AppLocalizationsNl extends AppLocalizations {
   AppLocalizationsNl([String locale = 'nl']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => 'Postvak bij geblokkeerde oproepen';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Doorschakeling bij bezet controleren of wijzigen';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock weigert oproepen van geblokkeerde nummers. Uw mobiele netwerk geeft de beller dan een bezet-signaal en stuurt de oproep mogelijk door naar uw voicemail.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Als u alleen de doorschakeling bij bezet uitschakelt, blijven de doorschakelingen bij niet-beantwoorden en onbereikbaarheid ongewijzigd. Ook bellers wier oproep u zelf afwijst, horen dan \'bezet\' en komen niet bij de voicemail terecht.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Controleer de status voordat u de doorschakeling uitschakelt en noteer het weergegeven mailboxnummer. U kunt dit hieronder opslaan voor het later weer inschakelen. De knoppen openen de telefoonapp met de juiste code; tik daar op \'Bellen\'.';
+
+  @override
+  String get mailboxCheckStatus => 'Status controleren';
+
+  @override
+  String get mailboxDisableBusy => 'Mailbox uitschakelen bij bezet';
+
+  @override
+  String get mailboxEnableBusy => 'Opnieuw inschakelen (ongedaan maken)';
+
+  @override
+  String get mailboxFallbackTitle =>
+      'Als het doorsturen niet opnieuw kan worden ingeschakeld';
+
+  @override
+  String get mailboxNumberHint => 'Mailboxnummer uit \'Status controleren\'';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Voer alleen cijfers in en eventueel een voorvoegsel +.';
+
+  @override
+  String get mailboxEnableWithNumber => 'Inschakelen met een mailboxnummer';
+
+  @override
+  String get mailboxCarrierHint =>
+      'De codes werken in de meeste GSM- en LTE-netwerken. Sommige providers gebruiken andere codes. Neem indien nodig contact op met uw provider.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Veel providers bieden bovendien de mogelijkheid om de sms-melding over gemiste oproepen zonder bericht uit te schakelen in de instellingen van de voicemail.';
+
+  @override
+  String get mailboxFaq => 'Meer informatie op PhoneBlock';
+
+  @override
+  String get mailboxDialerError => 'De telefoon-app kon niet worden geopend.';
+
+  @override
+  String get mailboxLinkError => 'De webpagina kon niet worden geopend.';
+
+  @override
+  String get mailboxStorageError =>
+      'Het mailboxnummer kon niet worden opgeslagen of geladen.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobiel';
 
   @override

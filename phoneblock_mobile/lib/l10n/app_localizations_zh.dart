@@ -9,6 +9,64 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => '呼叫被拦截时的邮箱';
+
+  @override
+  String get mailboxForwardingSubtitle => '检查或更改“忙线时转接”设置';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock 会拒接来自被屏蔽号码的来电。此时，您的移动网络会向来电方显示“忙线”状态，并可能将来电转接到您的语音信箱。';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      '如果您仅关闭“忙线转接”功能，则“未接听”和“无法接通”时的转接设置将保持不变。此外，即使您亲自拒接来电，呼叫方也会听到忙线音，且无法转接到语音信箱。';
+
+  @override
+  String get mailboxForwardingReminder =>
+      '在关闭转发功能之前，请检查状态并记下显示的邮箱号码。您可以将其保存在下方，以便日后重新启用。点击这些按钮将打开电话应用并显示相应的代码；请在应用中点击“拨号”。';
+
+  @override
+  String get mailboxCheckStatus => '检查状态';
+
+  @override
+  String get mailboxDisableBusy => '在忙线时停用邮箱';
+
+  @override
+  String get mailboxEnableBusy => '重新启用（撤销）';
+
+  @override
+  String get mailboxFallbackTitle => '如果无法重新启用邮件转发功能';
+
+  @override
+  String get mailboxNumberHint => '从“检查状态”中获取邮箱号';
+
+  @override
+  String get mailboxNumberInvalid => '请仅输入数字，可选地在前面添加一个“+”号。';
+
+  @override
+  String get mailboxEnableWithNumber => '使用语音信箱号码启用该功能';
+
+  @override
+  String get mailboxCarrierHint =>
+      '这些代码在大多数GSM和LTE网络中均可使用。部分运营商使用其他代码。如有需要，请咨询您的运营商。';
+
+  @override
+  String get mailboxSmsHint => '此外，许多运营商还允许用户在语音信箱设置中关闭“未接来电”短信通知（即不发送未接来电短信）。';
+
+  @override
+  String get mailboxFaq => '更多信息请访问 PhoneBlock';
+
+  @override
+  String get mailboxDialerError => '无法打开“电话”应用。';
+
+  @override
+  String get mailboxLinkError => '无法打开该网页。';
+
+  @override
+  String get mailboxStorageError => '无法保存或加载邮箱号。';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override

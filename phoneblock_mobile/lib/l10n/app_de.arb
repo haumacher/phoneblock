@@ -1,5 +1,95 @@
 {
   "@@locale": "de",
+  "mailboxForwardingTitle": "Mailbox bei blockierten Anrufen",
+  "@mailboxForwardingTitle": {
+    "description": "Title of the busy forwarding help screen",
+    "x-translated": "b93e0137"
+  },
+  "mailboxForwardingSubtitle": "Weiterleitung bei besetzt prüfen oder ändern",
+  "@mailboxForwardingSubtitle": {
+    "description": "Settings subtitle for busy forwarding help",
+    "x-translated": "e5ca32cf"
+  },
+  "mailboxForwardingExplanation": "PhoneBlock weist Anrufe von blockierten Nummern ab. Ihr Mobilfunknetz meldet dem Anrufer dann besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.",
+  "@mailboxForwardingExplanation": {
+    "description": "Why blocked calls may reach voicemail",
+    "x-translated": "45263975"
+  },
+  "mailboxForwardingTradeoff": "Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.",
+  "@mailboxForwardingTradeoff": {
+    "description": "Consequences of disabling busy forwarding",
+    "x-translated": "423b4040"
+  },
+  "mailboxForwardingReminder": "Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Schaltflächen öffnen die Telefon-App mit dem passenden Code; tippen Sie dort auf Anrufen.",
+  "@mailboxForwardingReminder": {
+    "description": "Reminder to check and save the mailbox number before disabling forwarding",
+    "x-translated": "13ce9793"
+  },
+  "mailboxCheckStatus": "Status prüfen",
+  "@mailboxCheckStatus": {
+    "description": "Button to check busy forwarding",
+    "x-translated": "80e128f8"
+  },
+  "mailboxDisableBusy": "Mailbox bei besetzt abschalten",
+  "@mailboxDisableBusy": {
+    "description": "Button to disable busy forwarding",
+    "x-translated": "43c11b3b"
+  },
+  "mailboxEnableBusy": "Wieder einschalten (rückgängig)",
+  "@mailboxEnableBusy": {
+    "description": "Button to enable busy forwarding again",
+    "x-translated": "afc5869a"
+  },
+  "mailboxFallbackTitle": "Falls sich die Weiterleitung nicht wieder einschalten lässt",
+  "@mailboxFallbackTitle": {
+    "description": "Heading for the explicit mailbox number fallback",
+    "x-translated": "baa8cf0d"
+  },
+  "mailboxNumberHint": "Mailboxnummer aus „Status prüfen“",
+  "@mailboxNumberHint": {
+    "description": "Hint for the mailbox number field",
+    "x-translated": "937751a5"
+  },
+  "mailboxNumberInvalid": "Geben Sie nur Ziffern und optional ein führendes + ein.",
+  "@mailboxNumberInvalid": {
+    "description": "Validation error for a mailbox number",
+    "x-translated": "ee8e758"
+  },
+  "mailboxEnableWithNumber": "Mit Mailboxnummer einschalten",
+  "@mailboxEnableWithNumber": {
+    "description": "Button to register and enable busy forwarding with a number",
+    "x-translated": "eadc53a2"
+  },
+  "mailboxCarrierHint": "Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.",
+  "@mailboxCarrierHint": {
+    "description": "Carrier compatibility advice for the busy-forwarding codes",
+    "x-translated": "a8c12010"
+  },
+  "mailboxSmsHint": "Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.",
+  "@mailboxSmsHint": {
+    "description": "Tip to turn off the carrier's missed-call SMS",
+    "x-translated": "9f816ede"
+  },
+  "mailboxFaq": "Weitere Informationen auf PhoneBlock",
+  "@mailboxFaq": {
+    "description": "Link to mailbox FAQ",
+    "x-translated": "12882f0a"
+  },
+  "mailboxDialerError": "Die Telefon-App konnte nicht geöffnet werden.",
+  "@mailboxDialerError": {
+    "description": "Error when no dialer can be opened",
+    "x-translated": "810ab076"
+  },
+  "mailboxLinkError": "Die Webseite konnte nicht geöffnet werden.",
+  "@mailboxLinkError": {
+    "description": "Error when the mailbox FAQ cannot be opened",
+    "x-translated": "7093c914"
+  },
+  "mailboxStorageError": "Die Mailboxnummer konnte nicht gespeichert oder geladen werden.",
+  "@mailboxStorageError": {
+    "description": "Error reading or saving the mailbox number",
+    "x-translated": "32cd9b02"
+  },
   "appTitle": "PhoneBlock Mobile",
   "@appTitle": {
     "description": "Application title",

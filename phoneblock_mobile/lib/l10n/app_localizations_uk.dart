@@ -9,6 +9,72 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle =>
+      'Поштова скринька у разі заблокованих дзвінків';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Перевірка або зміна налаштувань переадресації при зайнятій лінії';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock відхиляє дзвінки з заблокованих номерів. Ваш оператор мобільного зв’язку повідомляє абоненту, що лінія зайнята, і, можливо, переадресовує дзвінок на вашу голосову пошту.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Якщо ви вимкнете лише переадресацію при зайнятій лінії, налаштування переадресації при відмові від дзвінка та недоступності залишаться без змін. Також абоненти, дзвінки яких ви відхиляєте самостійно, почують сигнал «зайнято» і не зможуть додзвонитися до голосової пошти.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Перед вимкненням перевірте стан і запишіть номер поштової скриньки, що відображається. Ви можете зберегти його нижче для подальшого повторного увімкнення. Ці кнопки відкривають додаток «Телефон» із відповідним кодом; там натисніть «Зателефонувати».';
+
+  @override
+  String get mailboxCheckStatus => 'Перевірити стан';
+
+  @override
+  String get mailboxDisableBusy => 'Вимкнути переадресацію при зайнятості';
+
+  @override
+  String get mailboxEnableBusy => 'Увімкнути знову (скасувати)';
+
+  @override
+  String get mailboxFallbackTitle =>
+      'Якщо не вдається знову увімкнути переадресацію';
+
+  @override
+  String get mailboxNumberHint =>
+      'Номер поштової скриньки з розділу «Перевірити стан»';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Введіть лише цифри та, за бажанням, знак «+» на початку.';
+
+  @override
+  String get mailboxEnableWithNumber =>
+      'Увімкнути за номером поштової скриньки';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Ці коди працюють у більшості мереж GSM та LTE. Деякі оператори використовують інші коди. У разі необхідності зверніться до свого оператора.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Багато операторів також дозволяють у налаштуваннях голосової пошти відключити SMS-повідомлення про пропущені дзвінки без повідомлення.';
+
+  @override
+  String get mailboxFaq => 'Додаткова інформація на сайті PhoneBlock';
+
+  @override
+  String get mailboxDialerError => 'Не вдалося відкрити додаток «Телефон».';
+
+  @override
+  String get mailboxLinkError => 'Не вдалося відкрити веб-сторінку.';
+
+  @override
+  String get mailboxStorageError =>
+      'Не вдалося зберегти або завантажити номер поштової скриньки.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override

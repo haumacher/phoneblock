@@ -9,6 +9,69 @@ class AppLocalizationsDa extends AppLocalizations {
   AppLocalizationsDa([String locale = 'da']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => 'Postkasse ved blokerede opkald';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Kontroller eller ændr viderestilling ved optaget';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock afviser opkald fra blokerede numre. Dit mobilnetværk melder derefter, at linjen er optaget, og viderestiller muligvis opkaldet til din telefonsvarer.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Hvis du kun deaktiverer viderestilling ved optaget, forbliver viderestillingerne ved ubesvarede opkald og utilgængelighed uændrede. Også opkaldere, hvis opkald du selv afviser, hører da optaget og kommer ikke igennem til telefonsvareren.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Kontroller status, inden du deaktiverer videresendelsen, og noter det viste postkassenummer. Du kan gemme det nedenfor, så du kan genaktivere videresendelsen senere. Knapperne åbner telefonappen med den relevante kode; tryk på \"Ring op\" der.';
+
+  @override
+  String get mailboxCheckStatus => 'Kontroller status';
+
+  @override
+  String get mailboxDisableBusy => 'Deaktiver viderestilling ved optaget';
+
+  @override
+  String get mailboxEnableBusy => 'Aktivér igen (fortryd)';
+
+  @override
+  String get mailboxFallbackTitle =>
+      'Hvis videresendelsen ikke kan genaktiveres';
+
+  @override
+  String get mailboxNumberHint => 'Postkassenummer fra „Kontroller status“';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Indtast kun cifre og eventuelt et foranstillet +.';
+
+  @override
+  String get mailboxEnableWithNumber => 'Aktivér med postkassenummer';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Koderne fungerer i de fleste GSM- og LTE-netværk. Nogle udbydere bruger andre koder. Spørg eventuelt din udbyder.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Mange udbydere giver desuden mulighed for at deaktivere SMS-beskeder om ubesvarede opkald uden besked i indstillingerne for telefonsvareren.';
+
+  @override
+  String get mailboxFaq => 'Yderligere oplysninger på PhoneBlock';
+
+  @override
+  String get mailboxDialerError => 'Telefon-appen kunne ikke åbnes.';
+
+  @override
+  String get mailboxLinkError => 'Det var ikke muligt at åbne websiden.';
+
+  @override
+  String get mailboxStorageError =>
+      'Det var ikke muligt at gemme eller indlæse postkassenummeret.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobil';
 
   @override

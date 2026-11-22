@@ -1,3 +1,4 @@
 Version 1.3.2:
+* Help for blocked callers reaching the mailbox: Settings > call screening opens the dialer pre-filled with the codes to check, switch off and switch on again busy forwarding (#549)
 * Adding a number ending in * to the blocklist creates a range rule instead of failing with "Error 400"; invalid input is shown in the dialog (#481)
 * The add button no longer covers the last entry of the lists (#487)

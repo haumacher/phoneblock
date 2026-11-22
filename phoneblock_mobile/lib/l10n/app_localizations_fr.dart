@@ -9,6 +9,73 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => 'Boîte vocale en cas d\'appels bloqués';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Vérifier ou modifier le transfert en cas de ligne occupée';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock rejette les appels provenant de numéros bloqués. Votre opérateur mobile signale alors à l\'appelant que la ligne est occupée et peut transférer l\'appel vers votre boîte vocale.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Si vous désactivez uniquement le renvoi d\'appel en cas de ligne occupée, les renvois en cas de non-réponse et d\'indisponibilité restent inchangés. Même les appelants dont vous refusez vous-même l\'appel entendront alors la tonalité « occupé » et ne pourront pas accéder à la messagerie vocale.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Avant de désactiver le transfert, vérifiez l\'état et notez le numéro de boîte vocale affiché. Vous pouvez l\'enregistrer ci-dessous pour le réactiver ultérieurement. Les boutons ouvrent l\'application Téléphone avec le code correspondant ; appuyez sur « Appeler » dans cette application.';
+
+  @override
+  String get mailboxCheckStatus => 'Vérifier l\'état';
+
+  @override
+  String get mailboxDisableBusy =>
+      'Désactiver la boîte vocale lorsque la ligne est occupée';
+
+  @override
+  String get mailboxEnableBusy => 'Réactiver (annuler)';
+
+  @override
+  String get mailboxFallbackTitle =>
+      'Si le transfert ne peut pas être réactivé';
+
+  @override
+  String get mailboxNumberHint =>
+      'Numéro de boîte aux lettres issu de « Vérifier le statut »';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Saisissez uniquement des chiffres et, éventuellement, un signe « + » en début de numéro.';
+
+  @override
+  String get mailboxEnableWithNumber =>
+      'Activer avec le numéro de boîte vocale';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Ces codes fonctionnent sur la plupart des réseaux GSM et LTE. Certains opérateurs utilisent d\'autres codes. Le cas échéant, renseignez-vous auprès de votre opérateur.';
+
+  @override
+  String get mailboxSmsHint =>
+      'De nombreux opérateurs permettent également de désactiver les SMS de notification d\'appels manqués sans message dans les paramètres de la messagerie vocale.';
+
+  @override
+  String get mailboxFaq => 'Plus d\'informations sur PhoneBlock';
+
+  @override
+  String get mailboxDialerError =>
+      'L\'application Téléphone n\'a pas pu être ouverte.';
+
+  @override
+  String get mailboxLinkError => 'Impossible d\'ouvrir la page Web.';
+
+  @override
+  String get mailboxStorageError =>
+      'Le numéro de boîte aux lettres n\'a pas pu être enregistré ou chargé.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override
