@@ -57,6 +57,15 @@ static web_http_error_t handle_retype(web_http_request_t *request)
     return web_http_send_text(request, "{}");
 }
 
+static web_http_error_t handle_dup_header(web_http_request_t *request)
+{
+    char *cookie = web_http_dup_header(request, "Cookie");
+    char text[32];
+    snprintf(text, sizeof(text), "%zu", cookie ? strlen(cookie) : (size_t)0);
+    free(cookie);
+    return web_http_send_text(request, text);
+}
+
 static web_http_error_t handle_has_header(web_http_request_t *request)
 {
     return web_http_send_text(request,
@@ -112,6 +121,7 @@ static const web_http_route_t routes[] = {
     { "/query", WEB_HTTP_GET, handle_query, 0 },
     { "/retype", WEB_HTTP_GET, handle_retype, 0 },
     { "/has-header", WEB_HTTP_GET, handle_has_header, 0 },
+    { "/dup-header", WEB_HTTP_GET, handle_dup_header, 0 },
 };
 
 // Number of occurrences of `needle` in `haystack`.
@@ -233,6 +243,24 @@ int main(void)
                    "GET /has-header HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
                    response, sizeof(response)) > 0);
     REQUIRE(strstr(response, "\r\n\r\nno") != NULL);
+
+    // A Cookie header far beyond any stack buffer arrives whole.
+    {
+        char cookies[2048];
+        memset(cookies, 'x', sizeof(cookies));
+        memcpy(cookies, "nas=", 4);
+        cookies[sizeof(cookies) - 1] = '\0';
+        char message[2300];
+        snprintf(message, sizeof(message),
+                 "GET /dup-header HTTP/1.1\r\nHost: localhost\r\n"
+                 "Cookie: %s\r\nConnection: close\r\n\r\n", cookies);
+        REQUIRE(request(port, message, response, sizeof(response)) > 0);
+        REQUIRE(strstr(response, "\r\n\r\n2047") != NULL);
+        REQUIRE(request(port,
+                       "GET /dup-header HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
+                       response, sizeof(response)) > 0);
+        REQUIRE(strstr(response, "\r\n\r\n0") != NULL);
+    }
 
     // Parallel connections, but their handlers run one after the other.
     slow_client_t clients[3];

@@ -204,6 +204,19 @@ int web_http_get_header(web_http_request_t *request, const char *name,
         ? 0 : -1;
 }
 
+char *web_http_dup_header(web_http_request_t *request, const char *name)
+{
+    size_t length = httpd_req_get_hdr_value_len(request, name);
+    if (length == 0) return NULL;
+    char *value = malloc(length + 1);
+    if (!value) return NULL;
+    if (httpd_req_get_hdr_value_str(request, name, value, length + 1) != ESP_OK) {
+        free(value);
+        return NULL;
+    }
+    return value;
+}
+
 bool web_http_has_header(web_http_request_t *request, const char *name)
 {
     return httpd_req_get_hdr_value_len(request, name) > 0;

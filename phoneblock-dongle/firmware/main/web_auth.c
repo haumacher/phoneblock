@@ -142,11 +142,15 @@ static bool cookie_get(const char *header, const char *name,
 
 static bool get_cookie_session(web_http_request_t *req, char *out, size_t out_cap)
 {
-    char header[256];
-    if (web_http_get_header(req, "Cookie", header, sizeof(header)) != WEB_HTTP_OK) {
-        return false;
-    }
-    return cookie_get(header, "pb_session", out, out_cap);
+    // No fixed buffer: the browser also sends the cookies other services
+    // on the same IP set (cookies ignore the port), e.g. a NAS web UI next
+    // to the Docker container. A clipped header lost pb_session, and the
+    // login looped back to the login page.
+    char *header = web_http_dup_header(req, "Cookie");
+    if (!header) return false;
+    bool found = cookie_get(header, "pb_session", out, out_cap);
+    free(header);
+    return found;
 }
 
 // --- Public API -----------------------------------------------------

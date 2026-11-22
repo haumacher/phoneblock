@@ -555,6 +555,13 @@ int web_http_get_header(web_http_request_t *request, const char *name,
                       value, capacity);
 }
 
+char *web_http_dup_header(web_http_request_t *request, const char *name)
+{
+    const char *value = MHD_lookup_connection_value(request->connection,
+                                                    MHD_HEADER_KIND, name);
+    return value ? strdup(value) : NULL;
+}
+
 bool web_http_has_header(web_http_request_t *request, const char *name)
 {
     return MHD_lookup_connection_value(request->connection, MHD_HEADER_KIND,
