@@ -700,8 +700,14 @@ public interface SpamReports {
 	@Select("select s.LASTMETA from NUMBERS s where s.PHONE=#{phone}")
 	Long getLastMetaSearch(String phone);
 	
-	@Update("update NUMBERS s set s.LASTMETA=#{lastUpdate} where s.PHONE=#{phone}")
-	int setLastMetaSearch(String phone, long lastUpdate);
+	/**
+	 * Sets the LASTMETA timestamp, if the last meta search is older than the given limit.
+	 *
+	 * @return The number of updated rows. 0, if a concurrent request already claimed the
+	 *         search.
+	 */
+	@Update("update NUMBERS s set s.LASTMETA=#{now} where s.PHONE=#{phone} and s.LASTMETA < #{olderThan}")
+	int claimMetaSearch(String phone, long now, long olderThan);
 
 	/**
 	 * Atomically inserts or updates the LASTMETA timestamp for a phone number.

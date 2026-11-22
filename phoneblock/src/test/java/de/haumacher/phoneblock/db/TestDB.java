@@ -1679,6 +1679,36 @@ public class TestDB {
 	}
 
 	/**
+	 * Test that only the first of two requests claims an outdated meta search.
+	 *
+	 * @see SpamReports#claimMetaSearch(String, long, long)
+	 */
+	@Test
+	public void testClaimMetaSearch() {
+		String phone = "012345679";
+
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			// No row: nothing to claim.
+			assertEquals(0, reports.claimMetaSearch(phone, 5000, 4000));
+
+			reports.mergeLastMetaSearch(phone, 1000);
+			session.commit();
+
+			// Recent search: not claimed.
+			assertEquals(0, reports.claimMetaSearch(phone, 5000, 500));
+			assertEquals(1000L, reports.getLastMetaSearch(phone).longValue());
+
+			// Outdated search: the first request claims it, the second one does not.
+			assertEquals(1, reports.claimMetaSearch(phone, 5000, 4000));
+			session.commit();
+			assertEquals(0, reports.claimMetaSearch(phone, 5001, 4000));
+			assertEquals(5000L, reports.getLastMetaSearch(phone).longValue());
+		}
+	}
+
+	/**
 	 * Test that concurrent mergeLastMetaSearch calls for the same phone number
 	 * don't cause exceptions (race condition fix for issue #216).
 	 */

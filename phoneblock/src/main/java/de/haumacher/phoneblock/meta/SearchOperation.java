@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,59 +69,92 @@ public class SearchOperation {
 
 	/** 
 	 * Performs the search and updates the local DB.
+	 *
+	 * <p>
+	 * The search runs in three steps, so that no transaction stays open while the external
+	 * sites are queried (which can take several seconds): a short transaction claims the
+	 * search by updating the <code>LASTMETA</code> timestamp, the meta search runs without
+	 * any transaction, and a second short transaction stores the results. Keeping the row
+	 * lock across the meta search let concurrent requests for the same number fail with a
+	 * lock timeout.
+	 * </p>
 	 */
 	public SearchOperation search() {
 		DB db = DBService.getInstance();
+		String phoneId = NumberAnalyzer.getPhoneId(_number);
+
+		try (SqlSession session = db.openSession()) {
+			SpamReports mapper = session.getMapper(SpamReports.class);
+			_comments = new ArrayList<>(mapper.getAnyComments(phoneId));
+		}
+
+		_searchPerformed = claimSearch(db, phoneId);
+
+		List<UserComment> newComments;
+		if (_searchPerformed) {
+			LOG.info("Performing meta search for: " + _number);
+			newComments = doSearch();
+		} else {
+			LOG.info("Skipping search, still up-to-date: " + _number);
+			newComments = Collections.emptyList();
+		}
+
+		if (newComments.isEmpty() && _votes == 0) {
+			return this;
+		}
+
+		boolean indexUpdated = false;
 		try (SqlSession session = db.openSession()) {
 			SpamReports mapper = session.getMapper(SpamReports.class);
 
-			String phoneId = NumberAnalyzer.getPhoneId(_number);
-			
-			_comments = new ArrayList<>(mapper.getAnyComments(phoneId));
-			{
-				_searchPerformed = shouldSearch(mapper, _number);
-				
-				boolean indexUpdated = false;
-				if (_searchPerformed) {
-					LOG.info("Performing meta search for: " + _number);
-	
-					Map<String, UserComment> indexedComments = index();
-	
-					int commentCnt = 0;
-					List<UserComment> newComments = doSearch();
-					for (UserComment comment : newComments) {
-						if (!indexedComments.containsKey(comment.getComment())) {
-							comment.setId(UUID.randomUUID().toString());
-							_comments.add(comment);
+			Map<String, UserComment> indexedComments = index();
 
-							// Meta-search comments count as votes; ping the index only when
-							// one of them pushes the number across the spam threshold.
-							indexUpdated |= db.addRating(mapper, _number, _dialPrefix, comment, true);
-							commentCnt++;
-						}
-					}
-					LOG.info("Found " + commentCnt + " new comments: " + _number);
-				} else {
-					LOG.info("Skipping search, still up-to-date: " + _number);
-				}
-				
-				boolean commit = _searchPerformed;
-				
-				if (_votes != 0) {
-					indexUpdated |= db.processVotes(mapper, _number, _dialPrefix, _votes, _lastVote);
-					commit = true;
-				}
-				
-				if (commit) {
-					session.commit();
-				}
-				
-				if (indexUpdated) {
-					_indexer.publishUpdate(_number);
+			int commentCnt = 0;
+			for (UserComment comment : newComments) {
+				if (!indexedComments.containsKey(comment.getComment())) {
+					comment.setId(UUID.randomUUID().toString());
+					_comments.add(comment);
+
+					// Meta-search comments count as votes; ping the index only when
+					// one of them pushes the number across the spam threshold.
+					indexUpdated |= db.addRating(mapper, _number, _dialPrefix, comment, true);
+					commentCnt++;
 				}
 			}
+			if (_searchPerformed) {
+				LOG.info("Found " + commentCnt + " new comments: " + _number);
+			}
+
+			if (_votes != 0) {
+				indexUpdated |= db.processVotes(mapper, _number, _dialPrefix, _votes, _lastVote);
+			}
+
+			session.commit();
+		}
+
+		if (indexUpdated) {
+			_indexer.publishUpdate(_number);
 		}
 		return this;
+	}
+
+	/**
+	 * Claims the meta search for the given number in a transaction of its own.
+	 *
+	 * @return Whether this operation should perform the search. <code>false</code>, if the
+	 *         last search is recent, or a concurrent request already claimed it.
+	 */
+	private boolean claimSearch(DB db, String phoneId) {
+		try (SqlSession session = db.openSession()) {
+			boolean doSearch = shouldSearch(session.getMapper(SpamReports.class), phoneId);
+			session.commit();
+			return doSearch;
+		} catch (PersistenceException ex) {
+			// Another transaction holds the row, e.g. a concurrent search storing its results.
+			// The page can be rendered from the local data, the search is retried later.
+			LOG.warn("Skipping meta search, number is locked: " + _number + " (" + ex.getCause() + ")");
+			return false;
+		}
 	}
 
 	private Map<String, UserComment> index() {
@@ -143,24 +177,20 @@ public class SearchOperation {
 	 *
 	 * @return Whether a search should be performed.
 	 */
-	private boolean shouldSearch(SpamReports db, PhoneNumer number) {
-		String phoneId = NumberAnalyzer.getPhoneId(number);
-
+	private boolean shouldSearch(SpamReports db, String phoneId) {
 		long now = System.currentTimeMillis();
 		Long lastMetaSearch = db.getLastMetaSearch(phoneId);
-		boolean doSearch;
 		if (lastMetaSearch == null) {
 			// Use MERGE to atomically insert or update, avoiding race conditions
 			// when multiple requests search for the same number simultaneously.
 			db.mergeLastMetaSearch(phoneId, now);
-			doSearch = true;
+			return true;
 		} else if (lastMetaSearch.longValue() < now - SearchServlet.ONE_MONTH) {
-			db.setLastMetaSearch(phoneId, now);
-			doSearch = true;
+			// Conditional update: of two concurrent requests, only the first one wins.
+			return db.claimMetaSearch(phoneId, now, now - SearchServlet.ONE_MONTH) > 0;
 		} else {
-			doSearch = false;
+			return false;
 		}
-		return doSearch;
 	}
 
 	/**
