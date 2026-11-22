@@ -25,6 +25,16 @@ size_t append_html_escaped(char *body, size_t cap, size_t len, const char *s);
 // whose leading '+' must become %2B).
 size_t append_url_encoded(char *body, size_t cap, size_t len, const char *s);
 
+// Append one status-mail call row. Cell boundaries and the row end each
+// terminate an HTML line. For production fields, the longest row line is
+// 573 bytes: a 127-byte base URL, 139 URL-encoded bytes for a 47-byte number,
+// 277 HTML-escaped display bytes for that number, and 30 bytes of link markup.
+size_t mail_html_append_call_row(char *body, size_t cap, size_t len,
+                                 const char *when, const char *base,
+                                 const char *number, bool dialable,
+                                 const char *label, const char *name,
+                                 const char *verdict);
+
 // Render a localized message template into out[cap], substituting ICU named
 // placeholders {name} from the (key, value) varargs, terminated by a NULL
 // key. Values are inserted verbatim (the caller pre-escapes dynamic parts and
