@@ -389,6 +389,39 @@ function loadBasePack(){
     .then(dict => { if (dict && typeof dict === 'object') I18N_BASE = dict; })
     .catch(() => { /* t() falls back to the key */ });
 }
+// Whether LANG reflects the device's ui_lang (or the user's choice on this
+// page); false while the boot read of /api/status has not succeeded.
+let g_langKnown = false;
+let g_repairingUi = false;
+// The strings are loaded once on boot; a request that fails then (the device
+// short of memory or sockets, #770) left every label as its raw key until F5.
+// Called by every successful status poll: if the boot never learned ui_lang,
+// adopt it; if a pack is missing (failed fetch, not a deliberately served
+// English fallback — that one is stored), fetch again and re-render.
+function repairUiStrings(s){
+  if (g_repairingUi) return;
+  const adopt = !g_langKnown && s && s.ui_lang;
+  const lang = adopt ? String(s.ui_lang) : LANG;
+  if (!adopt && I18N[lang] && I18N_BASE) return;
+  if (adopt){
+    LANG = lang;
+    g_langKnown = true;
+    document.documentElement.lang = lang;
+    const sel = document.getElementById('langSelect');
+    if (sel) sel.value = lang;
+  }
+  const before = [I18N[lang], I18N_BASE];
+  g_repairingUi = true;
+  loadUiPack(lang).then(() => {
+    g_repairingUi = false;
+    if (LANG !== lang) return;                       // user switched meanwhile
+    if (!adopt && I18N[lang] === before[0] && I18N_BASE === before[1]) return;
+    route();
+    // No boot poll runs when the boot status read failed.
+    if (adopt) awaitUiPack(lang);
+  });
+}
+
 // The locales the device can serve = the selector's options (single source,
 // no duplicated list).
 function supportedLangs(){
@@ -561,6 +594,7 @@ function loadDeviceLang(){
   return fetch('api/status').then(r => r.ok ? r.json() : null).then(d => {
     noteI18nState(d && d.i18n);
     LANG = (d && d.ui_lang) ? String(d.ui_lang) : 'en';
+    if (d) g_langKnown = true;
     if (d && d.ui_lang_set === false){
       const auto = pickBrowserLang();
       if (auto && auto !== LANG){
@@ -2100,6 +2134,7 @@ async function refreshAll(){
   // Keeps the "is a pack still coming?" answer fresh for awaitUiPack without
   // any request of its own — this poll runs every 3 s anyway.
   noteI18nState(s.i18n);
+  repairUiStrings(s);
   resetNonce = s.reset_nonce || '';
   syncRegionSelectors(s);
   const sipConfigured = !!(s.sip.host && s.sip.user);
@@ -4971,6 +5006,7 @@ function setUiLang(lang){
   // /api/i18n/ui. Re-render now (English until the pack arrives), then poll
   // the device for the new pack.
   LANG = lang;
+  g_langKnown = true;
   document.documentElement.lang = lang;
   const foot = document.getElementById('langSelect');
   if (foot) foot.value = lang;
