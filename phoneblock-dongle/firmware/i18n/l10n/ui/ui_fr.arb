@@ -201,6 +201,7 @@
   "status.mail.pass.keep": "enregistré — laisser vide pour le conserver",
   "status.mail.from": "Expéditeur (e-mail, vide = nom d’utilisateur)",
   "status.mail.to": "Destinataires (adresse e-mail, séparer les destinataires multiples par « ; »)",
+  "status.mail.help": "Astuce : avec Gmail, Outlook ou iCloud, tu as généralement besoin d'un « mot de passe d'application » (lorsque l'authentification à deux facteurs est activée), et non de ton mot de passe de compte habituel. iCloud utilise smtp.mail.me.com avec STARTTLS (port 587). Les fournisseurs classiques tels que GMX, web.de ou mailbox.org fonctionnent avec un nom d'utilisateur et un mot de passe.",
   "status.mail.on_error": "E-mail en cas d’erreurs et de plantages",
   "status.mail.on_error.help": "Envoie un e-mail par jour si une erreur est apparue dans le journal depuis la dernière notification — y compris un redémarrage après un plantage.",
   "status.mail.on_spam": "Signaler les appels par e-mail",
@@ -516,5 +517,10 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "status.mail.help": "Astuce : avec Gmail, Outlook ou iCloud, tu as généralement besoin d'un « mot de passe d'application » (lorsque l'authentification à deux facteurs est activée), et non de ton mot de passe de compte habituel. iCloud utilise smtp.mail.me.com avec STARTTLS (port 587). Les fournisseurs classiques tels que GMX, web.de ou mailbox.org fonctionnent avec un nom d'utilisateur et un mot de passe."
+  "status.system.wifi_power": "Puissance d'émission Wi-Fi maximale (dBm)",
+  "status.system.wifi_power.hint": "Entre 8 et 20 dBm. Est appliqué immédiatement et conservé après un redémarrage.",
+  "status.system.wifi_power.save": "Appliquer la puissance d'émission",
+  "status.system.wifi_power.saved": "La puissance d'émission a été enregistrée et appliquée.",
+  "status.system.wifi_power.invalid": "Veuillez saisir une valeur entière comprise entre 8 et 20 dBm.",
+  "status.system.wifi_power.failed": "Puissance d'émission non appliquée : {reason}"
 }

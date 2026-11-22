@@ -201,6 +201,7 @@
   "status.mail.pass.keep": "zapisano — pozostaw puste, aby zachować",
   "status.mail.from": "Nadawca (adres e-mail, puste pole = nazwa użytkownika)",
   "status.mail.to": "Odbiorcy (adres e-mail, wielu odbiorców należy oddzielić znakiem „;”)",
+  "status.mail.help": "Wskazówka: W przypadku Gmaila, Outlooka lub iCloud zazwyczaj potrzebujesz „hasła aplikacji” (przy włączonym logowaniu dwuskładnikowym), a nie zwykłego hasła do konta. iCloud korzysta z serwera smtp.mail.me.com z protokołem STARTTLS (port 587). Tradycyjni dostawcy, tacy jak GMX, web.de czy mailbox.org, obsługują logowanie za pomocą nazwy użytkownika i hasła.",
   "status.mail.on_error": "E-mail w przypadku błędów i awarii",
   "status.mail.on_error.help": "Wysyła raz dziennie wiadomość e-mail, jeśli od ostatniego zgłoszenia w protokole pojawił się błąd — dotyczy to również ponownego uruchomienia po awarii.",
   "status.mail.on_spam": "Zgłaszanie połączeń za pośrednictwem poczty elektronicznej",
@@ -516,5 +517,10 @@
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
   "status.rec.failed": "Nie udało się załadować nagrania.",
-  "status.mail.help": "Wskazówka: W przypadku Gmaila, Outlooka lub iCloud zazwyczaj potrzebujesz „hasła aplikacji” (przy włączonym logowaniu dwuskładnikowym), a nie zwykłego hasła do konta. iCloud korzysta z serwera smtp.mail.me.com z protokołem STARTTLS (port 587). Tradycyjni dostawcy, tacy jak GMX, web.de czy mailbox.org, obsługują logowanie za pomocą nazwy użytkownika i hasła."
+  "status.system.wifi_power": "Maksymalna moc nadawania Wi-Fi (dBm)",
+  "status.system.wifi_power.hint": "Od 8 do 20 dBm. Ustawienie jest stosowane natychmiast i zachowywane po ponownym uruchomieniu.",
+  "status.system.wifi_power.save": "Zastosuj moc nadawania",
+  "status.system.wifi_power.saved": "Moc nadawcza została zapisana i zastosowana.",
+  "status.system.wifi_power.invalid": "Wprowadź wartość całkowitą z zakresu od 8 do 20 dBm.",
+  "status.system.wifi_power.failed": "Moc nadawania nie została zastosowana: {reason}"
 }

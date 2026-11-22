@@ -201,6 +201,7 @@
   "status.mail.pass.keep": "guardada — déjala en blanco para conservarla",
   "status.mail.from": "Remitente (correo, vacío = nombre de usuario)",
   "status.mail.to": "Destinatarios (correo electrónico; separar varios con «;»)",
+  "status.mail.help": "Consejo: En Gmail, Outlook o iCloud, normalmente necesitas una «contraseña de aplicación» (si tienes activada la autenticación de dos factores), no la contraseña habitual de tu cuenta. iCloud utiliza smtp.mail.me.com con STARTTLS (puerto 587). Los proveedores clásicos como GMX, web.de o mailbox.org funcionan con nombre de usuario y contraseña.",
   "status.mail.on_error": "Correo en caso de errores y fallos",
   "status.mail.on_error.help": "Envía un correo al día si ha aparecido un error en el registro desde la última notificación — esto incluye un reinicio tras un fallo.",
   "status.mail.on_spam": "Notificar llamadas por correo electrónico",
@@ -516,5 +517,10 @@
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
   "status.rec.failed": "No se ha podido cargar la grabación.",
-  "status.mail.help": "Consejo: En Gmail, Outlook o iCloud, normalmente necesitas una «contraseña de aplicación» (si tienes activada la autenticación de dos factores), no la contraseña habitual de tu cuenta. iCloud utiliza smtp.mail.me.com con STARTTLS (puerto 587). Los proveedores clásicos como GMX, web.de o mailbox.org funcionan con nombre de usuario y contraseña."
+  "status.system.wifi_power": "Potencia máxima de transmisión Wi-Fi (dBm)",
+  "status.system.wifi_power.hint": "Entre 8 y 20 dBm. Se aplica de forma inmediata y se mantiene tras reiniciar el sistema.",
+  "status.system.wifi_power.save": "Aplicar la potencia de transmisión",
+  "status.system.wifi_power.saved": "Potencia de transmisión guardada y aplicada.",
+  "status.system.wifi_power.invalid": "Introduzca un valor entero comprendido entre 8 y 20 dBm.",
+  "status.system.wifi_power.failed": "No se ha aplicado la potencia de transmisión: {reason}"
 }

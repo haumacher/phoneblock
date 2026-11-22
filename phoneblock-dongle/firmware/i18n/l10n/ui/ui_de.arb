@@ -467,27 +467,27 @@
   "status.system.wifi_power": "Maximale WLAN-Sendeleistung (dBm)",
   "@status.system.wifi_power": {
     "description": "Dongle web UI: maximum WiFi transmit power setting",
-    "x-translated": "00000000"
+    "x-translated": "72c7eea2"
   },
   "status.system.wifi_power.hint": "Zwischen 8 und 20 dBm. Wird sofort angewendet und nach einem Neustart beibehalten.",
   "@status.system.wifi_power.hint": {
     "description": "Dongle web UI: WiFi power range and immediate application behavior",
-    "x-translated": "00000000"
+    "x-translated": "51ba0be"
   },
   "status.system.wifi_power.save": "Sendeleistung übernehmen",
   "@status.system.wifi_power.save": {
     "description": "Dongle web UI: save WiFi transmit power",
-    "x-translated": "00000000"
+    "x-translated": "d467eed8"
   },
   "status.system.wifi_power.saved": "Sendeleistung gespeichert und angewendet.",
   "@status.system.wifi_power.saved": {
     "description": "Dongle web UI: successful immediate application of WiFi transmit power",
-    "x-translated": "00000000"
+    "x-translated": "bd4ff859"
   },
   "status.system.wifi_power.invalid": "Bitte einen ganzzahligen Wert von 8 bis 20 dBm eingeben.",
   "@status.system.wifi_power.invalid": {
     "description": "Dongle web UI: invalid WiFi transmit power input",
-    "x-translated": "00000000"
+    "x-translated": "3caa2d58"
   },
   "status.system.wifi_power.failed": "Sendeleistung nicht übernommen: {reason}",
   "@status.system.wifi_power.failed": {
@@ -495,7 +495,7 @@
     "placeholders": {
       "reason": {}
     },
-    "x-translated": "00000000"
+    "x-translated": "ce69af6b"
   },
   "status.system.wifi_link": "WLAN „{ssid}“ über Access Point {bssid}, Kanal {channel}, verbunden seit {since}",
   "@status.system.wifi_link": {

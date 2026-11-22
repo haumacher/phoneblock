@@ -201,6 +201,7 @@
   "status.mail.pass.keep": "opgeslagen — laat leeg om het te behouden",
   "status.mail.from": "Afzender (e-mail, leeg = gebruikersnaam)",
   "status.mail.to": "Ontvangers (e-mail, meerdere ontvangers scheiden met „;”)",
+  "status.mail.help": "Tip: Bij Gmail, Outlook of iCloud heb je meestal een 'app-wachtwoord' nodig (als tweefactorauthenticatie is ingeschakeld), niet je normale accountwachtwoord. iCloud maakt gebruik van smtp.mail.me.com met STARTTLS (poort 587). Traditionele providers zoals GMX, web.de of mailbox.org werken met gebruikersnaam en wachtwoord.",
   "status.mail.on_error": "E-mail bij fouten en crashes",
   "status.mail.on_error.help": "Stuur één keer per dag een e-mail als er sinds het laatste bericht een fout in het logboek is opgetreden — hieronder valt ook een herstart na een crash.",
   "status.mail.on_spam": "Oproepen via e-mail melden",
@@ -516,5 +517,10 @@
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
   "status.rec.failed": "Het bestand kon niet worden geladen.",
-  "status.mail.help": "Tip: Bij Gmail, Outlook of iCloud heb je meestal een 'app-wachtwoord' nodig (als tweefactorauthenticatie is ingeschakeld), niet je normale accountwachtwoord. iCloud maakt gebruik van smtp.mail.me.com met STARTTLS (poort 587). Traditionele providers zoals GMX, web.de of mailbox.org werken met gebruikersnaam en wachtwoord."
+  "status.system.wifi_power": "Maximaal wifi-zendvermogen (dBm)",
+  "status.system.wifi_power.hint": "Tussen 8 en 20 dBm. Wordt onmiddellijk toegepast en blijft behouden na een herstart.",
+  "status.system.wifi_power.save": "Verzendvermogen overnemen",
+  "status.system.wifi_power.saved": "Zendvermogen opgeslagen en toegepast.",
+  "status.system.wifi_power.invalid": "Voer een geheel getal in tussen 8 en 20 dBm.",
+  "status.system.wifi_power.failed": "Zendvermogen niet toegepast: {reason}"
 }
