@@ -308,5 +308,7 @@
   "blocklistSyncing": "Synchroniser...",
   "blocklistSyncSuccess": "Synchronisation des listes de blocage réussie",
   "blocklistSyncFailed": "Échec de la synchronisation de la liste de blocage",
-  "personalizedAddedDate": "Ajouté à la liste : {date}"
+  "personalizedAddedDate": "Ajouté à la liste : {date}",
+  "numberRejectedByServer": "Le numéro n'a pas été accepté par le serveur. Veuillez vérifier son format.",
+  "wildcardOnlyBlacklist": "Les caractères génériques (*) ne sont autorisés que dans la liste noire."
 }

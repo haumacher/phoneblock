@@ -230,6 +230,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get numberRejectedByServer =>
+      'El servidor no ha aceptado el número. Compruebe el formato.';
+
+  @override
   String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber reportado como SPAM';
   }
@@ -1004,6 +1008,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Intervalo de números de bloque';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Los comodines (*) solo se pueden utilizar en la lista negra.';
 
   @override
   String get wildcardHint =>

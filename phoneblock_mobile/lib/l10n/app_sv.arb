@@ -308,5 +308,7 @@
   "blocklistSyncing": "Synkronisera...",
   "blocklistSyncSuccess": "Synkroniseringen av blocklistan lyckades",
   "blocklistSyncFailed": "Synkroniseringen av blocklistan misslyckades",
-  "personalizedAddedDate": "Tillagd: {date}"
+  "personalizedAddedDate": "Tillagd: {date}",
+  "numberRejectedByServer": "Numret accepterades inte av servern. Kontrollera formatet.",
+  "wildcardOnlyBlacklist": "Jokertecken (*) är endast tillåtna i blockeringslistan."
 }

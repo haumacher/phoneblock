@@ -229,6 +229,10 @@ class AppLocalizationsDa extends AppLocalizations {
   }
 
   @override
+  String get numberRejectedByServer =>
+      'Nummeret blev ikke accepteret af serveren. Kontroller venligst formatet.';
+
+  @override
   String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber rapporteret som SPAM';
   }
@@ -995,6 +999,10 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Område for bloknummer';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Jokertegn (*) er kun tilladt på sortlisten.';
 
   @override
   String get wildcardHint =>

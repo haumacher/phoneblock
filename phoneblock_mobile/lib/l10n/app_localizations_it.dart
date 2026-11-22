@@ -231,6 +231,10 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get numberRejectedByServer =>
+      'Il numero non è stato accettato dal server. Si prega di verificare il formato.';
+
+  @override
   String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber segnalato come SPAM';
   }
@@ -1015,6 +1019,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Gamma di numeri di blocco';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'I caratteri jolly (*) sono ammessi solo nella lista nera.';
 
   @override
   String get wildcardHint =>

@@ -230,6 +230,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get numberRejectedByServer =>
+      'لم يقبل الخادم الرقم. يرجى التحقق من التنسيق.';
+
+  @override
   String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber الذي تم الإبلاغ عنه كرسالة غير مرغوب فيها';
   }
@@ -990,6 +994,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'نطاق رقم المربع';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'لا يُسمح باستخدام أحرف البدل (*) إلا في قائمة الحظر.';
 
   @override
   String get wildcardHint => 'يحظر جميع الأرقام التي تبدأ بهذه البادئة';

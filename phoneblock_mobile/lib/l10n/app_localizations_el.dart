@@ -231,6 +231,10 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
+  String get numberRejectedByServer =>
+      'Ο αριθμός δεν έγινε αποδεκτός από τον διακομιστή. Παρακαλώ ελέγξτε τη μορφή.';
+
+  @override
   String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber αναφέρθηκε ως SPAM';
   }
@@ -1004,6 +1008,10 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Εύρος αριθμού μπλοκ';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Οι χαρακτήρες μπαλαντέρ (*) επιτρέπονται μόνο στη λίστα αποκλεισμού.';
 
   @override
   String get wildcardHint =>

@@ -308,5 +308,7 @@
   "blocklistSyncing": "مزامنة...",
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
   "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
-  "personalizedAddedDate": "تمت الإضافة: {date}"
+  "personalizedAddedDate": "تمت الإضافة: {date}",
+  "numberRejectedByServer": "لم يقبل الخادم الرقم. يرجى التحقق من التنسيق.",
+  "wildcardOnlyBlacklist": "لا يُسمح باستخدام أحرف البدل (*) إلا في قائمة الحظر."
 }

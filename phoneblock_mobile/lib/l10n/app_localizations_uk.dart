@@ -229,6 +229,10 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
+  String get numberRejectedByServer =>
+      'Сервер не прийняв цей номер. Будь ласка, перевірте формат.';
+
+  @override
   String reportedAsSpam(String phoneNumber) {
     return '$phoneNumber повідомлено як СПАМ';
   }
@@ -998,6 +1002,10 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Діапазон номерів блоків';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Символ-замінник (*) можна використовувати лише у чорному списку.';
 
   @override
   String get wildcardHint =>
