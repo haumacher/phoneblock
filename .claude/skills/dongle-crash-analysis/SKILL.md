@@ -95,16 +95,29 @@ per release.
 `--chip` is a **global** flag, before the subcommand.
 
 ```bash
-source ~/.espressif/python_env/idf5.3_py3.10_env/bin/activate
+# The py3.10 env is broken (its interpreter is gone); use the py3.12 one, and
+# call the module directly rather than through the env's wrapper script.
+PY=~/.espressif/python_env/idf5.3_py3.12_env/bin/python
 T=~/.espressif/tools
+# Several gdb versions may be installed: pick one, a glob yielding two paths breaks --gdb.
 case "$CHIP" in   # esp32 | esp32c3 | esp32s3, from the header check above
-  esp32)   GDB=$(echo $T/xtensa-esp-elf-gdb/*/xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb) ;;
-  esp32s3) GDB=$(echo $T/xtensa-esp-elf-gdb/*/xtensa-esp-elf-gdb/bin/xtensa-esp32s3-elf-gdb) ;;
-  esp32c3) GDB=$(echo $T/riscv32-esp-elf-gdb/*/riscv32-esp-elf-gdb/bin/riscv32-esp-elf-gdb) ;;
+  esp32)   GDB=$(ls $T/xtensa-esp-elf-gdb/*/xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb | head -1) ;;
+  esp32s3) GDB=$(ls $T/xtensa-esp-elf-gdb/*/xtensa-esp-elf-gdb/bin/xtensa-esp32s3-elf-gdb | head -1) ;;
+  esp32c3) GDB=$(ls $T/riscv32-esp-elf-gdb/*/riscv32-esp-elf-gdb/bin/riscv32-esp-elf-gdb | head -1) ;;
 esac
-esp-coredump --chip "$CHIP" info_corefile --gdb "$GDB" \
+$PY -m esp_coredump --chip "$CHIP" info_corefile --gdb "$GDB" \
     --core "$SCRATCH/core.elf" --core-format elf \
     "$SCRATCH/dongle-<ver>.elf" > "$SCRATCH/decoded-<ver>.txt" 2>/dev/null
+```
+
+**Which build produced the dump?** The upload is filed under the version running
+at *upload* time, so a crash just before an OTA lands in the next version's folder.
+The dump carries the first 9 hex digits of the producing ELF's SHA-256 near its end;
+compare before trusting the folder name:
+
+```bash
+tail -c 600 "$f" | strings -n 9 | grep -E '^[0-9a-f]{9}$'
+sha256sum "$SCRATCH/dongle-<ver>.elf" | cut -c1-9      # must match
 ```
 
 **Match check:** in a correct decode the IDF frames resolve to the release build
