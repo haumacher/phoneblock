@@ -45,13 +45,14 @@ char *dialog_store_read_speakers(void);
 
 // Reads the clip table from the header of the file at `path`, checked
 // against the file's size. True and *set's count/clip filled if valid;
-// false otherwise, *set cleared.
+// false otherwise, *set cleared, and errno ENOMEM if only the header buffer
+// could not be allocated (the file may be fine), else another code.
 bool dialog_store_check_path(const char *path, dialog_set_t *set);
 
 // Reads the clip table from the header of the file of `lang`, checked
 // against the file's size (dialog_header_parse()). True and *set filled
 // (set->lang = lang) if the file is a valid set; false otherwise, *set
-// cleared.
+// cleared, errno as for dialog_store_check_path().
 bool dialog_store_read_file(const char *lang, dialog_set_t *set);
 
 // The complete set on the device: the locale the index names, its file's

@@ -631,6 +631,45 @@ static void test_no_file(void)
     CHECK(calls_test_reboot(), "reopened");
 }
 
+// /api/errors streams the error ring one entry at a time (#770): paging
+// from a mark must yield the same entries as one snapshot, newest first, and
+// entries recorded mid-stream must neither repeat one nor push one out.
+static void test_read_errors_paged(void)
+{
+    printf("errors read in pages:\n");
+    stats_clear_errors();
+    char msg[16];
+    for (int i = 0; i < 5; i++) {
+        snprintf(msg, sizeof(msg), "e%d", i);
+        stats_record_error(STATS_LOG_LEVEL_WARN, "t", msg);
+    }
+    stats_error_t e;
+    uint32_t mark = stats_errors_mark();
+    CHECK(stats_read_errors(mark, 0, &e, 1) == 1 && strcmp(e.message, "e4") == 0,
+          "page 0 is the newest");
+    // Two more arrive while the answer is being sent.
+    stats_record_error(STATS_LOG_LEVEL_WARN, "t", "new1");
+    stats_record_error(STATS_LOG_LEVEL_WARN, "t", "new2");
+    CHECK(stats_read_errors(mark, 1, &e, 1) == 1 && strcmp(e.message, "e3") == 0,
+          "later entries do not shift the pages");
+    stats_error_t two[2];
+    CHECK(stats_read_errors(mark, 3, two, 2) == 2 && strcmp(two[0].message, "e1") == 0
+          && strcmp(two[1].message, "e0") == 0, "a page of two, down to the oldest");
+    CHECK(stats_read_errors(mark, 5, &e, 1) == 0, "nothing past the end");
+    CHECK(stats_read_errors(mark, -1, &e, 1) == 0, "a negative skip reads nothing");
+
+    // So many arrive that the ring overwrote the rest: the read ends early.
+    mark = stats_errors_mark();
+    for (int i = 0; i < STATS_MAX_ERRORS - 1; i++)
+        stats_record_error(STATS_LOG_LEVEL_WARN, "t", "flood");
+    CHECK(stats_read_errors(mark, 0, &e, 1) == 1 && strcmp(e.message, "new2") == 0,
+          "the newest at the mark survives");
+    CHECK(stats_read_errors(mark, 1, &e, 1) == 0, "overwritten entries are gone");
+
+    stats_clear_errors();
+    CHECK(stats_read_errors(stats_errors_mark(), 0, &e, 1) == 0, "empty after clearing");
+}
+
 int main(void)
 {
     stats_setup();
@@ -652,6 +691,7 @@ int main(void)
     test_clear_persists();
     test_no_file();
     test_damaged_file();
+    test_read_errors_paged();
     calls_test_cleanup();
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;

@@ -244,6 +244,15 @@ void stats_snapshot_counters(stats_counters_t *out);
 // number of entries actually written (<= max and <= STATS_MAX_ERRORS).
 int stats_snapshot_errors(stats_error_t *out, int max);
 
+// Paged reading of the same ring, for answers streamed in small pieces
+// without a copy of the whole ring (7.5 KB) on the heap: take a mark once,
+// then read up to `max` entries newest first, starting `skip` entries below
+// the newest as of the mark. Entries recorded after the mark are left out,
+// so pages neither repeat nor skip one; entries the ring has overwritten
+// since are gone. Returns the number written, 0 past the end.
+uint32_t stats_errors_mark(void);
+int stats_read_errors(uint32_t mark, int skip, stats_error_t *out, int max);
+
 // Up to `max` listed calls older than `before_seq` (0: from the newest),
 // newest first, into `out`. Returns how many. Page through the whole list
 // with before_seq = the seq of the last call of the previous page; fewer
