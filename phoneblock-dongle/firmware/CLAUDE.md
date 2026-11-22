@@ -53,12 +53,12 @@ stays comfortably inside `uint32_t`. Use the helpers in
 Plain `pdMS_TO_TICKS` is fine for short, obviously-safe intervals
 (seconds to a few minutes).
 
-This is a temporary workaround: FreeRTOS-Kernel PR #866 widened
-`pdMS_TO_TICKS` to `uint64_t` upstream and shipped in kernel V11.0.0
-(Dec 2023). ESP-IDF v5.3 still bundles V10.5.1 with the 32-bit
-multiplication. When we upgrade to ESP-IDF >= v5.4 (kernel V11+),
-plain `pdMS_TO_TICKS` becomes safe again and `ticks_util.h` (plus the
-`seconds_to_ticks` / `pb_ms_to_ticks` call sites) can be retired.
+This is not going away with an IDF upgrade: FreeRTOS-Kernel PR #866
+widened `pdMS_TO_TICKS` to `uint64_t` upstream (kernel V11.0.0, Dec
+2023), but ESP-IDF keeps its own patched V10.5.1 kernel as the default —
+still in v5.5 (our version) and in v6.1. Only the optional Amazon SMP
+kernel (`CONFIG_FREERTOS_SMP`, "feature under development") is V11. Keep
+the helpers until IDF's default kernel moves on (#350).
 
 ## Analysing a field crash dump
 
