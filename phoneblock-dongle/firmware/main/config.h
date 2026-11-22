@@ -128,10 +128,9 @@ int         config_wifi_tx_power_dbm(void);
 // Whether a maximum Wi-Fi transmit power is in the supported user range.
 bool        config_wifi_tx_power_dbm_valid(int dbm);
 
-// Whether the T-Dongle-S3 display is rotated by 180°. Depending on how the
-// Fritz!Box's USB port is oriented, the stick sits upside down; this turns
-// the logo the right way up. Default off; only meaningful on the S3 build
-// (the other targets have no display and never show the option).
+// Whether the display is rotated by 180°. Depending on how the Fritz!Box's
+// USB port is oriented, the stick sits upside down; this turns the logo the
+// right way up. Default off; only meaningful with a display (display.h).
 bool        config_lcd_flipped(void);
 
 // Board hardware settings (#730, board.h): the status LED spec
@@ -446,7 +445,7 @@ typedef struct {
     // "1" = status LED quiet mode (dark when READY), "0" = solid-on when
     // READY. NULL = leave unchanged. Default when unset is "off".
     const char *led_quiet;
-    // "1" = display rotated 180° (S3 only), "0" = normal orientation.
+    // "1" = display rotated 180°, "0" = normal orientation.
     // NULL = leave unchanged. Default when unset is "off".
     const char *lcd_flip;
     // Status LED spec / display "1"|"0" (board.h); "" = back to the

@@ -39,7 +39,9 @@ static void newest_screen(dm_call_screen_t *out)
 {
     int n = stats_snapshot_calls(s_calls, 1);
     if (n == 0) { memset(out, 0, sizeof(*out)); return; }
-    dm_call_screen(&s_calls[0], out);
+    dm_layout_t l;
+    dm_layout(DM_TDONGLE_W, DM_TDONGLE_H, &l);
+    dm_call_screen(&s_calls[0], &l, out);
 }
 
 static void checked(const char *number, const char *display,
@@ -111,7 +113,8 @@ int main(void)
         newest_screen(&s);
         CHECK(s.main.font != NULL && s.main.text[0] != '\0',
               "anonymous caller shows something");
-        CHECK(s.main.width <= DM_TEXT_MAX_PX, "anonymous fits the panel");
+        CHECK(s.main.width <= DM_TEXT_MAX_PX(DM_TDONGLE_W),
+              "anonymous fits the panel");
     }
 
     printf("re-rating and naming from the call list\n");

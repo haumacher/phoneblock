@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "driver/gpio.h"
-#include "driver/ledc.h"
 #include "driver/spi_master.h"
 #include "esp_heap_caps.h"
 #include "esp_lcd_panel_io.h"
@@ -16,6 +15,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+#include "board.h"
 #include "config.h"
 #include "display_model.h"
 #include "lcd_font.h"
@@ -26,41 +26,88 @@
 
 static const char *TAG = "display";
 
-// T-Dongle-S3 wiring (pins in display.h).
-#define LCD_HOST      SPI2_HOST
+// The boards, in landscape. Each build knows only its own: the S3 build the
+// T-Dongle-S3, the classic ESP32 build the T-Display (#708). Pins in
+// display.h, where board.c reads them for the status LED's pin check.
+typedef struct {
+    const char       *name;          // for the log
+    spi_host_device_t host;
+    int mosi, sclk, cs, dc, rst;
+    int backlight;
+    bool backlight_active_low;
+    int width, height;
+    // Offset of the visible window in the controller's RAM, in the swapped
+    // (landscape) axes, per orientation. Turning the image by 180° mirrors
+    // both axes, which may move the window to the opposite edge of the RAM.
+    int gap_normal_x, gap_normal_y, gap_flipped_x, gap_flipped_y;
+    // MADCTL mirroring for the normal orientation: (mirror_x, !mirror_x);
+    // the flipped one swaps the two.
+    bool mirror_x;
+    lcd_rgb_element_order_t rgb_order;
+} board_t;
+
+#if CONFIG_IDF_TARGET_ESP32S3
+// T-Dongle-S3. Offset of the 80x160
+// panel inside the controller's 132x162 RAM: LilyGO's 1/26 for normal; adjust
+// the flipped pair if the rotated logo appears shifted on the hardware.
+static const board_t k_board = {
+    .name = "T-Dongle-S3", .host = SPI2_HOST,
+    .mosi = PIN_MOSI, .sclk = PIN_SCLK, .cs = PIN_CS, .dc = PIN_DC, .rst = PIN_RST,
+    .backlight = PIN_BACKLIGHT, .backlight_active_low = true,
+    .width = DM_TDONGLE_W, .height = DM_TDONGLE_H,
+    .gap_normal_x = 1, .gap_normal_y = 26, .gap_flipped_x = 1, .gap_flipped_y = 26,
+    .mirror_x = false, .rgb_order = LCD_RGB_ELEMENT_ORDER_BGR,
+};
+#else
+// LilyGO T-Display V1.1: ST7789V, 135x240. The window offsets
+// (40/53 normal, 40/52 rotated) are TFT_eSPI's for this panel in landscape.
+// BGR: with RGB, red and blue came out swapped in the hardware test on #727
+// (the red logo showed blue, the navy background grey).
+static const board_t k_board = {
+    .name = "T-Display", .host = SPI3_HOST,
+    .mosi = PIN_MOSI, .sclk = PIN_SCLK, .cs = PIN_CS, .dc = PIN_DC, .rst = PIN_RST,
+    .backlight = PIN_BACKLIGHT, .backlight_active_low = false,
+    .width = DM_TDISPLAY_W, .height = DM_TDISPLAY_H,
+    .gap_normal_x = 40, .gap_normal_y = 53, .gap_flipped_x = 40, .gap_flipped_y = 52,
+    .mirror_x = true, .rgb_order = LCD_RGB_ELEMENT_ORDER_BGR,
+};
+#endif
 #define LCD_PCLK_HZ   (40 * 1000 * 1000)
 
-// Backlight PWM. Dimmed instead of off: the logo stays readable when
-// someone looks at the Fritz!Box, at a fraction of the current and heat.
+// Backlight. The S3 dims it by PWM instead of switching it off: the logo
+// stays readable when someone looks at the Fritz!Box, at a fraction of the
+// current and heat. The classic ESP32 build switches it on and off by GPIO
+// instead, which keeps the LEDC driver out of its full app slot (#708):
+// "dimmed" is dark there.
+#if CONFIG_IDF_TARGET_ESP32S3
+#define BL_PWM        1
+#include "driver/ledc.h"
 #define BL_TIMER      LEDC_TIMER_1
 #define BL_CHANNEL    LEDC_CHANNEL_1
 #define BL_FULL       255
 #define BL_DIMMED     24
+#else
+#define BL_PWM        0
+#endif
+// The backlight dims this long after boot or after a call ended. The caller
+// screen of an ended call stays until then, and the logo is drawn right
+// before dimming, so a call that ended at once can still be read.
 #define BL_DIM_AFTER_US (60LL * 1000 * 1000)
 
-// The caller screen's fallback: a legitimate call is declined by the dongle
+// The call's fallback end: a legitimate call is declined by the dongle
 // after a few seconds (#380) while the other phones keep ringing, and the
-// Fritz!Box tells the dongle nothing more about it — so the screen ends on
-// this timeout unless a CANCEL, the spam call's teardown or the next call
-// ends it first. Long enough to cover the ringing phase.
+// Fritz!Box tells the dongle nothing more about it — so the call counts as
+// ended on this timeout unless a CANCEL, the spam call's teardown or the
+// next call ends it first. Long enough to cover the ringing phase. Ending
+// a call only starts the BL_DIM_AFTER_US hold: the caller screen stays.
 #define CALL_TIMEOUT_US (60LL * 1000 * 1000)
 
-// Offset of the 80x160 panel inside the controller's 132x162 RAM, in the
-// swapped (landscape) axes, per orientation (LilyGO: 1/26 for normal).
-// Turning the image by 180° mirrors both axes, which may move the visible
-// window to the opposite edge of the RAM; adjust the flipped pair if the
-// rotated logo appears shifted on the hardware.
-#define GAP_NORMAL_X   1
-#define GAP_NORMAL_Y   26
-#define GAP_FLIPPED_X  1
-#define GAP_FLIPPED_Y  26
-
 // Frames are composed and sent in horizontal strips from one transient
-// DMA buffer (5 KB, freed after each frame) instead of a 25.6 KB frame
-// buffer: the S3 has no PSRAM. A full frame is 25.6 KB on a 40 MHz bus,
-// about 5 ms of transfer.
+// DMA buffer (5 KB on the T-Dongle-S3, 7.5 KB on the T-Display; freed after
+// each frame) instead of a frame buffer (25.6 / 64.8 KB): neither board has
+// PSRAM. A full T-Dongle-S3 frame is about 5 ms of transfer on a 40 MHz bus.
 #define STRIP_ROWS   16
-#define STRIP_PIXELS (DM_WIDTH * STRIP_ROWS)
+#define W            (s_mem->layout.width)
 
 // RGB565 with the bytes swapped into the order the panel reads over SPI —
 // the encoding scripts/gen-lcd-logo.py uses for the logo.
@@ -77,23 +124,24 @@ static const char *TAG = "display";
 #define C_NEUTRAL     COLOR(70, 80, 100)
 #define C_BADGE       COLOR(230, 40, 40)
 
-// Caller screen layout (what goes into the lines: dm_call_screen()): a
-// dark area with the name over the number, or the number alone, and the
-// rating band below it in the class colour.
-#define BAND_Y         58                   // band: rows 58..79
-#define NAME_Y         10                   // large name, cell top
-#define NAME_NUMBER_Y  35                   // small number below a name
-#define NUMBER_LARGE_Y 20                   // number alone, large font
-#define NUMBER_SMALL_Y 22                   // number alone, small font
-#define BAND_TEXT_Y    62                   // small font in the band
-
-// Spam badge on the idle screen: a red pill in the top-right corner, in
-// the logo's empty area above the word mark (rows 0..17 are background
-// from x = 80 on).
-#define BADGE_TOP      1
-#define BADGE_H        17
-#define BADGE_RIGHT    158                  // last column
-#define BADGE_TEXT_Y   3                    // small digits centred in it
+// The larger state, allocated by display_start() only once this dongle
+// drives a display: an ESP32 without one carries none of it (#708).
+typedef struct {
+    // Where things go on the panel (dm_layout(), host-tested): the caller
+    // screen is a dark area with the name over the number, or the number
+    // alone, and the rating band below it in the class colour; the idle
+    // screen is the logo with the spam badge in its empty top-right
+    // corner, above the word mark. Set before any drawing.
+    dm_layout_t      layout;
+    // The call on screen, written by the notifiers under s_state.
+    stats_call_t     call;
+    // The drawing scratch space, under s_lock: rather here than on the
+    // esp_timer task's stack.
+    stats_call_t     draw_call;
+    dm_call_screen_t screen;
+    uint16_t         logo_row[LCD_LOGO_W];  // one decoded logo row
+} display_mem_t;
+static display_mem_t *s_mem;
 
 // Set once display_start() got the panel up; NULL means "no display", and
 // every entry point then does nothing.
@@ -109,37 +157,36 @@ static volatile bool s_off;
 static esp_timer_handle_t s_dim_timer;
 static esp_timer_handle_t s_call_timer;
 
-// The call on screen, written by the notifiers under s_state.
-static stats_call_t s_call;
 // The badge's count, recounted by display_calls_changed() in the task that
 // changed the list: the call list is a file (#589), and reading it is no
 // job for the esp_timer task the drawing runs on (3.5 KB stack, and every
 // other timer waits meanwhile).
 static int          s_badge;
-static bool         s_call_active;
+static bool         s_call_active;       // a call is going on
+static bool         s_call_shown;        // the caller screen is wanted: during
+                                         // the call and until the dim timer
 static uint32_t     s_call_gen;          // bumped per call
 static int64_t      s_call_started_us;
+static int64_t      s_dim_due_us;        // when the latest dim timer fires
 
-// What is on the panel, and the drawing scratch space — static rather than
-// on the esp_timer task's stack. All under s_lock.
+// What is on the panel (the scratch space is in s_mem). All under s_lock.
 static bool             s_drawn_valid;
 static bool             s_drawn_call;
 static uint32_t         s_drawn_gen;
 static int              s_drawn_badge;
-static stats_call_t     s_draw_call;
-static dm_call_screen_t s_screen;
 static bool             s_draw_failure_logged;
 
-// ST7735 power and gamma setup. The panel is driven through ESP-IDF's
-// ST7789 driver (reset, sleep-out, pixel format, address window, MADCTL
-// are the same commands); these registers are ST7735-specific. Values from
-// LilyGO's T-Dongle-S3 init (esp_lcd_st7735.c, MIT).
 typedef struct {
     uint8_t cmd;
     uint8_t len;
     uint8_t data[16];
 } lcd_cmd_t;
 
+#if CONFIG_IDF_TARGET_ESP32S3
+// ST7735 power and gamma setup. The panel is driven through ESP-IDF's
+// ST7789 driver (reset, sleep-out, pixel format, address window, MADCTL
+// are the same commands); these registers are ST7735-specific. Values from
+// LilyGO's T-Dongle-S3 init (esp_lcd_st7735.c, MIT).
 static const lcd_cmd_t k_st7735_init[] = {
     { 0xB1, 3,  { 0x05, 0x3A, 0x3A } },                          // FRMCTR1
     { 0xB2, 3,  { 0x05, 0x3A, 0x3A } },                          // FRMCTR2
@@ -156,36 +203,94 @@ static const lcd_cmd_t k_st7735_init[] = {
     { 0xE1, 16, { 0x10, 0x0E, 0x03, 0x03, 0x0F, 0x06, 0x02, 0x08,
                   0x0A, 0x13, 0x26, 0x36, 0x00, 0x0D, 0x0E, 0x10 } }, // GMCTRN1
 };
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32
+// ST7789V power and gamma setup for the LilyGO T-Display V1.1 (135x240).
+// ESP-IDF's ST7789 driver only sets reset, sleep-out, pixel format, address
+// window, MADCTL and display-on; with only that, the colours came out
+// washed out in the hardware test on #727. Values from the ST7789_Init.h that LilyGO ships for the
+// T-Display (TFT_eSPI by Bodmer, FreeBSD licence, i.e. BSD-2-Clause):
+// (github.com/Xinyuan-LilyGO/TTGO-T-Display, commit
+// 6f89cddcde7152b84f7afc1831b6a1dee1fc3206,
+// TFT_eSPI/TFT_Drivers/ST7789_Init.h).
+// Copyright (c) 2020 Bodmer (https://github.com/Bodmer). SLPOUT, NORON,
+// MADCTL, COLMOD, INVON (see invert_color below), CASET/RASET and DISPON
+// are left to the ESP-IDF driver.
+static const lcd_cmd_t k_st7789_tdisplay_init[] = {
+    { 0xB6, 2,  { 0x0A, 0x82 } },                                // DFC
+    { 0xB2, 5,  { 0x0C, 0x0C, 0x00, 0x33, 0x33 } },              // PORCTRL
+    { 0xB7, 1,  { 0x35 } },                                      // GCTRL
+    { 0xBB, 1,  { 0x28 } },                                      // VCOMS
+    { 0xC0, 1,  { 0x0C } },                                      // LCMCTRL
+    { 0xC2, 2,  { 0x01, 0xFF } },                                // VDVVRHEN
+    { 0xC3, 1,  { 0x10 } },                                      // VRHS
+    { 0xC4, 1,  { 0x20 } },                                      // VDVS
+    { 0xC6, 1,  { 0x0F } },                                      // FRCTRL2
+    { 0xD0, 2,  { 0xA4, 0xA1 } },                                // PWCTRL1
+    { 0xE0, 14, { 0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x32, 0x44,
+                  0x42, 0x06, 0x0E, 0x12, 0x14, 0x17 } },        // PVGAMCTRL
+    { 0xE1, 14, { 0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x31, 0x54,
+                  0x47, 0x0E, 0x1C, 0x17, 0x1B, 0x1E } },        // NVGAMCTRL
+};
+#endif
 
 // --- backlight --------------------------------------------------------
 
-static void set_backlight(uint32_t duty)
+// Full brightness (true) or dimmed (false; dark on the ESP32 build).
+static void set_backlight(bool full)
 {
-    if (s_off) duty = 0;
+#if BL_PWM
+    uint32_t duty = s_off ? 0 : full ? BL_FULL : BL_DIMMED;
     ledc_set_duty(LEDC_LOW_SPEED_MODE, BL_CHANNEL, duty);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, BL_CHANNEL);
+#else
+    bool lit = full && !s_off;
+    gpio_set_level(k_board.backlight, lit != k_board.backlight_active_low);
+#endif
 }
+
+static void redraw(void *arg);
 
 static void dim_backlight(void *arg)
 {
     (void)arg;
     xSemaphoreTake(s_state, portMAX_DELAY);
+    // A callback that was already running when a newer timer was armed
+    // (brighten_for_a_while) must not cut that hold short.
+    bool stale = esp_timer_get_time() < s_dim_due_us - 1000;
     bool calling = s_call_active;
+    bool held = s_call_shown && !calling && !stale;
+    if (held) s_call_shown = false;
     xSemaphoreGive(s_state);
-    if (!calling) set_backlight(BL_DIMMED);
+    if (calling || stale) return;
+    // The dimmed screen shows the logo, not the held caller.
+    if (held) redraw(NULL);
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    // A call or a new hold may have arrived while drawing the logo.
+    if (!s_call_shown && esp_timer_get_time() >= s_dim_due_us - 1000) {
+        set_backlight(false);
+    }
+    xSemaphoreGive(s_state);
 }
 
 // Full brightness now, dimmed BL_DIM_AFTER_US later (unless a call is on
-// screen by then).
+// screen by then); a held caller screen goes back to the logo then.
 static void brighten_for_a_while(void)
 {
-    set_backlight(BL_FULL);
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    // Publish the hold with the light so a dim callback cannot undo it.
+    set_backlight(true);
+    s_dim_due_us = esp_timer_get_time() + BL_DIM_AFTER_US;
+    xSemaphoreGive(s_state);
     esp_timer_stop(s_dim_timer);
     esp_timer_start_once(s_dim_timer, BL_DIM_AFTER_US);
 }
 
+// Sets the backlight up dark: it comes on once the logo is drawn.
 static bool backlight_init(void)
 {
+#if BL_PWM
     ledc_timer_config_t timer = {
         .speed_mode      = LEDC_LOW_SPEED_MODE,
         .timer_num       = BL_TIMER,
@@ -194,15 +299,25 @@ static bool backlight_init(void)
         .clk_cfg         = LEDC_AUTO_CLK,
     };
     ledc_channel_config_t channel = {
-        .gpio_num   = PIN_BACKLIGHT,
+        .gpio_num   = k_board.backlight,
         .speed_mode = LEDC_LOW_SPEED_MODE,
         .channel    = BL_CHANNEL,
         .timer_sel  = BL_TIMER,
         .duty       = 0,                    // dark until the logo is drawn
-        .flags.output_invert = 1,           // active-low
+        .flags.output_invert = k_board.backlight_active_low,
     };
     return ledc_timer_config(&timer) == ESP_OK
         && ledc_channel_config(&channel) == ESP_OK;
+#else
+    gpio_config_t io = {
+        .pin_bit_mask = 1ULL << k_board.backlight,
+        .mode         = GPIO_MODE_OUTPUT,
+    };
+    // Level first, so the pin never drives the light on while it turns
+    // into an output.
+    return gpio_set_level(k_board.backlight, k_board.backlight_active_low) == ESP_OK
+        && gpio_config(&io) == ESP_OK;
+#endif
 }
 
 static bool on_trans_done(esp_lcd_panel_io_handle_t io,
@@ -219,20 +334,22 @@ static bool on_trans_done(esp_lcd_panel_io_handle_t io,
 static esp_err_t set_orientation(bool flipped)
 {
     esp_err_t err = flipped
-        ? esp_lcd_panel_set_gap(s_panel, GAP_FLIPPED_X, GAP_FLIPPED_Y)
-        : esp_lcd_panel_set_gap(s_panel, GAP_NORMAL_X, GAP_NORMAL_Y);
+        ? esp_lcd_panel_set_gap(s_panel, k_board.gap_flipped_x, k_board.gap_flipped_y)
+        : esp_lcd_panel_set_gap(s_panel, k_board.gap_normal_x, k_board.gap_normal_y);
+    bool mx = k_board.mirror_x != flipped;
     if (err == ESP_OK) err = esp_lcd_panel_swap_xy(s_panel, true);
-    if (err == ESP_OK) err = esp_lcd_panel_mirror(s_panel, flipped, !flipped);
+    if (err == ESP_OK) err = esp_lcd_panel_mirror(s_panel, mx, !mx);
     return err;
 }
 
 // --- composing strips ---------------------------------------------------
 
-// Expands the run-length encoded logo (lcd_logo.h) strip by strip.
+// Expands the run-length encoded logo (lcd_logo.h) row by row.
 typedef struct {
     size_t   next;       // index of the next (count, colour) pair
     uint32_t left;       // pixels left in the current run
     uint16_t colour;
+    int      row;        // logo row in s_mem->logo_row, -1 before the first
 } logo_cursor_t;
 
 // Fills `n` pixels from the logo. False if the runs end early (corrupt
@@ -255,37 +372,74 @@ static bool logo_fill(logo_cursor_t *c, uint16_t *out, size_t n)
     return true;
 }
 
+// Decodes logo rows up to `row` into s_mem->logo_row. Rows only ever move
+// forward within a frame: the scaled rows map onto them in order.
+static bool logo_seek(logo_cursor_t *c, int row)
+{
+    while (c->row < row) {
+        if (!logo_fill(c, s_mem->logo_row, LCD_LOGO_W)) return false;
+        c->row++;
+    }
+    return true;
+}
+
+// The logo part of `rows` panel rows from y0: the logo scaled by
+// logo_num / logo_den (nearest neighbour) at its place, the logo's
+// background colour around it.
+static bool compose_logo(uint16_t *strip, int y0, int rows, logo_cursor_t *c)
+{
+    const dm_layout_t *l = &s_mem->layout;
+    for (int r = 0; r < rows; r++) {
+        uint16_t *out = strip + r * W;
+        int ly = y0 + r - l->logo_y;
+        if (ly < 0 || ly >= l->logo_h) {
+            for (int x = 0; x < W; x++) out[x] = C_BACKGROUND;
+            continue;
+        }
+        if (!logo_seek(c, ly * l->logo_den / l->logo_num)) return false;
+        for (int x = 0; x < W; x++) {
+            int lx = x - l->logo_x;
+            out[x] = lx < 0 || lx >= l->logo_w
+                   ? C_BACKGROUND : s_mem->logo_row[lx * l->logo_den / l->logo_num];
+        }
+    }
+    return true;
+}
+
 // Draws the set pixels of glyph `index` with its cell's top-left corner at
-// (x, y), clipped to the strip holding rows y0 .. y0 + STRIP_ROWS - 1.
+// (x, y), each as a scale x scale block, clipped per row to the strip
+// holding rows y0 .. y0 + STRIP_ROWS - 1 (a scaled glyph may span strips).
 static void draw_glyph(uint16_t *strip, int y0, const lcd_font_t *font,
-                       int index, int x, int y, uint16_t fg)
+                       int scale, int index, int x, int y, uint16_t fg)
 {
     const uint8_t *bits = font->bits + (size_t)index * font->bytes_per_glyph;
-    for (int gy = 0; gy < font->h; gy++) {
-        int sy = y + gy - y0;
-        if (sy < 0 || sy >= STRIP_ROWS) continue;
-        for (int gx = 0; gx < font->w; gx++) {
-            int sx = x + gx;
-            if (sx < 0 || sx >= DM_WIDTH) continue;
-            int bit = gy * font->w + gx;
+    for (int sy = 0; sy < font->h * scale; sy++) {
+        int row = y + sy - y0;
+        if (row < 0 || row >= STRIP_ROWS) continue;
+        int gy = sy / scale;
+        for (int sx = 0; sx < font->w * scale; sx++) {
+            int col = x + sx;
+            if (col < 0 || col >= W) continue;
+            int bit = gy * font->w + sx / scale;
             if (bits[bit >> 3] & (0x80 >> (bit & 7))) {
-                strip[sy * DM_WIDTH + sx] = fg;
+                strip[row * W + col] = fg;
             }
         }
     }
 }
 
-// Draws UTF-8 `text` from (x, y); a code point the fonts lack shows as '?'.
+// Draws UTF-8 `text` from (x, y) at `scale`; a code point the fonts lack
+// shows as '?'.
 static void draw_text(uint16_t *strip, int y0, const lcd_font_t *font,
-                      const char *text, int x, int y, uint16_t fg)
+                      int scale, const char *text, int x, int y, uint16_t fg)
 {
-    if (y + font->h <= y0 || y >= y0 + STRIP_ROWS) return;
+    if (y + font->h * scale <= y0 || y >= y0 + STRIP_ROWS) return;
     uint32_t cp;
     while ((cp = dm_utf8_next(&text)) != 0) {
         int index = cp == DM_UTF8_INVALID ? -1 : dm_glyph_index(cp);
         if (index < 0) index = dm_glyph_index('?');
-        draw_glyph(strip, y0, font, index, x, y, fg);
-        x += font->w;
+        draw_glyph(strip, y0, font, scale, index, x, y, fg);
+        x += font->w * scale;
     }
 }
 
@@ -294,35 +448,36 @@ static void draw_line(uint16_t *strip, int y0, const dm_line_t *line,
                       int y, uint16_t fg)
 {
     if (!line->font || !line->text[0]) return;
-    draw_text(strip, y0, line->font, line->text,
-              (DM_WIDTH - line->width) / 2, y, fg);
+    draw_text(strip, y0, line->font, s_mem->layout.text_scale, line->text,
+              (W - line->width) / 2, y, fg);
 }
 
-// The badge: a pill BADGE_H high, right-aligned at BADGE_RIGHT, wide
+// The badge: a pill badge_h high, right-aligned at badge_right, wide
 // enough for `text` (a circle for one digit), with the count in white.
 static void draw_badge(uint16_t *strip, int y0, const char *text)
 {
+    const dm_layout_t *l = &s_mem->layout;
     const lcd_font_t *font = &lcd_font_small;
-    int text_w = dm_text_width(font, text);
-    int w = text_w + 8 > BADGE_H ? text_w + 8 : BADGE_H;
-    int x0 = BADGE_RIGHT + 1 - w;
+    int text_w = dm_text_width(font, 1, text);
+    int w = text_w + 8 > l->badge_h ? text_w + 8 : l->badge_h;
+    int x0 = l->badge_right + 1 - w;
     // In doubled coordinates, so the cap centres and the radius (half the
     // height) fall on whole numbers; pixel centres are at odd values.
-    int r2 = BADGE_H;
+    int r2 = l->badge_h;
     int left_cx = 2 * x0 + r2;
-    int right_cx = 2 * (BADGE_RIGHT + 1) - r2;
-    int cy = 2 * BADGE_TOP + r2;
-    for (int y = BADGE_TOP; y < BADGE_TOP + BADGE_H; y++) {
+    int right_cx = 2 * (l->badge_right + 1) - r2;
+    int cy = 2 * l->badge_top + r2;
+    for (int y = l->badge_top; y < l->badge_top + l->badge_h; y++) {
         int sy = y - y0;
         if (sy < 0 || sy >= STRIP_ROWS) continue;
         int dy = 2 * y + 1 - cy;
-        for (int x = x0; x <= BADGE_RIGHT; x++) {
+        for (int x = x0; x <= l->badge_right; x++) {
             int px = 2 * x + 1;
             int dx = px < left_cx ? left_cx - px : px > right_cx ? px - right_cx : 0;
-            if (dx * dx + dy * dy <= r2 * r2) strip[sy * DM_WIDTH + x] = C_BADGE;
+            if (dx * dx + dy * dy <= r2 * r2) strip[sy * W + x] = C_BADGE;
         }
     }
-    draw_text(strip, y0, font, text, x0 + (w - text_w) / 2, BADGE_TEXT_Y, C_WHITE);
+    draw_text(strip, y0, font, 1, text, x0 + (w - text_w) / 2, l->badge_text_y, C_WHITE);
 }
 
 static uint16_t band_colour(dm_class_t cls)
@@ -337,20 +492,25 @@ static uint16_t band_colour(dm_class_t cls)
 
 static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
 {
+    const dm_layout_t *l = &s_mem->layout;
     uint16_t band = band_colour(scr->cls);
     for (int r = 0; r < STRIP_ROWS; r++) {
-        uint16_t c = y0 + r < BAND_Y ? C_BACKGROUND : band;
-        uint16_t *row = strip + r * DM_WIDTH;
-        for (int x = 0; x < DM_WIDTH; x++) row[x] = c;
+        uint16_t c = y0 + r < l->band_y ? C_BACKGROUND : band;
+        uint16_t *row = strip + r * W;
+        for (int x = 0; x < W; x++) row[x] = c;
     }
-    if (scr->named) {
-        draw_line(strip, y0, &scr->main, NAME_Y, C_WHITE);
-        draw_line(strip, y0, &scr->sub, NAME_NUMBER_Y, C_NUMBER);
+    if (scr->named && scr->name2.font) {
+        draw_line(strip, y0, &scr->main, l->wrap_y1, C_WHITE);
+        draw_line(strip, y0, &scr->name2, l->wrap_y2, C_WHITE);
+        draw_line(strip, y0, &scr->sub, l->wrap_number_y, C_NUMBER);
+    } else if (scr->named) {
+        draw_line(strip, y0, &scr->main, l->name_y, C_WHITE);
+        draw_line(strip, y0, &scr->sub, l->name_number_y, C_NUMBER);
     } else {
-        int y = scr->main.font == &lcd_font_large ? NUMBER_LARGE_Y : NUMBER_SMALL_Y;
+        int y = scr->main.font == &lcd_font_large ? l->number_large_y : l->number_small_y;
         draw_line(strip, y0, &scr->main, y, C_WHITE);
     }
-    draw_line(strip, y0, &scr->band, BAND_TEXT_Y,
+    draw_line(strip, y0, &scr->band, l->band_text_y,
               scr->cls == DM_CLASS_SUSPECT ? C_BLACK : C_WHITE);
 }
 
@@ -358,24 +518,28 @@ static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
 // with `badge` (hidden if 0). False (nothing logged) on failure.
 static bool send_frame(bool call, int badge)
 {
-    uint16_t *strip = heap_caps_malloc(STRIP_PIXELS * sizeof(uint16_t),
+    uint16_t *strip = heap_caps_malloc((size_t)W * STRIP_ROWS * sizeof(uint16_t),
                                        MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
     if (!strip) return false;
     char badge_text[8];
     snprintf(badge_text, sizeof(badge_text), "%d", badge);
-    logo_cursor_t logo = { 0 };
+    logo_cursor_t logo = { .row = -1 };
     bool ok = true;
-    for (int y0 = 0; ok && y0 < DM_HEIGHT; y0 += STRIP_ROWS) {
+    int height = s_mem->layout.height;
+    for (int y0 = 0; ok && y0 < height; y0 += STRIP_ROWS) {
+        // The last strip of a panel whose height is no multiple of
+        // STRIP_ROWS (135 on the T-Display) is shorter.
+        int rows = height - y0 < STRIP_ROWS ? height - y0 : STRIP_ROWS;
         if (call) {
-            compose_call(strip, y0, &s_screen);
+            compose_call(strip, y0, &s_mem->screen);
         } else {
-            ok = logo_fill(&logo, strip, STRIP_PIXELS);
+            ok = compose_logo(strip, y0, rows, &logo);
             if (ok && badge > 0) draw_badge(strip, y0, badge_text);
         }
         // The transfer runs from the strip buffer by DMA; reuse (or free)
         // it only once the panel IO reports it done.
-        ok = ok && esp_lcd_panel_draw_bitmap(s_panel, 0, y0, DM_WIDTH,
-                                             y0 + STRIP_ROWS, strip) == ESP_OK
+        ok = ok && esp_lcd_panel_draw_bitmap(s_panel, 0, y0, W,
+                                             y0 + rows, strip) == ESP_OK
                 && xSemaphoreTake(s_done, pdMS_TO_TICKS(1000)) == pdTRUE;
     }
     free(strip);
@@ -387,9 +551,9 @@ static bool send_frame(bool call, int badge)
 static bool draw_screen(bool force)
 {
     xSemaphoreTake(s_state, portMAX_DELAY);
-    bool call = s_call_active;
+    bool call = s_call_shown;
     uint32_t gen = s_call_gen;
-    if (call) s_draw_call = s_call;
+    if (call) s_mem->draw_call = s_mem->call;
     int badge = call ? 0 : s_badge;
     xSemaphoreGive(s_state);
 
@@ -397,7 +561,7 @@ static bool draw_screen(bool force)
         && (call ? s_drawn_gen == gen : s_drawn_badge == badge)) {
         return true;
     }
-    if (call) dm_call_screen(&s_draw_call, &s_screen);
+    if (call) dm_call_screen(&s_mem->draw_call, &s_mem->layout, &s_mem->screen);
     if (!send_frame(call, badge)) {
         s_drawn_valid = false;
         if (!s_draw_failure_logged) {
@@ -440,13 +604,15 @@ void display_call_started(const stats_call_t *call)
 {
     if (!s_redraw_timer) return;
     xSemaphoreTake(s_state, portMAX_DELAY);
-    s_call = *call;
+    s_mem->call = *call;
     s_call_active = true;
+    s_call_shown = true;
+    // Keep the light on with the caller state against a dim callback.
+    set_backlight(true);
     s_call_gen++;
     s_call_started_us = esp_timer_get_time();
     xSemaphoreGive(s_state);
     esp_timer_stop(s_dim_timer);
-    set_backlight(BL_FULL);
     esp_timer_stop(s_call_timer);
     esp_timer_start_once(s_call_timer, CALL_TIMEOUT_US);
     schedule_redraw();
@@ -515,20 +681,28 @@ static bool create_timer(esp_timer_cb_t cb, const char *name, esp_timer_handle_t
 
 void display_start(void)
 {
+    // Callers check the setting; this guards the pins of a chip that cannot
+    // take the display (T-Display DC on the PICO-D4's flash, board.c).
+    if (!board_display_supported()) {
+        ESP_LOGW(TAG, "%s not supported on this chip (a display pin is on its "
+                 "flash bus); display off", k_board.name);
+        return;
+    }
+
     if (!backlight_init()) {
-        ESP_LOGW(TAG, "backlight PWM setup failed");
+        ESP_LOGW(TAG, "backlight %s setup failed", BL_PWM ? "PWM" : "GPIO");
         return;
     }
 
     spi_bus_config_t bus = {
-        .mosi_io_num     = PIN_MOSI,
+        .mosi_io_num     = k_board.mosi,
         .miso_io_num     = -1,
-        .sclk_io_num     = PIN_SCLK,
+        .sclk_io_num     = k_board.sclk,
         .quadwp_io_num   = -1,
         .quadhd_io_num   = -1,
-        .max_transfer_sz = STRIP_PIXELS * sizeof(uint16_t),
+        .max_transfer_sz = k_board.width * STRIP_ROWS * (int)sizeof(uint16_t),
     };
-    esp_err_t err = spi_bus_initialize(LCD_HOST, &bus, SPI_DMA_CH_AUTO);
+    esp_err_t err = spi_bus_initialize(k_board.host, &bus, SPI_DMA_CH_AUTO);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "spi_bus_initialize: %s", esp_err_to_name(err));
         return;
@@ -540,8 +714,8 @@ void display_start(void)
     if (!s_done || !s_lock || !s_state) return;
     esp_lcd_panel_io_handle_t io = NULL;
     esp_lcd_panel_io_spi_config_t io_cfg = {
-        .cs_gpio_num         = PIN_CS,
-        .dc_gpio_num         = PIN_DC,
+        .cs_gpio_num         = k_board.cs,
+        .dc_gpio_num         = k_board.dc,
         .spi_mode            = 0,
         .pclk_hz             = LCD_PCLK_HZ,
         .trans_queue_depth   = 10,
@@ -550,7 +724,7 @@ void display_start(void)
         .lcd_cmd_bits        = 8,
         .lcd_param_bits      = 8,
     };
-    err = esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_HOST,
+    err = esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)k_board.host,
                                    &io_cfg, &io);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "panel io: %s", esp_err_to_name(err));
@@ -559,18 +733,27 @@ void display_start(void)
 
     esp_lcd_panel_handle_t panel = NULL;
     esp_lcd_panel_dev_config_t panel_cfg = {
-        .reset_gpio_num = PIN_RST,
-        .rgb_ele_order  = LCD_RGB_ELEMENT_ORDER_BGR,
+        .reset_gpio_num = k_board.rst,
+        .rgb_ele_order  = k_board.rgb_order,
         .bits_per_pixel = 16,
     };
     err = esp_lcd_new_panel_st7789(io, &panel_cfg, &panel);
     if (err == ESP_OK) err = esp_lcd_panel_reset(panel);
     if (err == ESP_OK) err = esp_lcd_panel_init(panel);
+#if CONFIG_IDF_TARGET_ESP32S3
     for (size_t i = 0; err == ESP_OK && i < sizeof(k_st7735_init) / sizeof(k_st7735_init[0]); i++) {
         err = esp_lcd_panel_io_tx_param(io, k_st7735_init[i].cmd,
                                         k_st7735_init[i].data,
                                         k_st7735_init[i].len);
     }
+#elif CONFIG_IDF_TARGET_ESP32
+    size_t n = sizeof(k_st7789_tdisplay_init) / sizeof(k_st7789_tdisplay_init[0]);
+    for (size_t i = 0; err == ESP_OK && i < n; i++) {
+        err = esp_lcd_panel_io_tx_param(io, k_st7789_tdisplay_init[i].cmd,
+                                        k_st7789_tdisplay_init[i].data,
+                                        k_st7789_tdisplay_init[i].len);
+    }
+#endif
     if (err == ESP_OK) err = esp_lcd_panel_invert_color(panel, true);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "panel init: %s", esp_err_to_name(err));
@@ -584,6 +767,13 @@ void display_start(void)
         ESP_LOGW(TAG, "timer setup failed");
         return;
     }
+
+    s_mem = calloc(1, sizeof(*s_mem));
+    if (!s_mem) {
+        ESP_LOGW(TAG, "no memory for the display state");
+        return;
+    }
+    dm_layout(k_board.width, k_board.height, &s_mem->layout);
 
     // Published under the lock: from here on display_set_flipped() may
     // redraw, but only after the boot draw below has finished.
@@ -603,7 +793,7 @@ void display_start(void)
     // Calls may be shown from now on.
     s_redraw_timer = redraw_timer;
     brighten_for_a_while();
-    ESP_LOGI(TAG, "logo shown");
+    ESP_LOGI(TAG, "%s: logo shown", k_board.name);
 }
 
 bool display_was_started(void)
@@ -627,7 +817,7 @@ void display_set_enabled(bool on)
             brighten_for_a_while();
         } else {
             esp_timer_stop(s_dim_timer);
-            set_backlight(0);
+            set_backlight(false);
         }
         ESP_LOGI(TAG, "display %s", on ? "on" : "off");
     }
