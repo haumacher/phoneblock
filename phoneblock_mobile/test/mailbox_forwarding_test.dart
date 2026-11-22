@@ -52,14 +52,14 @@ void main() {
 
     await tester.pumpWidget(screen());
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Falls das Einschalten nicht klappt'));
+    await tester.tap(find.text('Falls sich die Weiterleitung nicht wieder einschalten lässt'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '+493012345678');
     await tester.pumpAndSettle();
     await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(screen());
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Falls das Einschalten nicht klappt'));
+    await tester.tap(find.text('Falls sich die Weiterleitung nicht wieder einschalten lässt'));
     await tester.pumpAndSettle();
     expect(find.text('+493012345678'), findsOneWidget);
 

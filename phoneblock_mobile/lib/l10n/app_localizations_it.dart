@@ -9,67 +9,70 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
-  String get mailboxForwardingTitle => 'Mailbox bei blockierten Anrufen';
+  String get mailboxForwardingTitle =>
+      'Casella vocale in caso di chiamate bloccate';
 
   @override
   String get mailboxForwardingSubtitle =>
-      'Weiterleitung bei besetzt prüfen oder ändern';
+      'Verifica o modifica dell\'inoltro in caso di linea occupata';
 
   @override
   String get mailboxForwardingExplanation =>
-      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+      'PhoneBlock respinge le chiamate provenienti da numeri bloccati. La vostra rete mobile segnala quindi al chiamante che la linea è occupata e potrebbe inoltrare la chiamata alla vostra casella vocale.';
 
   @override
   String get mailboxForwardingTradeoff =>
-      'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.';
+      'Se si disattiva solo l\'inoltro in caso di linea occupata, gli inoltri in caso di mancata risposta e di irreperibilità rimangono invariati. Anche i chiamanti la cui chiamata viene rifiutata dall\'utente sentiranno il segnale di linea occupata e non potranno accedere alla casella vocale.';
 
   @override
   String get mailboxForwardingReminder =>
-      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+      'Prima di disattivare l\'inoltro, verifichi lo stato e prenda nota del numero di casella vocale visualizzato. Può salvarlo qui sotto per riattivarlo in seguito. I pulsanti aprono l\'app del telefono con il codice corrispondente; da lì, tocchi \"Chiama\".';
 
   @override
-  String get mailboxCheckStatus => 'Status prüfen';
+  String get mailboxCheckStatus => 'Verifica stato';
 
   @override
-  String get mailboxDisableBusy => 'Mailbox bei besetzt abschalten';
+  String get mailboxDisableBusy =>
+      'Disattivare la casella vocale quando la linea è occupata';
 
   @override
-  String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
+  String get mailboxEnableBusy => 'Riattivare (annullare)';
 
   @override
-  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+  String get mailboxFallbackTitle => 'Se non è possibile riattivare l\'inoltro';
 
   @override
-  String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
+  String get mailboxNumberHint =>
+      'Numero della casella di posta da \"Verifica stato\"';
 
   @override
   String get mailboxNumberInvalid =>
-      'Geben Sie nur Ziffern und optional ein führendes + ein.';
+      'Inserire solo cifre e, facoltativamente, un segno + iniziale.';
 
   @override
-  String get mailboxEnableWithNumber => 'Mit Mailboxnummer einschalten';
+  String get mailboxEnableWithNumber =>
+      'Attivare con il numero di casella vocale';
 
   @override
   String get mailboxCarrierHint =>
-      'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.';
+      'I codici funzionano sulla maggior parte delle reti GSM e LTE. Alcuni operatori utilizzano codici diversi. Se necessario, si rivolga al proprio operatore per ulteriori informazioni.';
 
   @override
   String get mailboxSmsHint =>
-      'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.';
+      'Molti operatori consentono inoltre di disattivare gli SMS relativi alle chiamate perse senza messaggio nelle impostazioni della casella vocale.';
 
   @override
-  String get mailboxFaq => 'Weitere Informationen auf PhoneBlock';
+  String get mailboxFaq => 'Ulteriori informazioni su PhoneBlock';
 
   @override
-  String get mailboxDialerError =>
-      'Die Telefon-App konnte nicht geöffnet werden.';
+  String get mailboxDialerError => 'Impossibile aprire l\'app Telefono.';
 
   @override
-  String get mailboxLinkError => 'Die Webseite konnte nicht geöffnet werden.';
+  String get mailboxLinkError => 'Impossibile aprire la pagina web.';
 
   @override
   String get mailboxStorageError =>
-      'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.';
+      'Impossibile salvare o caricare il numero della casella vocale.';
 
   @override
   String get appTitle => 'PhoneBlock Mobile';
@@ -292,6 +295,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String reportError(String error) {
     return 'Errore durante la segnalazione: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'Il numero non è stato accettato dal server. Si prega di verificare il formato.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1078,6 +1085,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Gamma di numeri di blocco';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'I caratteri jolly (*) sono ammessi solo nella lista nera.';
 
   @override
   String get wildcardHint =>

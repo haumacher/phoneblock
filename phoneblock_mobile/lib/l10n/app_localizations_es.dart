@@ -9,67 +9,69 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get mailboxForwardingTitle => 'Mailbox bei blockierten Anrufen';
+  String get mailboxForwardingTitle =>
+      'Buzón de voz cuando las llamadas están bloqueadas';
 
   @override
   String get mailboxForwardingSubtitle =>
-      'Weiterleitung bei besetzt prüfen oder ändern';
+      'Comprobar o modificar el reenvío cuando la línea está ocupada';
 
   @override
   String get mailboxForwardingExplanation =>
-      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+      'PhoneBlock rechaza las llamadas procedentes de números bloqueados. Tu red móvil indica entonces al llamante que la línea está ocupada y es posible que desvíe la llamada a tu buzón de voz.';
 
   @override
   String get mailboxForwardingTradeoff =>
-      'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.';
+      'Si solo desactiva el desvío cuando la línea está ocupada, los desvíos en caso de no contestar y de no estar localizable permanecerán sin cambios. Además, las personas a las que usted mismo rechace la llamada oirán que la línea está ocupada y no podrán acceder al buzón de voz.';
 
   @override
   String get mailboxForwardingReminder =>
-      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+      'Antes de desactivar el reenvío, compruebe el estado y anote el número de buzón que se muestra. Puede guardarlo más abajo para volver a activarlo más adelante. Los botones abren la aplicación de teléfono con el código correspondiente; pulse allí en «Llamar».';
 
   @override
-  String get mailboxCheckStatus => 'Status prüfen';
+  String get mailboxCheckStatus => 'Comprobar el estado';
 
   @override
-  String get mailboxDisableBusy => 'Mailbox bei besetzt abschalten';
+  String get mailboxDisableBusy =>
+      'Desactivar el buzón cuando la línea está ocupada';
 
   @override
-  String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
+  String get mailboxEnableBusy => 'Reactivar (deshacer)';
 
   @override
-  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+  String get mailboxFallbackTitle => 'Si no es posible reactivar el reenvío';
 
   @override
-  String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
+  String get mailboxNumberHint => 'Número de buzón de «Comprobar estado»';
 
   @override
   String get mailboxNumberInvalid =>
-      'Geben Sie nur Ziffern und optional ein führendes + ein.';
+      'Introduzca solo números y, opcionalmente, un signo «+» al principio.';
 
   @override
-  String get mailboxEnableWithNumber => 'Mit Mailboxnummer einschalten';
+  String get mailboxEnableWithNumber => 'Activar con el número de buzón de voz';
 
   @override
   String get mailboxCarrierHint =>
-      'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.';
+      'Los códigos funcionan en la mayoría de las redes GSM y LTE. Algunos operadores utilizan otros códigos. Si es necesario, consulte a su operador.';
 
   @override
   String get mailboxSmsHint =>
-      'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.';
+      'Además, muchos operadores permiten desactivar los SMS de llamadas perdidas sin mensaje en la configuración del buzón de voz.';
 
   @override
-  String get mailboxFaq => 'Weitere Informationen auf PhoneBlock';
+  String get mailboxFaq => 'Más información en PhoneBlock';
 
   @override
   String get mailboxDialerError =>
-      'Die Telefon-App konnte nicht geöffnet werden.';
+      'No se ha podido abrir la aplicación de teléfono.';
 
   @override
-  String get mailboxLinkError => 'Die Webseite konnte nicht geöffnet werden.';
+  String get mailboxLinkError => 'No se ha podido abrir la página web.';
 
   @override
   String get mailboxStorageError =>
-      'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.';
+      'No se ha podido guardar ni cargar el número de buzón.';
 
   @override
   String get appTitle => 'PhoneBlock Móvil';
@@ -291,6 +293,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String reportError(String error) {
     return 'Error al informar: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'El servidor no ha aceptado el número. Compruebe el formato.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1067,6 +1073,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Intervalo de números de bloque';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Los comodines (*) solo se pueden utilizar en la lista negra.';
 
   @override
   String get wildcardHint =>

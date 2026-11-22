@@ -17,7 +17,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mailboxForwardingExplanation =>
-      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+      'PhoneBlock weist Anrufe von blockierten Nummern ab. Ihr Mobilfunknetz meldet dem Anrufer dann besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
 
   @override
   String get mailboxForwardingTradeoff =>
@@ -25,7 +25,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mailboxForwardingReminder =>
-      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Schaltflächen öffnen die Telefon-App mit dem passenden Code; tippen Sie dort auf Anrufen.';
 
   @override
   String get mailboxCheckStatus => 'Status prüfen';
@@ -37,7 +37,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
 
   @override
-  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+  String get mailboxFallbackTitle =>
+      'Falls sich die Weiterleitung nicht wieder einschalten lässt';
 
   @override
   String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
@@ -291,6 +292,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String reportError(String error) {
     return 'Fehler beim Melden: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1063,6 +1068,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Nummernbereich sperren';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Platzhalter (*) sind nur in der Sperrliste möglich.';
 
   @override
   String get wildcardHint =>

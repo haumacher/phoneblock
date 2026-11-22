@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">Hvis du abonnerer på PhoneBlock-adresseboken, kan du se direkte om det lønner seg å svare på et anrop eller ringe tilbake hvis du går glipp av et anrop. Det er imidlertid ikke mulig å avvise spam-anrop direkte.</p>
 		<p data-tx="t0060:f7ad0c77">Hvis du installerer <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, kan du integrere PhoneBlock-databasen der. SpamBlocker kan da sammenligne nummeret med PhoneBlock-databasen når et anrop mottas, og avvise anropet direkte hvis det er en match. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> er en uavhengig app, vennligst kontakt utvikleren direkte hvis du har problemer med den.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">Mobiltelefonen min blokkerer spam-samtaler, men likevel havner samtalene på telefonsvareren min. Hva kan jeg gjøre?</h2>
+		<p data-tx="t0066:2821c2e9">PhoneBlock-appen avviser spam-samtaler. For mobilnettet ser det ut som om du selv har avvist samtalen. Hvis du hos operatøren din har satt opp viderekobling til telefonsvareren når linjen er opptatt, havner den som ringer derfor der.</p>
+		<p data-tx="t0067:a129bb9f">Videresending av anrop når linjen er opptatt kan deaktiveres separat. Videresending av anrop ved manglende svar og når du ikke er tilgjengelig forblir imidlertid aktivert. Tast inn følgende koder i telefonappen og trykk på ringeknappen etter hver kode:</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Viser om viderekobling ved opptatt er aktivert og til hvilket nummer (telefonsvareren din). Noter deg nummeret før du endrer noe.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Deaktiverer viderekobling når linjen er opptatt. Det lagrede nummeret beholdes.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: Aktiverer viderekobling ved opptatt til det lagrede nummeret igjen.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*postkassenummer#</code>: Hvis du ikke klarer å slå på viderekoblingen på denne måten, kan du bruke dette for å konfigurere viderekoblingen på nytt. Bruk nummeret du har notert ned.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">Ulempen: Hvis du avviser en ekte samtale manuelt, vil også denne innringeren høre opptatt-signalet i stedet for å bli viderekoblet til telefonsvareren. Kodene følger GSM-standarden og fungerer i de fleste mobilnettverk. Hvis det ikke fungerer hos din operatør, kan du få hjelp via operatørens app eller kundeservice.</p>
+		<p data-tx="t0073:4c1649f1">Uavhengig av dette kan du hos mange leverandører deaktivere SMS-varsler for anrop uten melding i innstillingene for innboksen.</p>
+
 		<h2 data-tx="t0021:d7604318">Kan jeg bruke PhoneBlock på en iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Ja, med iPhone kan du til og med gjøre dette uten å installere noen ekstra apper. Ta en titt på <a th:href="@{/setup-iphone}">installasjonsinstruksjonene</a> her.</p>
 

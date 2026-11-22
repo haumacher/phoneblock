@@ -9,67 +9,66 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get mailboxForwardingTitle => 'Mailbox bei blockierten Anrufen';
+  String get mailboxForwardingTitle => 'Mailbox for Blocked Calls';
 
   @override
   String get mailboxForwardingSubtitle =>
-      'Weiterleitung bei besetzt prüfen oder ändern';
+      'Check or change call forwarding when busy';
 
   @override
   String get mailboxForwardingExplanation =>
-      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+      'PhoneBlock blocks calls from blocked numbers. Your mobile network then signals to the caller that the line is busy and may forward the call to your voicemail.';
 
   @override
   String get mailboxForwardingTradeoff =>
-      'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.';
+      'If you disable busy forwarding only, call forwarding for unanswered calls and when you are unreachable remains unchanged. Callers whose calls you reject yourself will also hear a busy signal and will not be directed to your voicemail.';
 
   @override
   String get mailboxForwardingReminder =>
-      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+      'Before turning off forwarding, check the status and note the mailbox number displayed. You can save it below so you can turn it back on later. The buttons open the Phone app with the appropriate code; tap “Call” there.';
 
   @override
-  String get mailboxCheckStatus => 'Status prüfen';
+  String get mailboxCheckStatus => 'Check status';
 
   @override
-  String get mailboxDisableBusy => 'Mailbox bei besetzt abschalten';
+  String get mailboxDisableBusy => 'Disable mailbox when busy';
 
   @override
-  String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
+  String get mailboxEnableBusy => 'Turn it back on (undo)';
 
   @override
-  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+  String get mailboxFallbackTitle => 'If forwarding cannot be reactivated';
 
   @override
-  String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
+  String get mailboxNumberHint => 'Mailbox number from \"Check Status\"';
 
   @override
   String get mailboxNumberInvalid =>
-      'Geben Sie nur Ziffern und optional ein führendes + ein.';
+      'Enter only digits and, optionally, a leading +.';
 
   @override
-  String get mailboxEnableWithNumber => 'Mit Mailboxnummer einschalten';
+  String get mailboxEnableWithNumber => 'Activate with a mailbox number';
 
   @override
   String get mailboxCarrierHint =>
-      'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.';
+      'The codes work on most GSM and LTE networks. Some carriers use different codes. If necessary, check with your carrier.';
 
   @override
   String get mailboxSmsHint =>
-      'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.';
+      'Many providers also allow you to disable text messages about missed calls without a message in your voicemail settings.';
 
   @override
-  String get mailboxFaq => 'Weitere Informationen auf PhoneBlock';
+  String get mailboxFaq => 'More information on PhoneBlock';
 
   @override
-  String get mailboxDialerError =>
-      'Die Telefon-App konnte nicht geöffnet werden.';
+  String get mailboxDialerError => 'The Phone app could not be opened.';
 
   @override
-  String get mailboxLinkError => 'Die Webseite konnte nicht geöffnet werden.';
+  String get mailboxLinkError => 'The webpage could not be opened.';
 
   @override
   String get mailboxStorageError =>
-      'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.';
+      'The mailbox number could not be saved or loaded.';
 
   @override
   String get appTitle => 'PhoneBlock Mobile';
@@ -290,6 +289,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String reportError(String error) {
     return 'Error reporting: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'The number was not accepted by the server. Please check the format.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1059,6 +1062,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Block number range';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Wildcards (*) are only allowed in the block list.';
 
   @override
   String get wildcardHint => 'Blocks all numbers beginning with this prefix';

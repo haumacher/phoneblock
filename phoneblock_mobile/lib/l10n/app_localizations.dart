@@ -137,7 +137,7 @@ abstract class AppLocalizations {
   /// Why blocked calls may reach voicemail
   ///
   /// In de, this message translates to:
-  /// **'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.'**
+  /// **'PhoneBlock weist Anrufe von blockierten Nummern ab. Ihr Mobilfunknetz meldet dem Anrufer dann besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.'**
   String get mailboxForwardingExplanation;
 
   /// Consequences of disabling busy forwarding
@@ -149,7 +149,7 @@ abstract class AppLocalizations {
   /// Reminder to check and save the mailbox number before disabling forwarding
   ///
   /// In de, this message translates to:
-  /// **'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.'**
+  /// **'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Schaltflächen öffnen die Telefon-App mit dem passenden Code; tippen Sie dort auf Anrufen.'**
   String get mailboxForwardingReminder;
 
   /// Button to check busy forwarding
@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// Heading for the explicit mailbox number fallback
   ///
   /// In de, this message translates to:
-  /// **'Falls das Einschalten nicht klappt'**
+  /// **'Falls sich die Weiterleitung nicht wieder einschalten lässt'**
   String get mailboxFallbackTitle;
 
   /// Hint for the mailbox number field
@@ -625,6 +625,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fehler beim Melden: {error}'**
   String reportError(String error);
+
+  /// Error when the server rejects an exact personalized-list number
+  ///
+  /// In de, this message translates to:
+  /// **'Die Nummer wurde vom Server nicht akzeptiert. Bitte prüfen Sie das Format.'**
+  String get numberRejectedByServer;
 
   /// Successfully reported as spam
   ///
@@ -1909,6 +1915,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Nummernbereich sperren'**
   String get wildcardToggle;
+
+  /// Validation error when a wildcard is entered on the whitelist
+  ///
+  /// In de, this message translates to:
+  /// **'Platzhalter (*) sind nur in der Sperrliste möglich.'**
+  String get wildcardOnlyBlacklist;
 
   /// Help text shown when wildcard toggle is on
   ///

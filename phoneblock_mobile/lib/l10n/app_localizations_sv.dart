@@ -9,67 +9,67 @@ class AppLocalizationsSv extends AppLocalizations {
   AppLocalizationsSv([String locale = 'sv']) : super(locale);
 
   @override
-  String get mailboxForwardingTitle => 'Mailbox bei blockierten Anrufen';
+  String get mailboxForwardingTitle => 'Postlåda vid blockerade samtal';
 
   @override
   String get mailboxForwardingSubtitle =>
-      'Weiterleitung bei besetzt prüfen oder ändern';
+      'Kontrollera eller ändra vidarekoppling vid upptaget';
 
   @override
   String get mailboxForwardingExplanation =>
-      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+      'PhoneBlock avvisar samtal från blockerade nummer. Ditt mobilnätverk signalerar då upptaget till den som ringer och vidarebefordrar eventuellt samtalet till din röstbrevlåda.';
 
   @override
   String get mailboxForwardingTradeoff =>
-      'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.';
+      'Om du endast inaktiverar vidarekoppling vid upptaget förblir vidarekopplingarna vid icke-mottagande och otillgänglighet oförändrade. Även uppringare vars samtal du själv avvisar hör då upptaget och når inte röstbrevlådan.';
 
   @override
   String get mailboxForwardingReminder =>
-      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+      'Kontrollera statusen innan du inaktiverar vidarebefordringen och anteckna det visade postlådenumret. Du kan spara det nedan för att senare återaktivera funktionen. Knapparna öppnar telefonappen med rätt kod; tryck där på Ring.';
 
   @override
-  String get mailboxCheckStatus => 'Status prüfen';
+  String get mailboxCheckStatus => 'Kontrollera status';
 
   @override
-  String get mailboxDisableBusy => 'Mailbox bei besetzt abschalten';
+  String get mailboxDisableBusy => 'Inaktivera vid upptagen';
 
   @override
-  String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
+  String get mailboxEnableBusy => 'Aktivera igen (återgå)';
 
   @override
-  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+  String get mailboxFallbackTitle =>
+      'Om vidarebefordringen inte går att återaktivera';
 
   @override
-  String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
+  String get mailboxNumberHint => 'Postlådenummer från ”Kontrollera status”';
 
   @override
   String get mailboxNumberInvalid =>
-      'Geben Sie nur Ziffern und optional ein führendes + ein.';
+      'Ange endast siffror och eventuellt ett inledande +.';
 
   @override
-  String get mailboxEnableWithNumber => 'Mit Mailboxnummer einschalten';
+  String get mailboxEnableWithNumber => 'Aktivera med röstbrevlådanummer';
 
   @override
   String get mailboxCarrierHint =>
-      'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.';
+      'Koderna fungerar i de flesta GSM- och LTE-nät. Vissa operatörer använder andra koder. Fråga vid behov din operatör.';
 
   @override
   String get mailboxSmsHint =>
-      'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.';
+      'Många operatörer erbjuder dessutom möjligheten att inaktivera SMS om missade samtal utan meddelande i röstbrevlådans inställningar.';
 
   @override
-  String get mailboxFaq => 'Weitere Informationen auf PhoneBlock';
+  String get mailboxFaq => 'Mer information på PhoneBlock';
 
   @override
-  String get mailboxDialerError =>
-      'Die Telefon-App konnte nicht geöffnet werden.';
+  String get mailboxDialerError => 'Telefonappen kunde inte öppnas.';
 
   @override
-  String get mailboxLinkError => 'Die Webseite konnte nicht geöffnet werden.';
+  String get mailboxLinkError => 'Webbsidan kunde inte öppnas.';
 
   @override
   String get mailboxStorageError =>
-      'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.';
+      'Det gick inte att spara eller ladda postlådanumret.';
 
   @override
   String get appTitle => 'TelefonBlock Mobil';
@@ -293,6 +293,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String reportError(String error) {
     return 'Fel vid rapportering: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'Numret accepterades inte av servern. Kontrollera formatet.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1062,6 +1066,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Blocknummerintervall';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Jokertecken (*) är endast tillåtna i blockeringslistan.';
 
   @override
   String get wildcardHint => 'Spärrar alla nummer som börjar med detta prefix';

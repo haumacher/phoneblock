@@ -9,67 +9,66 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get mailboxForwardingTitle => 'Mailbox bei blockierten Anrufen';
+  String get mailboxForwardingTitle => 'صندوق البريد عند المكالمات المحجوبة';
 
   @override
   String get mailboxForwardingSubtitle =>
-      'Weiterleitung bei besetzt prüfen oder ändern';
+      'التحقق من إعادة التوجيه عند انشغال الخط أو تغييره';
 
   @override
   String get mailboxForwardingExplanation =>
-      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+      'يقوم تطبيق PhoneBlock برفض المكالمات الواردة من الأرقام المحظورة. وعندئذٍ تُبلغ شبكة الهاتف المحمول المتصل بأن الخط مشغول، وقد تقوم بتحويل المكالمة إلى البريد الصوتي الخاص بك.';
 
   @override
   String get mailboxForwardingTradeoff =>
-      'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.';
+      'إذا قمت بتعطيل ميزة إعادة التوجيه عند انشغال الخط فقط، فستبقى ميزات إعادة التوجيه في حالات عدم الرد وعدم إمكانية الوصول دون تغيير. كما أن المتصلين الذين ترفض مكالماتهم بنفسك سيسمعون صوت الانشغال ولن يتمكنوا من الوصول إلى صندوق البريد الصوتي.';
 
   @override
   String get mailboxForwardingReminder =>
-      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+      'قبل إيقاف الخدمة، تحقق من الحالة وقم بتدوين رقم صندوق البريد المعروض. يمكنك حفظه أدناه لاستخدامه لاحقًا عند إعادة تشغيل الخدمة. تفتح الأزرار تطبيق الهاتف مع الرمز المناسب؛ انقر هناك على «اتصال».';
 
   @override
-  String get mailboxCheckStatus => 'Status prüfen';
+  String get mailboxCheckStatus => 'التحقق من الحالة';
 
   @override
-  String get mailboxDisableBusy => 'Mailbox bei besetzt abschalten';
+  String get mailboxDisableBusy => 'إيقاف تشغيل صندوق البريد عند الانشغال';
 
   @override
-  String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
+  String get mailboxEnableBusy => 'إعادة التفعيل (إلغاء)';
 
   @override
-  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+  String get mailboxFallbackTitle => 'في حالة تعذر إعادة تفعيل إعادة التوجيه';
 
   @override
-  String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
+  String get mailboxNumberHint => 'رقم صندوق البريد من «التحقق من الحالة»';
 
   @override
   String get mailboxNumberInvalid =>
-      'Geben Sie nur Ziffern und optional ein führendes + ein.';
+      'أدخل أرقامًا فقط، مع إمكانية إضافة علامة + في البداية.';
 
   @override
-  String get mailboxEnableWithNumber => 'Mit Mailboxnummer einschalten';
+  String get mailboxEnableWithNumber =>
+      'تفعيل الخدمة باستخدام رقم صندوق البريد الصوتي';
 
   @override
   String get mailboxCarrierHint =>
-      'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.';
+      'تعمل هذه الرموز في معظم شبكات GSM وLTE. يستخدم بعض مزودي الخدمة رموزًا مختلفة. يرجى الاستفسار من مزود الخدمة الخاص بك إذا لزم الأمر.';
 
   @override
   String get mailboxSmsHint =>
-      'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.';
+      'كما تتيح العديد من شركات الاتصالات إمكانية تعطيل الرسائل النصية القصيرة المتعلقة بالمكالمات الفائتة التي لا تتضمن رسالة صوتية من خلال إعدادات صندوق البريد الصوتي.';
 
   @override
-  String get mailboxFaq => 'Weitere Informationen auf PhoneBlock';
+  String get mailboxFaq => 'مزيد من المعلومات على PhoneBlock';
 
   @override
-  String get mailboxDialerError =>
-      'Die Telefon-App konnte nicht geöffnet werden.';
+  String get mailboxDialerError => 'تعذر فتح تطبيق الهاتف.';
 
   @override
-  String get mailboxLinkError => 'Die Webseite konnte nicht geöffnet werden.';
+  String get mailboxLinkError => 'تعذر فتح الموقع الإلكتروني.';
 
   @override
-  String get mailboxStorageError =>
-      'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.';
+  String get mailboxStorageError => 'تعذر حفظ رقم صندوق البريد أو تحميله.';
 
   @override
   String get appTitle => 'فون بلوك موبايل';
@@ -291,6 +290,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String reportError(String error) {
     return 'خطأ عند الإبلاغ: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'لم يقبل الخادم الرقم. يرجى التحقق من التنسيق.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1053,6 +1056,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'نطاق رقم المربع';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'لا يُسمح باستخدام أحرف البدل (*) إلا في قائمة الحظر.';
 
   @override
   String get wildcardHint => 'يحظر جميع الأرقام التي تبدأ بهذه البادئة';

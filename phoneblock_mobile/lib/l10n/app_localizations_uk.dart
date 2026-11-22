@@ -9,67 +9,70 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
-  String get mailboxForwardingTitle => 'Mailbox bei blockierten Anrufen';
+  String get mailboxForwardingTitle =>
+      'Поштова скринька у разі заблокованих дзвінків';
 
   @override
   String get mailboxForwardingSubtitle =>
-      'Weiterleitung bei besetzt prüfen oder ändern';
+      'Перевірка або зміна налаштувань переадресації при зайнятій лінії';
 
   @override
   String get mailboxForwardingExplanation =>
-      'PhoneBlock weist blockierte Anrufe ab. Ihr Mobilfunknetz meldet dabei besetzt und leitet den Anruf möglicherweise an Ihre Mailbox weiter.';
+      'PhoneBlock відхиляє дзвінки з заблокованих номерів. Ваш оператор мобільного зв’язку повідомляє абоненту, що лінія зайнята, і, можливо, переадресовує дзвінок на вашу голосову пошту.';
 
   @override
   String get mailboxForwardingTradeoff =>
-      'Wenn Sie nur die Weiterleitung bei besetzt ausschalten, bleiben die Weiterleitungen bei Nichtannahme und Nichterreichbarkeit unverändert. Auch Anrufer, deren Anruf Sie selbst abweisen, hören dann besetzt und erreichen nicht die Mailbox.';
+      'Якщо ви вимкнете лише переадресацію при зайнятій лінії, налаштування переадресації при відмові від дзвінка та недоступності залишаться без змін. Також абоненти, дзвінки яких ви відхиляєте самостійно, почують сигнал «зайнято» і не зможуть додзвонитися до голосової пошти.';
 
   @override
   String get mailboxForwardingReminder =>
-      'Prüfen Sie vor dem Abschalten den Status und notieren Sie die angezeigte Mailboxnummer. Sie können sie unten für das spätere Wiedereinschalten speichern. Die Telefon-App wird mit dem Code geöffnet; tippen Sie dort auf Anrufen.';
+      'Перед вимкненням перевірте стан і запишіть номер поштової скриньки, що відображається. Ви можете зберегти його нижче для подальшого повторного увімкнення. Ці кнопки відкривають додаток «Телефон» із відповідним кодом; там натисніть «Зателефонувати».';
 
   @override
-  String get mailboxCheckStatus => 'Status prüfen';
+  String get mailboxCheckStatus => 'Перевірити стан';
 
   @override
-  String get mailboxDisableBusy => 'Mailbox bei besetzt abschalten';
+  String get mailboxDisableBusy => 'Вимкнути переадресацію при зайнятості';
 
   @override
-  String get mailboxEnableBusy => 'Wieder einschalten (rückgängig)';
+  String get mailboxEnableBusy => 'Увімкнути знову (скасувати)';
 
   @override
-  String get mailboxFallbackTitle => 'Falls das Einschalten nicht klappt';
+  String get mailboxFallbackTitle =>
+      'Якщо не вдається знову увімкнути переадресацію';
 
   @override
-  String get mailboxNumberHint => 'Mailboxnummer aus „Status prüfen“';
+  String get mailboxNumberHint =>
+      'Номер поштової скриньки з розділу «Перевірити стан»';
 
   @override
   String get mailboxNumberInvalid =>
-      'Geben Sie nur Ziffern und optional ein führendes + ein.';
+      'Введіть лише цифри та, за бажанням, знак «+» на початку.';
 
   @override
-  String get mailboxEnableWithNumber => 'Mit Mailboxnummer einschalten';
+  String get mailboxEnableWithNumber =>
+      'Увімкнути за номером поштової скриньки';
 
   @override
   String get mailboxCarrierHint =>
-      'Die Codes funktionieren in den meisten GSM- und LTE-Netzen. Manche Anbieter verwenden andere Codes. Fragen Sie gegebenenfalls bei Ihrem Anbieter nach.';
+      'Ці коди працюють у більшості мереж GSM та LTE. Деякі оператори використовують інші коди. У разі необхідності зверніться до свого оператора.';
 
   @override
   String get mailboxSmsHint =>
-      'Viele Anbieter erlauben außerdem, die SMS über verpasste Anrufe ohne Nachricht in den Mailbox-Einstellungen abzuschalten.';
+      'Багато операторів також дозволяють у налаштуваннях голосової пошти відключити SMS-повідомлення про пропущені дзвінки без повідомлення.';
 
   @override
-  String get mailboxFaq => 'Weitere Informationen auf PhoneBlock';
+  String get mailboxFaq => 'Додаткова інформація на сайті PhoneBlock';
 
   @override
-  String get mailboxDialerError =>
-      'Die Telefon-App konnte nicht geöffnet werden.';
+  String get mailboxDialerError => 'Не вдалося відкрити додаток «Телефон».';
 
   @override
-  String get mailboxLinkError => 'Die Webseite konnte nicht geöffnet werden.';
+  String get mailboxLinkError => 'Не вдалося відкрити веб-сторінку.';
 
   @override
   String get mailboxStorageError =>
-      'Die Mailboxnummer konnte nicht gespeichert oder geladen werden.';
+      'Не вдалося зберегти або завантажити номер поштової скриньки.';
 
   @override
   String get appTitle => 'PhoneBlock Mobile';
@@ -290,6 +293,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String reportError(String error) {
     return 'Помилка під час звітування: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'Сервер не прийняв цей номер. Будь ласка, перевірте формат.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1061,6 +1068,10 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Діапазон номерів блоків';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Символ-замінник (*) можна використовувати лише у чорному списку.';
 
   @override
   String get wildcardHint =>
