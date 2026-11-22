@@ -4,17 +4,17 @@ Hash: SHA512
 Architectures: amd64 arm64 armhf
 Codename: trixie
 Components: stable beta
-Date: Fri, 13 Nov 2026 22:25:21 +0000
+Date: Sun, 22 Nov 2026 14:02:16 +0000
 Label: PhoneBlock Dongle
 Origin: PhoneBlock
 Suite: trixie
 MD5Sum:
- 76c01783dd4c6c646c6934aadd4b4ff5             8789 beta/binary-amd64/Packages
- ef9e0fad84517f0b831db38d4d1dcc7b             2186 beta/binary-amd64/Packages.gz
- 960a463d6d5eb46a0ba143a92d83b256             8789 beta/binary-arm64/Packages
- d18194ca4faf5b6d75467d6ebdc85088             2179 beta/binary-arm64/Packages.gz
- 0e610d9976c3708cee1503a5f1d78f3f             8789 beta/binary-armhf/Packages
- 0a86a14958a2df60dc9f9015a04978ec             2179 beta/binary-armhf/Packages.gz
+ 83f4050039d627b1ef6df798b28f3077             9766 beta/binary-amd64/Packages
+ e98a9b5bf96d319be88013dd9edba039             2373 beta/binary-amd64/Packages.gz
+ ed1a871b2281ca43855e30e9394eace3             9766 beta/binary-arm64/Packages
+ 9d70d033e38b6af315f247b92bd2853e             2364 beta/binary-arm64/Packages.gz
+ 708959f4d0d4fe451e1063dd65095ab1             9766 beta/binary-armhf/Packages
+ acb09ee297dbfa58739804f4c033d1a0             2372 beta/binary-armhf/Packages.gz
  61e9743c083651897aab028fa88d90c2             2913 stable/binary-amd64/Packages
  b04b3c0cf1aa7a2f8604115a841500d6             1035 stable/binary-amd64/Packages.gz
  c4d79b47016556b35e5b9c23259667c4             2913 stable/binary-arm64/Packages
@@ -22,12 +22,12 @@ MD5Sum:
  5705a75fc20745f5be18f367b1050e42             2913 stable/binary-armhf/Packages
  bb83b54764551c6223cbd2567b77269c             1034 stable/binary-armhf/Packages.gz
 SHA1:
- 5c73f0115b3433d4b453fa8f2fad61e44d6acea7             8789 beta/binary-amd64/Packages
- 8dbf1f324eca50983a45663f5fc50e92e41d707a             2186 beta/binary-amd64/Packages.gz
- 533c8f14228b5ef908a584084b458a1c8978a930             8789 beta/binary-arm64/Packages
- 4c4acc45a3886fb53a8f64532e624f421efa99ed             2179 beta/binary-arm64/Packages.gz
- ed98cc09626c5307e9d6678cfba2956dd2157a92             8789 beta/binary-armhf/Packages
- 11895f01226da38c39bee27b33dee95f51987eb7             2179 beta/binary-armhf/Packages.gz
+ 3e88395b2165ecb376d149543791041c11d76545             9766 beta/binary-amd64/Packages
+ d99771fb784e06c5779a1df1b14c2aeac62ffe8e             2373 beta/binary-amd64/Packages.gz
+ 5e7acf4d612d00daa611af6da318cdfba219b3cf             9766 beta/binary-arm64/Packages
+ 85cf2cb1ba7c4db55ef1d676754ed40a5a68211b             2364 beta/binary-arm64/Packages.gz
+ 88051302fd71d0bdad0b65983ffc67b0d2cb920f             9766 beta/binary-armhf/Packages
+ e290ca441321adb9df5382cfdd06e2f91b4a1acc             2372 beta/binary-armhf/Packages.gz
  49107b36cbb8d5926c84aa85b7d2d79d255a11b4             2913 stable/binary-amd64/Packages
  7f5f7b41e6a6536f8f2e36380da4105ec2418176             1035 stable/binary-amd64/Packages.gz
  15d07f280b6fd5313db9b156d0263f1d0018c5c3             2913 stable/binary-arm64/Packages
@@ -35,12 +35,12 @@ SHA1:
  8f8673c7c6d502b4b8737133bc32dc08439881ff             2913 stable/binary-armhf/Packages
  3dca905696028f5cf04a28874b7445ed6b7c4d3e             1034 stable/binary-armhf/Packages.gz
 SHA256:
- 5e4b3c727f019fc4a08f256326c745cfe9bc283fe2872dceaa382ffd3ea32486             8789 beta/binary-amd64/Packages
- d91307d05adcf68b76dc3cb2ee06907d8cddac87f9db1c7f48fe3e12c31b1315             2186 beta/binary-amd64/Packages.gz
- c010f8db7dd317816c6e71d5e26c066f811e1d9eb30d72f52c6509da930ecc35             8789 beta/binary-arm64/Packages
- f65b8ac7f5373acc8eba46aa036634fe51685f8b695a9963734f38544e433ea3             2179 beta/binary-arm64/Packages.gz
- 0638a89f192c0ac01cac0070ec423956b0fad148c547cd914aadf3064b650ed2             8789 beta/binary-armhf/Packages
- ff12ef7403790e921911066751fc261c7fc31340d95e19dece1fd5dcd959a597             2179 beta/binary-armhf/Packages.gz
+ 585f0dee6dc23707dfe0136f247c395c3fe7d6fbddf688c84e93ee8d35c29694             9766 beta/binary-amd64/Packages
+ 6d2700d68740f5cf4fb3e68b589eaf7aac3fc85f863bcdf847152dde6ce1b777             2373 beta/binary-amd64/Packages.gz
+ dec2cb3aee3f12c549995bfa715d201a68a9f120088c48ca9dce723de6c469df             9766 beta/binary-arm64/Packages
+ 9fcb4dce7fa7661b890a3d412ef95376f87558f7f35f2774c34771008a4a1737             2364 beta/binary-arm64/Packages.gz
+ 97b7fa07132a1e3f1992896ee538c20e85a8cc0bd897059af7afe9b2f3caa987             9766 beta/binary-armhf/Packages
+ ccaabfef112f00d69c76a0287e8c3e861d5bc5ed0b650d27e5d9034427c69e11             2372 beta/binary-armhf/Packages.gz
  cca136f378cfb785bdaeeec772095ec7dc52d52ab7aed93151fa1721d6d2fb27             2913 stable/binary-amd64/Packages
  bb281efd6f9695cc6442ddaa74831e3238e69d73718de5433dd8b03389e57082             1035 stable/binary-amd64/Packages.gz
  66b0c2a23dccac21a2d2ae914494d42d438acbed99f351091b74653c74bd83b1             2913 stable/binary-arm64/Packages
@@ -48,12 +48,12 @@ SHA256:
  4060fc7e588662a79095adb3916f6ad7dbfd2b2969ddcfe60e78a8555759ffaa             2913 stable/binary-armhf/Packages
  3dd390ff935839426840e6b6c0250d17a09d85a352a719bca88eb39187fd1ddb             1034 stable/binary-armhf/Packages.gz
 SHA512:
- 96559e9a2cf464f5be7cd6447cc78d3bea142f91205a3bf13967afb4266abbcd681612c91c658703ed38a23252b5f0d593312a532b3aa640f8e567da6ece4833             8789 beta/binary-amd64/Packages
- 9eb090568bfaee8dd92f0953e6453e6b574bd6bda4ca25cb8f6d474afd46f7bf38ae6f5f68f50379f061cd8a496733f74f693e858e2dda82701d7861accaf1cc             2186 beta/binary-amd64/Packages.gz
- 66a999a339c0849bcdfc37314edfe40408b3c79fe56ec8cbf0b8cf945668ce7220960cd8c5fdcd1b145818479eacc67f25dd33f19385b7375f41feb4d968d1e7             8789 beta/binary-arm64/Packages
- 13ef9445388b8d3e8eb4054c4382959749e4978aacb6bb73956eb77f3419618c9bb69601a69ec51213c459d51537b27452cae2fa4d392403981c1a543abfda35             2179 beta/binary-arm64/Packages.gz
- d6aef0c790d9e3f62f5ec6a7c9bdc07f95d9c83c56a845b26deec9dfadac7f45b1600ce9a124ea1bf95e6a53ad72e644e2b4494bf819021744f97179b1296e1b             8789 beta/binary-armhf/Packages
- 6479ef706745d95aa88c61cee4fcaf59331d97bbab9d90ef2685198e5b78e9ba7dfb9ccb7c80fbe494e0bd266ff8416f884c50b9ae69c9b2c1ee80bbfd8bb782             2179 beta/binary-armhf/Packages.gz
+ 2e19e193e3c44c35bd1935bea9f8c0a1dba2fe3971b236efc380c3225a0646afc8a459e9ec3f442c1217493a141cf53763d61f74469d51cb0cf78a73d43cb91c             9766 beta/binary-amd64/Packages
+ 9a5046bf4b2744bb1d1e1d3879ae77bdfcafe11b36008698bbb8fc9c754f18b68772568ae6865664247a8ae54da4d8b31a04b6650be24da22803d11e9045a11b             2373 beta/binary-amd64/Packages.gz
+ 959f1bb8053236dd708dd9568d5bf1022ce423b71b8818579ab118503133ae15c8a072b57de72ca4709352efb2f518121ae06f75b35fff049176b0ce7373915a             9766 beta/binary-arm64/Packages
+ 237ae4680efd7b512bcfee5ac119149760e749c100350ca4e288c8c910d78f10a28258d8a9a27a8777461477bd824d11801b78ad05fad7fa91aa10c9a0558ff7             2364 beta/binary-arm64/Packages.gz
+ 7f3368efe8f87f732342293c1a886cbd1c54baa266d71265fb61219549e4cfb01b7142a2001c69611a5b31f7dc6ecfa028562acfc33ff86fe26722c134734275             9766 beta/binary-armhf/Packages
+ c05ef38f06197026683927d1465000e1a3e803ffee60cde8a9bcc23edeb15882e8202bbf96a2177a56880de432b024e0429b7a20b981883f901ed7915b1b15ef             2372 beta/binary-armhf/Packages.gz
  67430b6339bcc8e4b176327f562dfe1427fcdc734059ef8e959b9adfdbc66c4c2d6ed0cc3f84fb8a359e90decb0f31b212a0c3216c515ea3911f98fa870d5f8a             2913 stable/binary-amd64/Packages
  cffee73a09beaaa61749bd90e809d025e576cd1bcaf0ac6f34f146ca75b28cf85f39d89d09b8998186d25ea69d6475c4901d6698bc9d62078f729b2e2fa861ac             1035 stable/binary-amd64/Packages.gz
  d9fc9ef2ec3eac49db0858ef188c1039e7e30db332e4a64bb8c9c50cb9158de86d79c2fe4521f8abf299bd4ffb25610b575d0deb5706f562c49b90d336d43204             2913 stable/binary-arm64/Packages
@@ -62,8 +62,8 @@ SHA512:
  7d8035b23d02cb04aa94291eda977eef013486caa7eb7de9847e1b97f0102829609c12074fd37ccdb6a154f8b7512023ab154ba3837a5343ca01612122a26a81             1034 stable/binary-armhf/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQQKGUi5X0W63WJst1Ot+siqVYEWPwUCaveOUQAKCRCt+siqVYEW
-P3O3AQC9ixD1efaRQ8iwQrTOe0UzolaoIcMGsr78mp8wHezLpwEAxR7HU5lCjfaK
-wFcTvAygn1vMP8YiElFGEv7vMg58TAw=
-=O0Js
+iHUEARYKAB0WIQQKGUi5X0W63WJst1Ot+siqVYEWPwUCawL16AAKCRCt+siqVYEW
+P338APwNLdpIozuc2miSNbSp45vCYQUqchPD7wmc0KUXFnkTVwD9F18O0GZ9KZZ/
+z2+4uhiA9Din9+WzDrxkup7Sw5SG0gQ=
+=/t/h
 -----END PGP SIGNATURE-----
