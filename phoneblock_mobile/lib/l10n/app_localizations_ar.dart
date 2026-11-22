@@ -9,6 +9,68 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => 'صندوق البريد عند المكالمات المحجوبة';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'التحقق من إعادة التوجيه عند انشغال الخط أو تغييره';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'يقوم تطبيق PhoneBlock برفض المكالمات الواردة من الأرقام المحظورة. وعندئذٍ تُبلغ شبكة الهاتف المحمول المتصل بأن الخط مشغول، وقد تقوم بتحويل المكالمة إلى البريد الصوتي الخاص بك.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'إذا قمت بتعطيل ميزة إعادة التوجيه عند انشغال الخط فقط، فستبقى ميزات إعادة التوجيه في حالات عدم الرد وعدم إمكانية الوصول دون تغيير. كما أن المتصلين الذين ترفض مكالماتهم بنفسك سيسمعون صوت الانشغال ولن يتمكنوا من الوصول إلى صندوق البريد الصوتي.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'قبل إيقاف الخدمة، تحقق من الحالة وقم بتدوين رقم صندوق البريد المعروض. يمكنك حفظه أدناه لاستخدامه لاحقًا عند إعادة تشغيل الخدمة. تفتح الأزرار تطبيق الهاتف مع الرمز المناسب؛ انقر هناك على «اتصال».';
+
+  @override
+  String get mailboxCheckStatus => 'التحقق من الحالة';
+
+  @override
+  String get mailboxDisableBusy => 'إيقاف تشغيل صندوق البريد عند الانشغال';
+
+  @override
+  String get mailboxEnableBusy => 'إعادة التفعيل (إلغاء)';
+
+  @override
+  String get mailboxFallbackTitle => 'في حالة تعذر إعادة تفعيل إعادة التوجيه';
+
+  @override
+  String get mailboxNumberHint => 'رقم صندوق البريد من «التحقق من الحالة»';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'أدخل أرقامًا فقط، مع إمكانية إضافة علامة + في البداية.';
+
+  @override
+  String get mailboxEnableWithNumber =>
+      'تفعيل الخدمة باستخدام رقم صندوق البريد الصوتي';
+
+  @override
+  String get mailboxCarrierHint =>
+      'تعمل هذه الرموز في معظم شبكات GSM وLTE. يستخدم بعض مزودي الخدمة رموزًا مختلفة. يرجى الاستفسار من مزود الخدمة الخاص بك إذا لزم الأمر.';
+
+  @override
+  String get mailboxSmsHint =>
+      'كما تتيح العديد من شركات الاتصالات إمكانية تعطيل الرسائل النصية القصيرة المتعلقة بالمكالمات الفائتة التي لا تتضمن رسالة صوتية من خلال إعدادات صندوق البريد الصوتي.';
+
+  @override
+  String get mailboxFaq => 'مزيد من المعلومات على PhoneBlock';
+
+  @override
+  String get mailboxDialerError => 'تعذر فتح تطبيق الهاتف.';
+
+  @override
+  String get mailboxLinkError => 'تعذر فتح الموقع الإلكتروني.';
+
+  @override
+  String get mailboxStorageError => 'تعذر حفظ رقم صندوق البريد أو تحميله.';
+
+  @override
   String get appTitle => 'فون بلوك موبايل';
 
   @override
@@ -228,6 +290,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String reportError(String error) {
     return 'خطأ عند الإبلاغ: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'لم يقبل الخادم الرقم. يرجى التحقق من التنسيق.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -990,6 +1056,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'نطاق رقم المربع';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'لا يُسمح باستخدام أحرف البدل (*) إلا في قائمة الحظر.';
 
   @override
   String get wildcardHint => 'يحظر جميع الأرقام التي تبدأ بهذه البادئة';

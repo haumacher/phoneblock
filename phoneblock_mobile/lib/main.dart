@@ -25,6 +25,8 @@ import 'package:phoneblock_mobile/blocklist_sync_service.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/logging/crash_handler.dart';
 import 'package:phoneblock_mobile/logging/log_viewer_screen.dart';
+import 'package:phoneblock_mobile/mailbox_forwarding_screen.dart';
+import 'package:phoneblock_mobile/number_input.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
@@ -1389,6 +1391,9 @@ class _MainScreenState extends State<MainScreen> {
     return RefreshIndicator(
       onRefresh: _refreshCalls,
       child: ListView.builder(
+        padding: EdgeInsets.only(
+          bottom: 56 + 2 * kFloatingActionButtonMargin + MediaQuery.paddingOf(context).bottom,
+        ),
         itemCount: _screenedCalls.length,
         itemBuilder: (context, index) {
           final call = _screenedCalls[index];
@@ -3573,6 +3578,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 const Divider(),
+                ListTile(
+                  title: Text(context.l10n.mailboxForwardingTitle),
+                  subtitle: Text(context.l10n.mailboxForwardingSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MailboxForwardingScreen()),
+                  ),
+                ),
+                const Divider(),
                 // Retention period setting
                 ListTile(
                   title: Text(context.l10n.callHistoryRetention),
@@ -4159,6 +4174,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                       labelText: context.l10n.phoneNumberLabel,
                       hintText: context.l10n.phoneNumberHint,
                       errorText: errorText,
+                      errorMaxLines: 3,
                       border: const OutlineInputBorder(),
                       suffixText: isWildcard ? '*' : null,
                       suffixStyle: const TextStyle(
@@ -4193,12 +4209,19 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                 ),
                 TextButton(
                   onPressed: () {
-                    final phone = phoneController.text.trim();
-                    if (phone.isEmpty) {
-                      setDialogState(() => errorText = context.l10n.invalidPhoneNumber);
+                    final parsed = parseNumberInput(
+                      phoneController.text,
+                      isBlacklist: _isBlacklist,
+                      wildcardSelected: isWildcard,
+                    );
+                    if (parsed.error != null) {
+                      setDialogState(() => errorText = switch (parsed.error!) {
+                        NumberInputError.invalidPhoneNumber => context.l10n.invalidPhoneNumber,
+                        NumberInputError.wildcardOnWhitelist => context.l10n.wildcardOnlyBlacklist,
+                      });
                       return;
                     }
-                    Navigator.of(context).pop((phone: phone, wildcard: isWildcard));
+                    Navigator.of(context).pop((phone: parsed.phone, wildcard: parsed.wildcard));
                   },
                   child: Text(context.l10n.next),
                 ),
@@ -4406,7 +4429,9 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(context.l10n.reportError(response.statusCode.toString())),
+              content: Text(response.statusCode == 400
+                  ? context.l10n.numberRejectedByServer
+                  : context.l10n.reportError(response.statusCode.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -4475,7 +4500,9 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(context.l10n.reportError(response.statusCode.toString())),
+              content: Text(response.statusCode == 400
+                  ? context.l10n.numberRejectedByServer
+                  : context.l10n.reportError(response.statusCode.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -4842,6 +4869,9 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                   : RefreshIndicator(
                       onRefresh: _loadNumbers,
                       child: ListView(
+                        padding: EdgeInsets.only(
+                          bottom: 56 + 2 * kFloatingActionButtonMargin + MediaQuery.paddingOf(context).bottom,
+                        ),
                         children: [
                           if (_isBlacklist && _wildcardBlocks.isNotEmpty) ...[
                             Padding(

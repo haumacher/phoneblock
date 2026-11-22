@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">Om du prenumererar på PhoneBlocks adressbok kan du direkt se om det är värt att svara på ett samtal eller ringa tillbaka om du missar ett samtal. Det är dock inte möjligt att direkt avvisa spam-samtal.</p>
 		<p data-tx="t0060:f7ad0c77">Om du installerar <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a> kan du integrera PhoneBlock-databasen där. SpamBlocker kan sedan jämföra numret med PhoneBlock-databasen när ett samtal tas emot och avvisa samtalet direkt om det är en matchning. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> är en oberoende app, vänligen kontakta utvecklaren direkt om du har några problem med den.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">Min mobil blockerar skräpsamtal, men ändå hamnar samtalen i min röstbrevlåda. Vad kan jag göra?</h2>
+		<p data-tx="t0066:2821c2e9">PhoneBlock-appen avvisar skräpsamtal. För mobilnätet ser det ut som om du själv har avvisat samtalet. Om din operatör har ställt in vidarekoppling till röstbrevlådan när linjen är upptagen, hamnar samtalet där.</p>
+		<p data-tx="t0067:a129bb9f">Vidarekoppling vid upptaget kan stängas av separat. Vidarekopplingarna vid icke-svar och vid otillgänglighet förblir dock aktiva. Ange följande koder i telefonappen och tryck på samtalsknappen efter varje kod:</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Visar om vidarekoppling vid upptaget är aktiverad och till vilket nummer (din röstbrevlåda). Skriv ner numret innan du gör några ändringar.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Stänger av vidarekoppling vid upptaget. Det sparade numret behålls.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: Återaktiverar vidarekoppling vid upptaget till det sparade numret.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*postlådenummer#</code>: Om du inte kan återaktivera vidarekopplingen på det sättet kan du ställa in den på nytt med detta kommando. Ange det nummer du har antecknat.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">Nackdelen: Om du manuellt avvisar ett riktigt samtal hör även den som ringer upptagningstonen istället för att hamna på röstbrevlådan. Koderna följer GSM-standarden och fungerar i de flesta mobilnät. Om det inte fungerar hos din operatör kan du vända dig till deras app eller kundtjänst.</p>
+		<p data-tx="t0073:4c1649f1">Oavsett detta kan du hos många operatörer stänga av SMS-aviseringar för samtal utan meddelande i dina röstbrevlådeinställningar.</p>
+
 		<h2 data-tx="t0021:d7604318">Kan jag använda PhoneBlock på en iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Ja, med iPhone kan du till och med göra detta utan att installera några ytterligare appar. Ta en titt på <a th:href="@{/setup-iphone}">installationsanvisningarna</a> här.</p>
 

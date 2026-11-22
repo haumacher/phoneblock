@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">Als u zich abonneert op het adresboek van PhoneBlock, kunt u direct bij een oproep zien of het de moeite waard is om de oproep te beantwoorden of terug te bellen als u een oproep mist. Het is echter niet mogelijk om spamoproepen direct te weigeren.</p>
 		<p data-tx="t0060:f7ad0c77">Als je <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a> installeert, kun je de PhoneBlock-database daarin integreren. SpamBlocker kan dan bij een oproep het nummer vergelijken met de PhoneBlock database en de oproep direct weigeren als het een match is. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> is een onafhankelijke app, neem direct contact op met de ontwikkelaar als je er problemen mee hebt.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">Mijn mobiele telefoon blokkeert spam-oproepen, maar toch komen de bellers op mijn voicemail terecht. Wat kan ik doen?</h2>
+		<p data-tx="t0066:2821c2e9">De PhoneBlock-app weert spam-oproepen af. Voor het mobiele netwerk lijkt het alsof je de oproep zelf hebt afgewezen. Als bij je provider een doorschakeling naar de voicemail is ingesteld wanneer de lijn bezet is, komt de beller daarom daar terecht.</p>
+		<p data-tx="t0067:a129bb9f">De doorschakeling bij bezet kan afzonderlijk worden uitgeschakeld. De doorschakelingen bij niet-beantwoorden en bij onbereikbaarheid blijven daarbij van kracht. Voer de volgende codes in de telefoon-app in en druk telkens op de belknop:</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Geeft aan of de doorschakeling bij bezet actief is en naar welk nummer (je voicemail). Noteer het nummer voordat je iets wijzigt.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Schakelt de doorschakeling bij bezet uit. Het opgeslagen nummer blijft behouden.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: Schakelt de doorschakeling bij bezet naar het opgeslagen nummer weer in.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*mailboxnummer#</code>: Als je de doorschakeling op deze manier niet opnieuw kunt inschakelen, stel je de doorschakeling hiermee opnieuw in. Gebruik daarbij het genoteerde nummer.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">Het nadeel: als je een echt telefoontje handmatig afwijst, hoort ook deze beller daarna het bezettoon, in plaats van dat hij bij de voicemail terechtkomt. De codes voldoen aan de GSM-standaard en werken in de meeste mobiele netwerken. Als het bij jouw provider niet lukt, kun je de app of de klantenservice van die provider raadplegen.</p>
+		<p data-tx="t0073:4c1649f1">Los daarvan kun je bij veel providers in de mailboxinstellingen de sms-melding voor oproepen zonder bericht uitschakelen.</p>
+
 		<h2 data-tx="t0021:d7604318">Kan ik PhoneBlock gebruiken op een iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Ja, met de iPhone kun je dit zelfs doen zonder extra apps te installeren. Bekijk de <a th:href="@{/setup-iphone}">installatie-instructies</a> hier.</p>
 
