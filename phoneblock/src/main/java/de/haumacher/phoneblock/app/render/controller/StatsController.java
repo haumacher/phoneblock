@@ -187,9 +187,8 @@ public class StatsController extends DefaultController {
 		// Active dongles by platform.
 		List<DonglePlatformCounts> dongles = DBService.getInstance().getActiveDonglesByPlatform();
 		StringBuilder dongleLabels = new StringBuilder("[");
-		List<Integer> dongles30 = new ArrayList<>();
-		List<Integer> dongles60 = new ArrayList<>();
-		List<Integer> dongles90 = new ArrayList<>();
+		List<Integer> donglesActive = new ArrayList<>();
+		List<Integer> donglesInactive = new ArrayList<>();
 		for (DonglePlatformCounts platform : dongles) {
 			if (dongleLabels.length() > 1) {
 				dongleLabels.append(',');
@@ -200,18 +199,15 @@ public class StatsController extends DefaultController {
 				default -> platform.platform().tag();
 			};
 			jsString(dongleLabels, label);
-			dongles30.add(platform.days30());
-			dongles60.add(platform.days60());
-			dongles90.add(platform.days90());
+			donglesActive.add(platform.active());
+			donglesInactive.add(platform.inactive());
 		}
 		dongleLabels.append(']');
 
 		StringBuilder dongleDatasets = new StringBuilder("[");
-		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongle30Days"), dongles30, DIAL_COLORS[0]);
+		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongle30Days"), donglesActive, DIAL_COLORS[1]);
 		dongleDatasets.append(',');
-		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongle60Days"), dongles60, DIAL_COLORS[1]);
-		dongleDatasets.append(',');
-		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongle90Days"), dongles90, DIAL_COLORS[2]);
+		appendBarDataset(dongleDatasets, I18N.getMessage(request, "page.stats.dongleInactive"), donglesInactive, DIAL_COLORS[10]);
 		dongleDatasets.append(']');
 		request.setAttribute("dongleLabels", dongleLabels.toString());
 		request.setAttribute("dongleDatasets", dongleDatasets.toString());
