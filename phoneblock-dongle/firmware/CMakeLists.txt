@@ -53,5 +53,19 @@ else()
     message(STATUS "Dongle version: ${PROJECT_VER} (from git describe)")
 endif()
 
+# Refuse an older ESP-IDF (#350). v5.5.6 carries two years of Wi-Fi library
+# fixes over the v5.3 that built up to 2.0.2, whose dongles hit heap
+# corruption by received Wi-Fi frames. A build machine still on v5.3 must
+# fail here instead of silently shipping the old libraries. (A version
+# constraint in main/idf_component.yml does not do this: the component
+# manager accepts v5.3 regardless.)
+set(PB_MIN_IDF_VERSION "5.5.6")
+include($ENV{IDF_PATH}/tools/cmake/version.cmake)
+if("$ENV{IDF_VERSION}" VERSION_LESS "${PB_MIN_IDF_VERSION}")
+    message(FATAL_ERROR
+        "ESP-IDF $ENV{IDF_VERSION} at $ENV{IDF_PATH} is too old: "
+        "the dongle firmware needs v${PB_MIN_IDF_VERSION} or newer.")
+endif()
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(phoneblock_dongle)

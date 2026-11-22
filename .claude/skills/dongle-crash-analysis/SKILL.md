@@ -6,7 +6,7 @@ allowed-tools: Bash, Read, Glob, Grep
 
 # Dongle crash-report analysis
 
-The dongle firmware (`phoneblock-dongle/firmware/`, an IDF v5.3 app for the
+The dongle firmware (`phoneblock-dongle/firmware/`, an IDF v5.5 app — v5.3 up to 2.0.2 — for the
 classic ESP32 (ESP32-PICO-D4), the ESP32-C3 (C3 Super Mini) and the ESP32-S3
 (LilyGO T-Dongle-S3)) writes an ESP core dump to its `coredump` flash partition on a panic, and
 on the next boot `crashreport_upload_async()` (`main/crashreport.c`) POSTs the

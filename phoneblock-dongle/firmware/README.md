@@ -11,7 +11,7 @@ Ausbaustufe der Dongle-Firmware. Nach dem Boot:
 
 ## Voraussetzungen
 
-- ESP-IDF v5.3 installiert (siehe
+- ESP-IDF v5.5.6 installiert (siehe
   [../GETTING_STARTED.md](../GETTING_STARTED.md))
 - Konto auf https://phoneblock.net + generierter Bearer-Token (beginnt mit
   `pbt_`)
