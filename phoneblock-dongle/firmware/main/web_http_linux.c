@@ -555,6 +555,34 @@ int web_http_get_header(web_http_request_t *request, const char *name,
                       value, capacity);
 }
 
+int web_http_get_cookie(web_http_request_t *request, const char *name,
+                        char *value, size_t capacity)
+{
+    // Parses the raw header in place (it lives in the connection's memory).
+    // Not MHD_COOKIE_KIND: libmicrohttpd 1.0 drops all cookies of a header
+    // as soon as one is malformed (a space or comma in a value, a cookie
+    // without a name), and browsers send such cookies set by other
+    // services on the same host.
+    const char *header = MHD_lookup_connection_value(request->connection,
+                                                     MHD_HEADER_KIND, "Cookie");
+    if (!header || !value || !capacity) return -1;
+    size_t name_length = strlen(name);
+    const char *p = header;
+    while (*p) {
+        while (*p == ' ' || *p == ';') p++;
+        if (strncmp(p, name, name_length) == 0 && p[name_length] == '=') {
+            const char *start = p + name_length + 1;
+            size_t length = strcspn(start, ";");
+            if (length >= capacity) return -1;
+            memcpy(value, start, length);
+            value[length] = '\0';
+            return 0;
+        }
+        p += strcspn(p, ";");
+    }
+    return -1;
+}
+
 bool web_http_has_header(web_http_request_t *request, const char *name)
 {
     return MHD_lookup_connection_value(request->connection, MHD_HEADER_KIND,

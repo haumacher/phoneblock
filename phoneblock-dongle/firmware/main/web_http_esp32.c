@@ -204,6 +204,16 @@ int web_http_get_header(web_http_request_t *request, const char *name,
         ? 0 : -1;
 }
 
+int web_http_get_cookie(web_http_request_t *request, const char *name,
+                        char *value, size_t capacity)
+{
+    // Copies the Cookie header to the heap internally (no public access to
+    // the request's header buffer); bounded by CONFIG_HTTPD_MAX_REQ_HDR_LEN.
+    size_t size = capacity;
+    return httpd_req_get_cookie_val(request, name, value, &size) == ESP_OK
+        ? 0 : -1;
+}
+
 bool web_http_has_header(web_http_request_t *request, const char *name)
 {
     return httpd_req_get_hdr_value_len(request, name) > 0;

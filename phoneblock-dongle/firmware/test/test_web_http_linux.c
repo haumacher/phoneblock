@@ -57,6 +57,14 @@ static web_http_error_t handle_retype(web_http_request_t *request)
     return web_http_send_text(request, "{}");
 }
 
+static web_http_error_t handle_cookie(web_http_request_t *request)
+{
+    char value[33];
+    if (web_http_get_cookie(request, "pb_session", value, sizeof(value)) != 0)
+        return web_http_send_text(request, "-");
+    return web_http_send_text(request, value);
+}
+
 static web_http_error_t handle_has_header(web_http_request_t *request)
 {
     return web_http_send_text(request,
@@ -112,6 +120,7 @@ static const web_http_route_t routes[] = {
     { "/query", WEB_HTTP_GET, handle_query, 0 },
     { "/retype", WEB_HTTP_GET, handle_retype, 0 },
     { "/has-header", WEB_HTTP_GET, handle_has_header, 0 },
+    { "/cookie", WEB_HTTP_GET, handle_cookie, 0 },
 };
 
 // Number of occurrences of `needle` in `haystack`.
@@ -233,6 +242,48 @@ int main(void)
                    "GET /has-header HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
                    response, sizeof(response)) > 0);
     REQUIRE(strstr(response, "\r\n\r\nno") != NULL);
+
+    // pb_session is found behind a Cookie header far longer than any stack
+    // buffer, as a browser sends it when a NAS web UI on the same IP has
+    // set its own cookies, also past cookies libmicrohttpd 1.0 considers
+    // malformed (and would drop the whole header for).
+    {
+        static const char *const cases[][2] = {
+            { "pb_session=0123456789abcdef0123456789abcdef",
+              "0123456789abcdef0123456789abcdef" },
+            { "%s; pb_session=0123456789abcdef0123456789abcdef",
+              "0123456789abcdef0123456789abcdef" },
+            { "pb_session=0123456789abcdef0123456789abcdef; %s",
+              "0123456789abcdef0123456789abcdef" },
+            { "a=x y; b=1,2; c; d=e=f; e=a\\b; k={\"a\":1}; %s; pb_session=0123456789abcdef0123456789abcdef",
+              "0123456789abcdef0123456789abcdef" },
+            { "pb_session=0123456789abcdef0123456789abcdef0", "-" },
+            { "xpb_session=0123456789abcdef0123456789abcdef", "-" },
+        };
+        char nas[2048];
+        memset(nas, 'x', sizeof(nas));
+        memcpy(nas, "nas=", 4);
+        nas[sizeof(nas) - 1] = '\0';
+        for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+            char cookies[2300];
+            snprintf(cookies, sizeof(cookies), cases[i][0], nas);
+            char message[2600];
+            snprintf(message, sizeof(message),
+                     "GET /cookie HTTP/1.1\r\nHost: localhost\r\n"
+                     "Cookie: %s\r\nConnection: close\r\n\r\n", cookies);
+            REQUIRE(request(port, message, response, sizeof(response)) > 0);
+            char expected[64];
+            snprintf(expected, sizeof(expected), "\r\n\r\n%s", cases[i][1]);
+            if (!strstr(response, expected)) {
+                fprintf(stderr, "cookie case %zu: %s\n", i, response);
+            }
+            REQUIRE(strstr(response, expected) != NULL);
+        }
+        REQUIRE(request(port,
+                       "GET /cookie HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
+                       response, sizeof(response)) > 0);
+        REQUIRE(strstr(response, "\r\n\r\n-") != NULL);
+    }
 
     // Parallel connections, but their handlers run one after the other.
     slow_client_t clients[3];
