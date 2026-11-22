@@ -113,44 +113,9 @@ static void store_session(const char *id)
     s_sessions[oldest].last_used_us = pb_monotonic_us();
 }
 
-// Extract the value of cookie name `name` from a Cookie header.
-// Returns true and writes into `out` on success. Cookies are simple
-// "k=v; k=v" lists — we don't need full RFC 6265 parsing.
-static bool cookie_get(const char *header, const char *name,
-                      char *out, size_t out_cap)
-{
-    size_t name_len = strlen(name);
-    const char *p = header;
-    while (p && *p) {
-        while (*p == ' ' || *p == ';') p++;
-        if (!*p) break;
-        if (strncmp(p, name, name_len) == 0 && p[name_len] == '=') {
-            const char *v = p + name_len + 1;
-            const char *end = strchr(v, ';');
-            size_t vlen = end ? (size_t)(end - v) : strlen(v);
-            if (vlen >= out_cap) return false;
-            memcpy(out, v, vlen);
-            out[vlen] = '\0';
-            return true;
-        }
-        const char *next = strchr(p, ';');
-        if (!next) break;
-        p = next + 1;
-    }
-    return false;
-}
-
 static bool get_cookie_session(web_http_request_t *req, char *out, size_t out_cap)
 {
-    // No fixed buffer: the browser also sends the cookies other services
-    // on the same IP set (cookies ignore the port), e.g. a NAS web UI next
-    // to the Docker container. A clipped header lost pb_session, and the
-    // login looped back to the login page.
-    char *header = web_http_dup_header(req, "Cookie");
-    if (!header) return false;
-    bool found = cookie_get(header, "pb_session", out, out_cap);
-    free(header);
-    return found;
+    return web_http_get_cookie(req, "pb_session", out, out_cap) == WEB_HTTP_OK;
 }
 
 // --- Public API -----------------------------------------------------

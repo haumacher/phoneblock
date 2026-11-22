@@ -96,12 +96,13 @@ int web_http_get_header(web_http_request_t *request, const char *name,
 // True if the request carries header `name`, whatever its length; needs no
 // buffer, so a presence check costs no stack.
 bool web_http_has_header(web_http_request_t *request, const char *name);
-// Heap copy of header `name`, whatever its length, or NULL if the request
-// does not carry it (or out of memory). The caller frees it. For headers
-// whose size the client does not bound, such as Cookie: a browser sends
-// every cookie of the host, including those other services on the same
-// IP set under a different port.
-char *web_http_dup_header(web_http_request_t *request, const char *name);
+// Copies the value of cookie `name` into `value`. Returns 0 on success,
+// -1 if the cookie is missing or does not fit. The Cookie header itself
+// may be as long as the server accepts: a browser sends every cookie of
+// the host, including those another service on the same IP set under a
+// different port (e.g. a NAS web UI next to the Docker container).
+int web_http_get_cookie(web_http_request_t *request, const char *name,
+                        char *value, size_t capacity);
 int web_http_get_query_string(web_http_request_t *request, char *query,
                               size_t capacity);
 int web_http_query_value(const char *query, const char *name, char *value,
