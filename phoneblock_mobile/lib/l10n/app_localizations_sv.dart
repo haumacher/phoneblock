@@ -9,6 +9,69 @@ class AppLocalizationsSv extends AppLocalizations {
   AppLocalizationsSv([String locale = 'sv']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle => 'Postlåda vid blockerade samtal';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Kontrollera eller ändra vidarekoppling vid upptaget';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'PhoneBlock avvisar samtal från blockerade nummer. Ditt mobilnätverk signalerar då upptaget till den som ringer och vidarebefordrar eventuellt samtalet till din röstbrevlåda.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Om du endast inaktiverar vidarekoppling vid upptaget förblir vidarekopplingarna vid icke-mottagande och otillgänglighet oförändrade. Även uppringare vars samtal du själv avvisar hör då upptaget och når inte röstbrevlådan.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Kontrollera statusen innan du inaktiverar vidarebefordringen och anteckna det visade postlådenumret. Du kan spara det nedan för att senare återaktivera funktionen. Knapparna öppnar telefonappen med rätt kod; tryck där på Ring.';
+
+  @override
+  String get mailboxCheckStatus => 'Kontrollera status';
+
+  @override
+  String get mailboxDisableBusy => 'Inaktivera vid upptagen';
+
+  @override
+  String get mailboxEnableBusy => 'Aktivera igen (återgå)';
+
+  @override
+  String get mailboxFallbackTitle =>
+      'Om vidarebefordringen inte går att återaktivera';
+
+  @override
+  String get mailboxNumberHint => 'Postlådenummer från ”Kontrollera status”';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Ange endast siffror och eventuellt ett inledande +.';
+
+  @override
+  String get mailboxEnableWithNumber => 'Aktivera med röstbrevlådanummer';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Koderna fungerar i de flesta GSM- och LTE-nät. Vissa operatörer använder andra koder. Fråga vid behov din operatör.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Många operatörer erbjuder dessutom möjligheten att inaktivera SMS om missade samtal utan meddelande i röstbrevlådans inställningar.';
+
+  @override
+  String get mailboxFaq => 'Mer information på PhoneBlock';
+
+  @override
+  String get mailboxDialerError => 'Telefonappen kunde inte öppnas.';
+
+  @override
+  String get mailboxLinkError => 'Webbsidan kunde inte öppnas.';
+
+  @override
+  String get mailboxStorageError =>
+      'Det gick inte att spara eller ladda postlådanumret.';
+
+  @override
   String get appTitle => 'TelefonBlock Mobil';
 
   @override
@@ -230,6 +293,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String reportError(String error) {
     return 'Fel vid rapportering: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'Numret accepterades inte av servern. Kontrollera formatet.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -999,6 +1066,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Blocknummerintervall';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Jokertecken (*) är endast tillåtna i blockeringslistan.';
 
   @override
   String get wildcardHint => 'Spärrar alla nummer som börjar med detta prefix';

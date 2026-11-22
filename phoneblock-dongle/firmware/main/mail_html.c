@@ -59,6 +59,35 @@ size_t append_url_encoded(char *body, size_t cap, size_t len, const char *s)
     return len;
 }
 
+size_t mail_html_append_call_row(char *body, size_t cap, size_t len,
+                                 const char *when, const char *base,
+                                 const char *number, bool dialable,
+                                 const char *label, const char *name,
+                                 const char *verdict)
+{
+    len = append_str(body, cap, len,
+                     "<tr style=\"border-bottom:1px solid #eee\"><td>");
+    len = append_html_escaped(body, cap, len, when);
+    len = append_str(body, cap, len, "</td>\n<td>");
+    if (dialable && base && base[0]) {
+        len = append_str(body, cap, len, "<a href=\"");
+        len = append_str(body, cap, len,
+                         base); // our own URL, no escaping needed
+        len = append_str(body, cap, len, "/nums/");
+        len = append_url_encoded(body, cap, len, number);
+        len = append_str(body, cap, len, "\">");
+        len = append_html_escaped(body, cap, len, label);
+        len = append_str(body, cap, len, "</a>");
+    } else {
+        len = append_html_escaped(body, cap, len, label);
+    }
+    len = append_str(body, cap, len, "</td>\n<td>");
+    len = append_html_escaped(body, cap, len, name ? name : "");
+    len = append_str(body, cap, len, "</td>\n<td>");
+    len = append_html_escaped(body, cap, len, verdict);
+    return append_str(body, cap, len, "</td></tr>\n");
+}
+
 // Extract the released "X.Y.Z" prefix of `version` into base[cap], matching
 // the web UI's fwLink regex ^(\d+\.\d+\.\d+)(?:-[0-9A-Za-z.]+)?$: three
 // dot-separated digit groups, then either end-of-string or a single '-'

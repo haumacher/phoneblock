@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">Jeśli subskrybujesz książkę adresową PhoneBlock, możesz bezpośrednio sprawdzić, czy warto odebrać połączenie lub oddzwonić w przypadku nieodebranego połączenia. Nie jest jednak możliwe bezpośrednie odrzucanie połączeń spamowych.</p>
 		<p data-tx="t0060:f7ad0c77">Jeśli zainstalujesz <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, możesz zintegrować tam bazę danych PhoneBlock. SpamBlocker może następnie porównać numer z bazą danych PhoneBlock, gdy połączenie zostanie odebrane i odrzucić połączenie bezpośrednio, jeśli jest zgodne. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> jest niezależną aplikacją, prosimy o bezpośredni kontakt z deweloperem w przypadku jakichkolwiek problemów.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">Mój telefon komórkowy blokuje połączenia spamowe, ale mimo to dzwoniący trafiają do mojej poczty głosowej. Co mogę zrobić?</h2>
+		<p data-tx="t0066:2821c2e9">Aplikacja PhoneBlock blokuje połączenia spamowe. Z punktu widzenia sieci komórkowej wygląda to tak, jakbyś sam odrzucił połączenie. Jeśli u Twojego operatora skonfigurowano przekierowanie połączeń na pocztę głosową w przypadku zajętej linii, połączenie trafi właśnie tam.</p>
+		<p data-tx="t0067:a129bb9f">Przekierowanie połączeń w przypadku zajętej linii można wyłączyć osobno. Przekierowania połączeń w przypadku nieodebrania i niedostępności pozostają przy tym aktywne. Wpisz poniższe kody w aplikacji telefonicznej i naciśnij przycisk połączenia po każdym z nich:</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Pokazuje, czy przekierowanie połączeń w przypadku zajętej linii jest aktywne i na jaki numer (Twoja poczta głosowa). Zapisz ten numer, zanim wprowadzisz jakiekolwiek zmiany.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Wyłącza przekierowanie połączeń w przypadku zajętej linii. Zapisany numer pozostaje niezmieniony.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: Ponownie włącza przekierowanie połączeń w przypadku zajętej linii na zapisany numer.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*numer skrzynki pocztowej#</code>: Jeśli w ten sposób nie uda się ponownie włączyć przekierowania połączeń, należy skonfigurować je ponownie, korzystając z tego kodu. Należy przy tym wprowadzić zapisany numer.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">Wada: jeśli ręcznie odrzucisz prawdziwe połączenie, dzwoniący usłyszy sygnał zajętości zamiast zostać przekierowany na pocztę głosową. Kody są zgodne ze standardem GSM i działają w większości sieci komórkowych. Jeśli u Twojego operatora to nie zadziała, skorzystaj z jego aplikacji lub infolinii.</p>
+		<p data-tx="t0073:4c1649f1">Niezależnie od tego, u wielu operatorów można w ustawieniach skrzynki pocztowej wyłączyć powiadomienia SMS o połączeniach bez wiadomości.</p>
+
 		<h2 data-tx="t0021:d7604318">Czy mogę używać PhoneBlock na iPhonie?</h2>
 		<p data-tx="t0022:b923b50e">Tak, w przypadku iPhone'a można to zrobić nawet bez instalowania dodatkowych aplikacji. Spójrz na <a th:href="@{/setup-iphone}">instrukcje instalacji</a> tutaj.</p>
 

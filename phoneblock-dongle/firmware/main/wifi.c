@@ -849,6 +849,15 @@ esp_err_t wifi_connect(void)
     ESP_ERROR_CHECK(esp_wifi_start());
     s_started = true;
 
+    esp_err_t tx_power_err = wifi_apply_tx_power();
+    if (tx_power_err != ESP_OK) {
+        ESP_LOGW(TAG, "could not apply max Wi-Fi TX power, using driver default: %s",
+                 esp_err_to_name(tx_power_err));
+    } else {
+        ESP_LOGI(TAG, "max Wi-Fi TX power applied: %d dBm",
+                 config_wifi_tx_power_dbm());
+    }
+
     // Disable WiFi modem power-save. The ESP-IDF default is
     // WIFI_PS_MIN_MODEM: the radio sleeps between DTIM beacons, which on
     // some APs (incl. Fritz!Box) loses enough downlink ACKs that the AP
@@ -872,6 +881,11 @@ esp_err_t wifi_connect(void)
         ESP_LOGE(TAG, "link watchdog task creation failed");
     }
     return ESP_OK;
+}
+
+esp_err_t wifi_apply_tx_power(void)
+{
+    return esp_wifi_set_max_tx_power((int8_t)(config_wifi_tx_power_dbm() * 4));
 }
 
 bool wifi_link_status(wifi_link_t *l)

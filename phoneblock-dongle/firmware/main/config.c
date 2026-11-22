@@ -78,6 +78,7 @@ static const char *NS   = "phoneblock";
 #define K_CONTACT_PORT  "contact_port"
 #define K_SIP_LPORT     "sip_lport"
 #define K_RTP_PORT      "rtp_port"
+#define K_WIFI_TX_POWER "wifi_tx_power"
 #define K_PB_URL        "pb_url"
 #define K_PB_TOKEN      "pb_token"
 #define K_MIN_DIRECT    "min_direct"
@@ -132,6 +133,7 @@ static const char *NS   = "phoneblock";
 // 0 means "use this default".
 #define DEFAULT_SIP_LOCAL_PORT 15060
 #define DEFAULT_RTP_PORT       16000
+#define DEFAULT_WIFI_TX_POWER_DBM 15
 // Interactive answer-bot dialog (#429). The VAD defaults are the values that
 // work for the Cloud/Docker answer bot (-35 dBFS); the response time is
 // shorter than its 1500 ms so the bot answers briskly. The comfort noise is a
@@ -194,6 +196,7 @@ typedef struct {
     int  contact_port;
     int  sip_local_port;     // 0 = use DEFAULT_SIP_LOCAL_PORT
     int  rtp_port;           // 0 = use DEFAULT_RTP_PORT
+    int  wifi_tx_power_dbm;  // 0 = default; clamped on read
     char pb_base_url[128];
     char pb_token[64];
     int  min_direct_votes;   // SPAM threshold for direct hits
@@ -421,6 +424,7 @@ static void load_values(void)
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         s_config.sip_local_port = 0;   // → DEFAULT_SIP_LOCAL_PORT
         s_config.rtp_port       = 0;   // → DEFAULT_RTP_PORT
+        s_config.wifi_tx_power_dbm = DEFAULT_WIFI_TX_POWER_DBM;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
         s_config.pb_token[0]  = '\0';
         s_config.min_direct_votes = DEFAULT_MIN_DIRECT_VOTES;
@@ -526,6 +530,8 @@ static void load_values(void)
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
     s_config.sip_local_port = load_int(h, K_SIP_LPORT, 0);
     s_config.rtp_port       = load_int(h, K_RTP_PORT,  0);
+    s_config.wifi_tx_power_dbm = load_int(h, K_WIFI_TX_POWER,
+                                          DEFAULT_WIFI_TX_POWER_DBM);
     load_str(h, K_PB_URL,       CONFIG_PHONEBLOCK_BASE_URL,
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
     load_str(h, K_PB_TOKEN,     "",
@@ -723,6 +729,16 @@ const char *config_hostname(void)
     // option 12 and the mDNS announcement, so an empty or corrupt NVS read
     // degrades to the name every dongle had before the setting existed.
     return hostname_valid(s_config.hostname) ? s_config.hostname : HOSTNAME_DEFAULT;
+}
+bool config_wifi_tx_power_dbm_valid(int dbm)
+{
+    return dbm >= CONFIG_WIFI_TX_POWER_MIN_DBM
+        && dbm <= CONFIG_WIFI_TX_POWER_MAX_DBM;
+}
+int config_wifi_tx_power_dbm(void)
+{
+    return config_wifi_tx_power_dbm_valid(s_config.wifi_tx_power_dbm)
+           ? s_config.wifi_tx_power_dbm : DEFAULT_WIFI_TX_POWER_DBM;
 }
 bool        config_auto_update_enabled(void)
 {
@@ -1002,6 +1018,9 @@ int config_update(const config_update_t *u)
                                               u->sip_local_port, &s_config.sip_local_port);
     if (err == PB_KV_OK) err = set_int_explicit(h, K_RTP_PORT, u->has_rtp_port,
                                               u->rtp_port, &s_config.rtp_port);
+    if (err == PB_KV_OK) err = set_int_if(h, K_WIFI_TX_POWER,
+                                        u->wifi_tx_power_dbm,
+                                        &s_config.wifi_tx_power_dbm);
     if (err == PB_KV_OK) err = set_str_if(h, K_SIP_USER, u->sip_user,
                                         s_config.sip_user, sizeof(s_config.sip_user));
     if (err == PB_KV_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,
