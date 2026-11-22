@@ -59,7 +59,8 @@ public class TestDonglePlatformStats {
 	@Test
 	public void testUserAgentParsing() {
 		for (DonglePlatform platform : List.of(DonglePlatform.ESP32, DonglePlatform.ESP32_C3,
-				DonglePlatform.ESP32_S3, DonglePlatform.LINUX, DonglePlatform.LINUX_HA)) {
+				DonglePlatform.ESP32_S3, DonglePlatform.LINUX, DonglePlatform.LINUX_HA,
+				DonglePlatform.LINUX_DOCKER)) {
 			assertEquals(new DongleAgent(platform, "device-a"),
 				DB.parseDongleAgent("PhoneBlock-Dongle/2.0 (" + platform.tag() + ") (device-a)"));
 		}
@@ -91,6 +92,8 @@ public class TestDonglePlatformStats {
 	public void testActiveDonglesByPlatform() {
 		addToken("PhoneBlock-Dongle/2.0 (ESP32) (device-a)", NOW - 45 * DAY, false);
 		addToken("PhoneBlock-Dongle/2.1 (Linux; HA) (device-a)", NOW - 10 * DAY, false);
+		addToken("PhoneBlock-Dongle/2.1 (Linux; Docker) (device-l)", NOW - 10 * DAY, false);
+		addToken("PhoneBlock-Dongle/2.1 (Linux; Ingress-Test) (device-m)", NOW - 10 * DAY, false);
 		addToken("PhoneBlock-Dongle/2.0 (ESP32-C3) (device-b)", NOW - 45 * DAY, false);
 		addToken("PhoneBlock-Dongle/2.0 (ESP32-S3) (device-c)", NOW - 80 * DAY, false);
 		addToken("PhoneBlock-Dongle/2.0 (Linux) (device-d)", NOW - 120 * DAY, false);
@@ -114,7 +117,8 @@ public class TestDonglePlatformStats {
 			new DonglePlatformCounts(DonglePlatform.ESP32_S3, 0, 0, 1),
 			new DonglePlatformCounts(DonglePlatform.LINUX, 0, 1, 1),
 			new DonglePlatformCounts(DonglePlatform.LINUX_HA, 1, 1, 1),
-			new DonglePlatformCounts(DonglePlatform.OTHER, 2, 2, 4),
+			new DonglePlatformCounts(DonglePlatform.LINUX_DOCKER, 1, 1, 1),
+			new DonglePlatformCounts(DonglePlatform.OTHER, 3, 3, 5),
 			new DonglePlatformCounts(DonglePlatform.UNKNOWN, 2, 3, 3)
 		), _db.getActiveDonglesByPlatform(NOW));
 	}

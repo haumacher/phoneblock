@@ -3733,6 +3733,7 @@ public class DB {
 		ESP32_S3("ESP32-S3"),
 		LINUX("Linux"),
 		LINUX_HA("Linux; HA"),
+		LINUX_DOCKER("Linux; Docker"),
 		OTHER(null),
 		UNKNOWN(null);
 
