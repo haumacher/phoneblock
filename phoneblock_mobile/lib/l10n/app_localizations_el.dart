@@ -9,6 +9,74 @@ class AppLocalizationsEl extends AppLocalizations {
   AppLocalizationsEl([String locale = 'el']) : super(locale);
 
   @override
+  String get mailboxForwardingTitle =>
+      'Θυρίδα αλληλογραφίας σε περίπτωση αποκλεισμένων κλήσεων';
+
+  @override
+  String get mailboxForwardingSubtitle =>
+      'Έλεγχος ή αλλαγή της προώθησης κλήσεων όταν η γραμμή είναι κατειλημμένη';
+
+  @override
+  String get mailboxForwardingExplanation =>
+      'Το PhoneBlock απορρίπτει τις κλήσεις από αποκλεισμένους αριθμούς. Το δίκτυο κινητής τηλεφωνίας σας εμφανίζει τότε στον καλούντα ότι η γραμμή είναι κατειλημμένη και ενδέχεται να προωθήσει την κλήση στον τηλεφωνητή σας.';
+
+  @override
+  String get mailboxForwardingTradeoff =>
+      'Εάν απενεργοποιήσετε μόνο την προώθηση κλήσεων όταν η γραμμή είναι κατειλημμένη, οι ρυθμίσεις προώθησης κλήσεων σε περίπτωση μη απάντησης και μη διαθεσιμότητας παραμένουν αμετάβλητες. Ακόμη και οι καλούντες των οποίων την κλήση απορρίπτετε εσείς οι ίδιοι θα ακούνε τον ήχο «κατειλημμένης γραμμής» και δεν θα μπορούν να φτάσουν στον τηλεφωνητή.';
+
+  @override
+  String get mailboxForwardingReminder =>
+      'Πριν απενεργοποιήσετε τη λειτουργία, ελέγξτε την κατάσταση και σημειώστε τον αριθμό του γραμματοκιβωτίου που εμφανίζεται. Μπορείτε να τον αποθηκεύσετε παρακάτω για να τον χρησιμοποιήσετε αργότερα, όταν θα θέλετε να ενεργοποιήσετε ξανά τη λειτουργία. Τα κουμπιά ανοίγουν την εφαρμογή τηλεφώνου με τον αντίστοιχο κωδικό· πατήστε εκεί το κουμπί «Κλήση».';
+
+  @override
+  String get mailboxCheckStatus => 'Έλεγχος κατάστασης';
+
+  @override
+  String get mailboxDisableBusy =>
+      'Απενεργοποίηση του γραμματοκιβωτίου όταν η γραμμή είναι κατειλημμένη';
+
+  @override
+  String get mailboxEnableBusy => 'Επανενεργοποίηση (αναίρεση)';
+
+  @override
+  String get mailboxFallbackTitle =>
+      'Σε περίπτωση που δεν είναι δυνατή η επανενεργοποίηση της προώθησης';
+
+  @override
+  String get mailboxNumberHint =>
+      'Αριθμός γραμματοκιβωτίου από την επιλογή «Έλεγχος κατάστασης»';
+
+  @override
+  String get mailboxNumberInvalid =>
+      'Εισάγετε μόνο αριθμούς και, προαιρετικά, ένα αρχικό σύμβολο +.';
+
+  @override
+  String get mailboxEnableWithNumber =>
+      'Ενεργοποίηση με αριθμό τηλεφωνικής θυρίδας';
+
+  @override
+  String get mailboxCarrierHint =>
+      'Οι κωδικοί λειτουργούν στα περισσότερα δίκτυα GSM και LTE. Ορισμένοι πάροχοι χρησιμοποιούν διαφορετικούς κωδικούς. Εάν χρειαστεί, ρωτήστε τον πάροχό σας.';
+
+  @override
+  String get mailboxSmsHint =>
+      'Πολλοί πάροχοι επιτρέπουν επίσης την απενεργοποίηση των SMS για χαμένες κλήσεις χωρίς μήνυμα στις ρυθμίσεις του φωνητικού ταχυδρομείου.';
+
+  @override
+  String get mailboxFaq => 'Περισσότερες πληροφορίες στο PhoneBlock';
+
+  @override
+  String get mailboxDialerError =>
+      'Δεν ήταν δυνατή η εκκίνηση της εφαρμογής τηλεφώνου.';
+
+  @override
+  String get mailboxLinkError => 'Δεν ήταν δυνατή η πρόσβαση στην ιστοσελίδα.';
+
+  @override
+  String get mailboxStorageError =>
+      'Δεν ήταν δυνατή η αποθήκευση ή η φόρτωση του αριθμού του γραμματοκιβωτίου.';
+
+  @override
   String get appTitle => 'PhoneBlock Mobile';
 
   @override
@@ -229,6 +297,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String reportError(String error) {
     return 'Σφάλμα κατά την αναφορά: $error';
   }
+
+  @override
+  String get numberRejectedByServer =>
+      'Ο αριθμός δεν έγινε αποδεκτός από τον διακομιστή. Παρακαλώ ελέγξτε τη μορφή.';
 
   @override
   String reportedAsSpam(String phoneNumber) {
@@ -1004,6 +1076,10 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get wildcardToggle => 'Εύρος αριθμού μπλοκ';
+
+  @override
+  String get wildcardOnlyBlacklist =>
+      'Οι χαρακτήρες μπαλαντέρ (*) επιτρέπονται μόνο στη λίστα αποκλεισμού.';
 
   @override
   String get wildcardHint =>

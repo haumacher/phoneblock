@@ -42,6 +42,18 @@
 		<p data-tx="t0059:d1ef3c0b">Si tu t'abonnes au carnet d'adresses PhoneBlock, tu peux voir directement si cela vaut la peine de répondre à un appel ou de rappeler si tu as manqué un appel. Il n'est toutefois pas possible de rejeter directement les appels spam.</p>
 		<p data-tx="t0060:f7ad0c77">Si tu installes <a href="https://news.phoneblock.net/setup-spamblocker-mit-phoneblock/">SpamBlocker</a>, tu peux y intégrer la base de données PhoneBlock. Lors d'un appel, SpamBlocker peut alors comparer le numéro avec la base de données PhoneBlock et rejeter directement l'appel en cas de réponse positive. <a href="https://github.com/aj3423/SpamBlocker">SpamBlocker</a> est une application indépendante. En cas de problème, adresse-toi directement au développeur.</p>
 		
+		<h2 data-tx="t0065:f7f7d113" id="mailbox">Mon téléphone portable bloque les appels indésirables, mais les appelants tombent quand même sur ma messagerie vocale. Que puis-je faire ?</h2>
+		<p data-tx="t0066:2821c2e9">L'application PhoneBlock bloque les appels indésirables. Pour le réseau mobile, cela revient à dire que tu as toi-même refusé l'appel. Si ton opérateur a configuré un renvoi vers la messagerie vocale lorsque la ligne est occupée, l'appelant sera donc redirigé vers celle-ci.</p>
+		<p data-tx="t0067:a129bb9f">Le renvoi d'appel en cas de ligne occupée peut être désactivé individuellement. Les renvois d'appel en cas de non-réponse et d'indisponibilité restent toutefois actifs. Saisis les codes suivants dans l'application Téléphone et appuie à chaque fois sur la touche d'appel :</p>
+		<ul>
+			<li data-tx="t0068:d7a5124d"><code dir="ltr">*#67#</code>: Indique si le renvoi d'appel en cas de ligne occupée est activé et vers quel numéro (votre messagerie vocale). Notez ce numéro avant d'effectuer toute modification.</li>
+			<li data-tx="t0069:a0afd1e4"><code dir="ltr">#67#</code>: Désactive le renvoi d'appel en cas de ligne occupée. Le numéro enregistré est conservé.</li>
+			<li data-tx="t0070:97d6380"><code dir="ltr">*67#</code>: réactive le renvoi d'appel en cas de ligne occupée vers le numéro enregistré.</li>
+			<li data-tx="t0071:640101ec"><code dir="ltr">**67*numéro de boîte vocale#</code>: si le renvoi d'appel ne peut pas être réactivé de cette manière, utilise cette commande pour le reconfigurer. Indique le numéro que tu as noté.</li>
+		</ul>
+		<p data-tx="t0072:d7b60511">L'inconvénient : si tu rejettes manuellement un appel réel, l'appelant entendra alors la tonalité « occupé » au lieu d'être redirigé vers la messagerie vocale. Ces codes sont conformes à la norme GSM et fonctionnent sur la plupart des réseaux mobiles. Si cela ne fonctionne pas avec ton opérateur, tu peux te tourner vers son application ou son service d'assistance téléphonique.</p>
+		<p data-tx="t0073:4c1649f1">Quoi qu'il en soit, chez de nombreux opérateurs, tu peux désactiver les SMS signalant les appels sans message dans les paramètres de ta messagerie vocale.</p>
+
 		<h2 data-tx="t0021:d7604318">Puis-je utiliser PhoneBlock sur un iPhone?</h2>
 		<p data-tx="t0022:b923b50e">Oui, avec l'iPhone, c'est même possible sans installer d'applications supplémentaires. Regarde ici les <a th:href="@{/setup-iphone}">instructions d'installation</a>.</p>
 
