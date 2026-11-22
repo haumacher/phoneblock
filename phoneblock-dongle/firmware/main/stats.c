@@ -98,6 +98,9 @@ static stats_drop_hook_t s_drop_hook;
 static stats_error_t s_errors[STATS_MAX_ERRORS];
 static int           s_errors_head;
 static int           s_errors_count;
+// Entries ever recorded (not reset by clearing): the reference point that
+// lets stats_read_errors() page through a ring that keeps changing.
+static uint32_t      s_errors_added;
 
 static void lock(void)   { pb_mutex_lock(s_mutex); }
 static void unlock(void) { pb_mutex_unlock(s_mutex); }
@@ -576,6 +579,7 @@ void stats_record_error(int level, const char *tag, const char *message)
 
     s_errors_head = (s_errors_head + 1) % STATS_MAX_ERRORS;
     if (s_errors_count < STATS_MAX_ERRORS) s_errors_count++;
+    s_errors_added++;
 
     unlock();
 }
@@ -638,6 +642,34 @@ int stats_snapshot_errors(stats_error_t *out, int max)
     int n = snapshot_ring(s_errors, sizeof(*s_errors),
                           s_errors_head, s_errors_count, STATS_MAX_ERRORS,
                           out, max);
+    unlock();
+    return n;
+}
+
+uint32_t stats_errors_mark(void)
+{
+    lock();
+    uint32_t mark = s_errors_added;
+    unlock();
+    return mark;
+}
+
+int stats_read_errors(uint32_t mark, int skip, stats_error_t *out, int max)
+{
+    lock();
+    // Entries recorded after the mark sit above the ones the reader means;
+    // skip them too. Entries the ring overwrote since are gone (count caps).
+    int64_t from = (int64_t)skip + (uint32_t)(s_errors_added - mark);
+    int n = 0;
+    if (skip >= 0 && from < s_errors_count) {
+        int avail = s_errors_count - (int)from;
+        n = avail < max ? avail : max;
+        for (int i = 0; i < n; i++) {
+            int src = (s_errors_head - 1 - (int)from - i + 2 * STATS_MAX_ERRORS)
+                      % STATS_MAX_ERRORS;
+            out[i] = s_errors[src];
+        }
+    }
     unlock();
     return n;
 }

@@ -7,6 +7,7 @@
 #include "dialog_store.h"
 
 #include <dirent.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -89,6 +90,9 @@ bool dialog_store_check_path(const char *path, dialog_set_t *set)
     // bytes) is a truncated or oversized file: not a set either.
     bool ok = read_ok &&
               dialog_header_parse(hdr, n, (uint64_t)st.st_size, set) == DIALOG_HEADER_OK;
+    // The caller may have to tell a heap too short for the buffer from a
+    // bad file: the set itself is fine then (#770).
+    if (!ok) errno = hdr ? EINVAL : ENOMEM;
     free(hdr);
     return ok;
 }
@@ -96,7 +100,10 @@ bool dialog_store_check_path(const char *path, dialog_set_t *set)
 bool dialog_store_read_file(const char *lang, dialog_set_t *set)
 {
     memset(set, 0, sizeof(*set));
-    if (!dialog_lang_valid(lang)) return false;
+    if (!dialog_lang_valid(lang)) {
+        errno = EINVAL;
+        return false;
+    }
     char path[DIALOG_STORE_PATH_CAP];
     dialog_store_file_path(path, sizeof(path), lang);
     if (!dialog_store_check_path(path, set)) {

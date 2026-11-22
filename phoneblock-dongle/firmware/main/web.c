@@ -2239,31 +2239,37 @@ static web_http_error_t handle_fritzbox_2fa_status(web_http_request_t *req)
 static web_http_error_t handle_errors(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
-    // On the heap: the whole ring (STATS_MAX_ERRORS x 160 B, 7.5 KB) would
-    // not leave the httpd worker's 8 KB stack room for anything else.
-    stats_error_t *errs = malloc(STATS_MAX_ERRORS * sizeof(*errs));
-    if (!errs) {
-        web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "out of memory");
-        return WEB_HTTP_OK;
-    }
-    int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
+    // Streamed one entry at a time, like /api/calls: neither a copy of the
+    // whole ring (7.5 KB) nor its JSON (~9 KB) is ever in one block. The page
+    // polls this every 3 s, and on a dongle short of memory such a block was
+    // what failed first (#770). One entry lives on the stack.
+    stats_error_t e;
+    uint32_t mark = stats_errors_mark();
     int64_t now_us = pb_monotonic_us();
 
-    cJSON *root = cJSON_CreateObject();
-    cJSON *arr  = cJSON_AddArrayToObject(root, "errors");
-    for (int i = 0; i < n; i++) {
+    web_http_set_type(req, "application/json; charset=utf-8");
+    web_http_set_header(req, "Cache-Control", "no-store");
+    bool ok = web_http_send_chunk(req, "{\"errors\":[", 11) == WEB_HTTP_OK;
+    for (int i = 0; ok && stats_read_errors(mark, i, &e, 1) == 1; i++) {
         cJSON *o = cJSON_CreateObject();
-        cJSON_AddNumberToObject(o, "age_s",   (double)((now_us - errs[i].at_us) / 1000000));
+        if (!o) { ok = false; break; }
+        cJSON_AddNumberToObject(o, "age_s",   (double)((now_us - e.at_us) / 1000000));
         cJSON_AddStringToObject(o, "level",
-            errs[i].level == STATS_LOG_LEVEL_ERROR ? "E" :
-            errs[i].level == STATS_LOG_LEVEL_WARN  ? "W" : "I");
-        cJSON_AddStringToObject(o, "tag",     errs[i].tag);
-        cJSON_AddStringToObject(o, "message", errs[i].message);
-        cJSON_AddItemToArray(arr, o);
+            e.level == STATS_LOG_LEVEL_ERROR ? "E" :
+            e.level == STATS_LOG_LEVEL_WARN  ? "W" : "I");
+        cJSON_AddStringToObject(o, "tag",     e.tag);
+        cJSON_AddStringToObject(o, "message", e.message);
+        char *json = cJSON_PrintUnformatted(o);
+        cJSON_Delete(o);
+        if (!json) { ok = false; break; }
+        if (i > 0) ok = web_http_send_chunk(req, ",", 1) == WEB_HTTP_OK;
+        if (ok) ok = web_http_send_chunk(req, json, strlen(json)) == WEB_HTTP_OK;
+        cJSON_free(json);
     }
-    free(errs);
-    send_json(req, root);
-    return WEB_HTTP_OK;
+    if (ok) ok = web_http_send_chunk(req, "]}", 2) == WEB_HTTP_OK;
+    // Terminates the chunked answer; after a failure the client sees it cut.
+    web_http_send_chunk(req, NULL, 0);
+    return ok ? WEB_HTTP_OK : WEB_HTTP_FAIL;
 }
 
 #ifdef ESP_PLATFORM

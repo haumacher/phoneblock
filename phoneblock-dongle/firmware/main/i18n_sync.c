@@ -633,8 +633,14 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
     // Verified, so a bad header is a publishing error, not a transfer one:
     // the file stays (a new download would bring the same bytes), unused.
     if (!dialog_store_read_file(want.lang, have)) {
-        snprintf(err, err_cap, "dialog: '%s' set has a malformed clip table, unusable",
-                 want.lang);
+        if (errno == ENOMEM) {
+            // The heap, not the file: the next pass reads it again (#770).
+            snprintf(err, err_cap, "dialog: out of memory reading the '%s' clip table",
+                     want.lang);
+        } else {
+            snprintf(err, err_cap, "dialog: '%s' set has a malformed clip table, unusable",
+                     want.lang);
+        }
         ok = false;
         goto out;
     }
