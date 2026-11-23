@@ -15,11 +15,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+#include "api.h"
 #include "board.h"
 #include "config.h"
 #include "display_model.h"
 #include "lcd_font.h"
 #include "lcd_logo.h"
+#include "sip_register.h"
+#include "wifi.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -90,8 +93,8 @@ static const board_t k_board = {
 #define BL_PWM        0
 #endif
 // The backlight dims this long after boot or after a call ended. The caller
-// screen of an ended call stays until then, and the logo is drawn right
-// before dimming, so a call that ended at once can still be read.
+// screen of an ended call stays until then, and the idle screen is drawn
+// right before dimming, so a call that ended at once can still be read.
 #define BL_DIM_AFTER_US (60LL * 1000 * 1000)
 
 // The call's fallback end: a legitimate call is declined by the dongle
@@ -101,6 +104,8 @@ static const board_t k_board = {
 // next call ends it first. Long enough to cover the ringing phase. Ending
 // a call only starts the BL_DIM_AFTER_US hold: the caller screen stays.
 #define CALL_TIMEOUT_US (60LL * 1000 * 1000)
+// Poll connection state once a second without callbacks from other modules.
+#define CONNECTION_POLL_US (1000LL * 1000)
 
 // Frames are composed and sent in horizontal strips from one transient
 // DMA buffer (5 KB on the T-Dongle-S3, 7.5 KB on the T-Display; freed after
@@ -123,6 +128,7 @@ static const board_t k_board = {
 #define C_LEGIT       COLOR(30, 150, 60)
 #define C_NEUTRAL     COLOR(70, 80, 100)
 #define C_BADGE       COLOR(230, 40, 40)
+#define C_WARNING     COLOR(255, 165, 0)
 
 // The larger state, allocated by display_start() only once this dongle
 // drives a display: an ESP32 without one carries none of it (#708).
@@ -139,6 +145,8 @@ typedef struct {
     // esp_timer task's stack.
     stats_call_t     draw_call;
     dm_call_screen_t screen;
+    dm_connection_state_t connection_state;
+    dm_connection_t connection;
     uint16_t         logo_row[LCD_LOGO_W];  // one decoded logo row
 } display_mem_t;
 static display_mem_t *s_mem;
@@ -156,6 +164,10 @@ static esp_timer_handle_t s_redraw_timer;
 static volatile bool s_off;
 static esp_timer_handle_t s_dim_timer;
 static esp_timer_handle_t s_call_timer;
+static esp_timer_handle_t s_connection_timer;
+// The backlight was turned on for the current connection fault. Only the
+// esp_timer task touches it (poll_connection, under s_lock).
+static bool s_connection_lit;
 
 // The badge's count, recounted by display_calls_changed() in the task that
 // changed the list: the call list is a file (#589), and reading it is no
@@ -174,6 +186,7 @@ static bool             s_drawn_valid;
 static bool             s_drawn_call;
 static uint32_t         s_drawn_gen;
 static int              s_drawn_badge;
+static dm_connection_t  s_drawn_connection;
 static bool             s_draw_failure_logged;
 
 typedef struct {
@@ -264,10 +277,10 @@ static void dim_backlight(void *arg)
     if (held) s_call_shown = false;
     xSemaphoreGive(s_state);
     if (calling || stale) return;
-    // The dimmed screen shows the logo, not the held caller.
+    // The dimmed screen shows the idle screen, not the held caller.
     if (held) redraw(NULL);
     xSemaphoreTake(s_state, portMAX_DELAY);
-    // A call or a new hold may have arrived while drawing the logo.
+    // A call or a new hold may have arrived while drawing the idle screen.
     if (!s_call_shown && esp_timer_get_time() >= s_dim_due_us - 1000) {
         set_backlight(false);
     }
@@ -275,7 +288,7 @@ static void dim_backlight(void *arg)
 }
 
 // Full brightness now, dimmed BL_DIM_AFTER_US later (unless a call is on
-// screen by then); a held caller screen goes back to the logo then.
+// screen by then); a held caller screen goes back to the idle screen then.
 static void brighten_for_a_while(void)
 {
     xSemaphoreTake(s_state, portMAX_DELAY);
@@ -514,9 +527,27 @@ static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
               scr->cls == DM_CLASS_SUSPECT ? C_BLACK : C_WHITE);
 }
 
-// Composes and sends one frame: the caller screen if `call`, else the logo
-// with `badge` (hidden if 0). False (nothing logged) on failure.
-static bool send_frame(bool call, int badge)
+static void compose_connection(uint16_t *strip, int y0, dm_connection_t connection)
+{
+    const dm_layout_t *l = &s_mem->layout;
+    int size = l->icon_size;
+    for (int r = 0; r < STRIP_ROWS; r++) {
+        int iy = y0 + r - l->icon_y;
+        for (int x = 0; x < W; x++) {
+            int ix = x - l->icon_x;
+            uint16_t c = C_BACKGROUND;
+            dm_icon_pixel_t pixel = dm_icon_pixel(connection, size, ix, iy);
+            if (pixel == DM_ICON_GLYPH) c = C_WHITE;
+            else if (pixel == DM_ICON_TRIANGLE) c = C_WARNING;
+            else if (pixel == DM_ICON_MARK) c = C_BLACK;
+            strip[r * W + x] = c;
+        }
+    }
+}
+
+// Composes and sends the caller, connection indicator, or logo with badge.
+// False (nothing logged) on failure.
+static bool send_frame(bool call, int badge, dm_connection_t connection)
 {
     uint16_t *strip = heap_caps_malloc((size_t)W * STRIP_ROWS * sizeof(uint16_t),
                                        MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
@@ -532,6 +563,8 @@ static bool send_frame(bool call, int badge)
         int rows = height - y0 < STRIP_ROWS ? height - y0 : STRIP_ROWS;
         if (call) {
             compose_call(strip, y0, &s_mem->screen);
+        } else if (connection != DM_CONNECTION_OK) {
+            compose_connection(strip, y0, connection);
         } else {
             ok = compose_logo(strip, y0, rows, &logo);
             if (ok && badge > 0) draw_badge(strip, y0, badge_text);
@@ -556,13 +589,16 @@ static bool draw_screen(bool force)
     if (call) s_mem->draw_call = s_mem->call;
     int badge = call ? 0 : s_badge;
     xSemaphoreGive(s_state);
+    dm_connection_t connection = dm_connection_visible(s_mem->connection, call);
 
     if (!force && s_drawn_valid && s_drawn_call == call
-        && (call ? s_drawn_gen == gen : s_drawn_badge == badge)) {
+        && (call ? s_drawn_gen == gen
+                 : s_drawn_connection == connection
+                   && (connection != DM_CONNECTION_OK || s_drawn_badge == badge))) {
         return true;
     }
     if (call) dm_call_screen(&s_mem->draw_call, &s_mem->layout, &s_mem->screen);
-    if (!send_frame(call, badge)) {
+    if (!send_frame(call, badge, connection)) {
         s_drawn_valid = false;
         if (!s_draw_failure_logged) {
             s_draw_failure_logged = true;
@@ -574,6 +610,7 @@ static bool draw_screen(bool force)
     s_drawn_call  = call;
     s_drawn_gen   = gen;
     s_drawn_badge = badge;
+    s_drawn_connection = connection;
     return true;
 }
 
@@ -582,6 +619,38 @@ static void redraw(void *arg)
     (void)arg;
     xSemaphoreTake(s_lock, portMAX_DELAY);
     if (s_panel && !s_off) draw_screen(false);
+    xSemaphoreGive(s_lock);
+}
+
+static void poll_connection(void *arg)
+{
+    (void)arg;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    dm_connection_t old = s_mem->connection;
+    dm_connection_t next = dm_connection_update(&s_mem->connection_state,
+        esp_timer_get_time(), wifi_is_wps_active(), wifi_has_ip(),
+        config_phoneblock_token()[0], config_sip_host()[0] && config_sip_user()[0],
+        sip_register_is_registered(), api_token_is_valid());
+    if (next != old) {
+        s_mem->connection = next;
+        s_connection_lit = false;
+        ESP_LOGI(TAG, "connection display: %s",
+                 next == DM_CONNECTION_WIFI ? "wifi lost" :
+                 next == DM_CONNECTION_SIP ? "sip lost" :
+                 next == DM_CONNECTION_TOKEN ? "token rejected" : "logo");
+    }
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    bool call_shown = s_call_shown;
+    xSemaphoreGive(s_state);
+    // Light the screen once per fault: when it starts, or, if a call or a
+    // held caller screen was shown then, as soon as that screen is gone.
+    // Otherwise the icon would first appear on the already dimmed screen.
+    if (!s_off && next != DM_CONNECTION_OK && !call_shown && !s_connection_lit) {
+        s_connection_lit = true;
+        brighten_for_a_while();
+    }
+    // Skipped when the screen is up to date; retries a failed draw.
+    if (!s_off) draw_screen(false);
     xSemaphoreGive(s_lock);
 }
 
@@ -763,7 +832,8 @@ void display_start(void)
     esp_timer_handle_t redraw_timer = NULL;
     if (!create_timer(dim_backlight, "lcd_dim", &s_dim_timer)
         || !create_timer(call_timeout, "lcd_call", &s_call_timer)
-        || !create_timer(redraw, "lcd_draw", &redraw_timer)) {
+        || !create_timer(redraw, "lcd_draw", &redraw_timer)
+        || !create_timer(poll_connection, "lcd_conn", &s_connection_timer)) {
         ESP_LOGW(TAG, "timer setup failed");
         return;
     }
@@ -793,6 +863,8 @@ void display_start(void)
     // Calls may be shown from now on.
     s_redraw_timer = redraw_timer;
     brighten_for_a_while();
+    err = esp_timer_start_periodic(s_connection_timer, CONNECTION_POLL_US);
+    if (err != ESP_OK) ESP_LOGW(TAG, "connection timer: %s", esp_err_to_name(err));
     ESP_LOGI(TAG, "%s: logo shown", k_board.name);
 }
 

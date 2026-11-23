@@ -10,6 +10,152 @@
 // "…" (U+2026), the first extra glyph.
 static const char k_ellipsis[] = "\xE2\x80\xA6";
 
+dm_connection_t dm_connection_update(dm_connection_state_t *state,
+                                     int64_t now_us,
+                                     bool pairing, bool wifi_up,
+                                     bool token_set, bool sip_configured,
+                                     bool sip_registered, bool token_valid)
+{
+    dm_connection_t fault = pairing ? DM_CONNECTION_OK
+        : !wifi_up ? DM_CONNECTION_WIFI
+        : !token_set || !sip_configured ? DM_CONNECTION_OK
+        : !sip_registered ? DM_CONNECTION_SIP
+        : !token_valid ? DM_CONNECTION_TOKEN
+        : DM_CONNECTION_OK;
+    if (fault != state->pending) {
+        state->pending = fault;
+        state->since_us = now_us;
+    }
+    return fault != DM_CONNECTION_OK
+        && now_us - state->since_us >= DM_CONNECTION_GRACE_US
+        ? fault : DM_CONNECTION_OK;
+}
+
+dm_connection_t dm_connection_visible(dm_connection_t connection,
+                                      bool call_shown)
+{
+    return call_shown ? DM_CONNECTION_OK : connection;
+}
+
+// All geometry uses a 1000-unit square, sampled at pixel centres.
+static bool circle(int x, int y, int cx, int cy, int r)
+{
+    int dx = x - cx, dy = y - cy;
+    return dx * dx + dy * dy <= r * r;
+}
+
+static bool segment(int x, int y, int ax, int ay, int bx, int by, int r)
+{
+    int dx = bx - ax, dy = by - ay;
+    int px = x - ax, py = y - ay;
+    int length2 = dx * dx + dy * dy;
+    int dot = px * dx + py * dy;
+    if (dot <= 0) return circle(x, y, ax, ay, r);
+    if (dot >= length2) return circle(x, y, bx, by, r);
+    int cross = px * dy - py * dx;
+    return (int64_t)cross * cross <= (int64_t)r * r * length2;
+}
+
+static bool rect(int x, int y, int x0, int y0, int x1, int y1)
+{
+    return x >= x0 && x <= x1 && y >= y0 && y <= y1;
+}
+
+// Earpiece of the handset: flat top with rounded corners, chamfered
+// towards the handle. The mouthpiece is the same shape mirrored.
+static bool handset_pad(int x, int y)
+{
+    if (x > 400 || y < 130) return false;
+    if (y > 350 && x * 100 + y * 92 > 72200) return false;
+    if (y < 190 && x < 190) return circle(x, y, 190, 190, 60);
+    if (y < 190 && x > 340) return circle(x, y, 340, 190, 60);
+    return true;
+}
+
+// Phone handset in the 1000-unit square: a band of the circle around
+// (870, 130) between radius 585 and 740, plus earpiece and mouthpiece.
+// The mouthpiece is the earpiece mirrored across the diagonal through
+// that centre, which maps (x, y) to (1000 - y, 1000 - x).
+static bool handset(int x, int y)
+{
+    int dx = x - 870, dy = y - 130;
+    if (dx > 0 || dy < 0 || x < 130 || y > 870) return false;
+    int d2 = dx * dx + dy * dy;
+    if (d2 > 740 * 740) return false;
+    return d2 >= 585 * 585 || handset_pad(x, y)
+        || handset_pad(1000 - y, 1000 - x);
+}
+
+// Blocky "SIP" in the top right: letters 100 wide, 260 high, strokes 45.
+static bool sip_letters(int x, int y)
+{
+    // S
+    if (rect(x, y, 520, 60, 620, 105) || rect(x, y, 520, 168, 620, 212)
+        || rect(x, y, 520, 275, 620, 320) || rect(x, y, 520, 60, 565, 190)
+        || rect(x, y, 575, 190, 620, 320)) return true;
+    // I
+    if (rect(x, y, 665, 60, 710, 320)) return true;
+    // P
+    return rect(x, y, 755, 60, 800, 320) || rect(x, y, 755, 60, 855, 105)
+        || rect(x, y, 755, 168, 855, 212) || rect(x, y, 810, 60, 855, 190);
+}
+
+static bool icon_glyph(dm_connection_t kind, int x, int y)
+{
+    if (kind == DM_CONNECTION_WIFI) {
+        if (circle(x, y, 470, 800, 65)) return true;
+        int dx = x - 470, dy = y - 800;
+        if (dy >= 0 || dx > -dy || -dx > -dy) return false;
+        int d2 = dx * dx + dy * dy;
+        const int radii[] = { 210, 390, 570 };
+        for (int i = 0; i < 3; i++) {
+            int r = radii[i];
+            if (d2 >= (r - 38) * (r - 38)
+                && d2 <= (r + 38) * (r + 38)) return true;
+        }
+        return false;
+    }
+    if (kind == DM_CONNECTION_SIP) {
+        // The handset is drawn at 4/5 size in the upper left, which keeps
+        // its mouthpiece clear of the warning triangle; "SIP" goes top right.
+        return handset(x * 5 / 4, y * 5 / 4) || sip_letters(x, y);
+    }
+    if (kind == DM_CONNECTION_TOKEN) {
+        // Horizontal key: bow on the left, two teeth pointing down.
+        return (circle(x, y, 260, 420, 190)
+                && !circle(x, y, 260, 420, 95))
+            || segment(x, y, 450, 420, 900, 420, 48)
+            || segment(x, y, 656, 420, 656, 540, 40)
+            || segment(x, y, 810, 420, 810, 540, 40);
+    }
+    return false;
+}
+
+dm_icon_pixel_t dm_icon_pixel(dm_connection_t kind, int size, int x, int y)
+{
+    if (size <= 0 || x < 0 || y < 0 || x >= size || y >= size
+        || kind < DM_CONNECTION_WIFI || kind > DM_CONNECTION_TOKEN) {
+        return DM_ICON_NONE;
+    }
+    int px = (int)(((int64_t)2 * x + 1) * 500 / size);
+    int py = (int)(((int64_t)2 * y + 1) * 500 / size);
+
+    // The background-coloured border separates the warning from the glyph.
+    int dx = px - 800;
+    if (dx < 0) dx = -dx;
+    if (py >= 600 && py <= 940 && dx * 340 <= (py - 600) * 190) {
+        if (py < 640 || py > 915 || dx * 340 > (py - 640) * 190) {
+            return DM_ICON_OUTLINE;
+        }
+        if ((dx <= 20 && py >= 720 && py <= 810)
+            || (dx <= 20 && py >= 845 && py <= 880)) {
+            return DM_ICON_MARK;
+        }
+        return DM_ICON_TRIANGLE;
+    }
+    return icon_glyph(kind, px, py) ? DM_ICON_GLYPH : DM_ICON_NONE;
+}
+
 uint32_t dm_utf8_next(const char **p)
 {
     const unsigned char *s = (const unsigned char *)*p;
@@ -128,6 +274,10 @@ void dm_layout(int width, int height, dm_layout_t *out)
     memset(out, 0, sizeof(*out));
     out->width  = width;
     out->height = height;
+
+    out->icon_size = (width < height ? width : height) * 3 / 4;
+    out->icon_x = (width - out->icon_size) / 2;
+    out->icon_y = (height - out->icon_size) / 2;
 
     // The logo grows by 3/2 where that fits (240x120 on the T-Display),
     // and stays 1:1 otherwise.
