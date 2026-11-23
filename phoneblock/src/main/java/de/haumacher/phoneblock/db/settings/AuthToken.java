@@ -57,6 +57,9 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/** @see #isAccessAdmin() */
 	private static final String ACCESS_ADMIN__PROP = "accessAdmin";
 
+	/** @see #isAccessPartner() */
+	private static final String ACCESS_PARTNER__PROP = "accessPartner";
+
 	/** @see #getLastAccess() */
 	private static final String LAST_ACCESS__PROP = "lastAccess";
 
@@ -93,6 +96,8 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 	private boolean _accessDiagnostics = false;
 
 	private boolean _accessAdmin = false;
+
+	private boolean _accessPartner = false;
 
 	private long _lastAccess = 0L;
 
@@ -390,6 +395,26 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 	}
 
 	/**
+	 * Whether this token may read the partner report exchange feed (granted by the operator only, no UI).
+	 */
+	public final boolean isAccessPartner() {
+		return _accessPartner;
+	}
+
+	/**
+	 * @see #isAccessPartner()
+	 */
+	public de.haumacher.phoneblock.db.settings.AuthToken setAccessPartner(boolean value) {
+		internalSetAccessPartner(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isAccessPartner()} without chain call utility. */
+	protected final void internalSetAccessPartner(boolean value) {
+		_accessPartner = value;
+	}
+
+	/**
 	 * When this token was used or updated the last time.
 	 */
 	public final long getLastAccess() {
@@ -492,6 +517,8 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 		out.value(isAccessDiagnostics());
 		out.name(ACCESS_ADMIN__PROP);
 		out.value(isAccessAdmin());
+		out.name(ACCESS_PARTNER__PROP);
+		out.value(isAccessPartner());
 		out.name(LAST_ACCESS__PROP);
 		out.value(getLastAccess());
 		out.name(USER_AGENT__PROP);
@@ -517,6 +544,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 			case ACCESS_LOGIN__PROP: setAccessLogin(in.nextBoolean()); break;
 			case ACCESS_DIAGNOSTICS__PROP: setAccessDiagnostics(in.nextBoolean()); break;
 			case ACCESS_ADMIN__PROP: setAccessAdmin(in.nextBoolean()); break;
+			case ACCESS_PARTNER__PROP: setAccessPartner(in.nextBoolean()); break;
 			case LAST_ACCESS__PROP: setLastAccess(in.nextLong()); break;
 			case USER_AGENT__PROP: setUserAgent(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case TOKEN__PROP: setToken(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;

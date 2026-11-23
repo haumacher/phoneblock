@@ -636,6 +636,54 @@ Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data 
 
 ---
 
+## Partner Report Exchange Configuration
+
+**JNDI Prefixes:** `exchange/`, `nize/`
+**System Property Prefixes:** `exchange.`, `nize.`
+**Source:** `PartnerReportsServlet.java`, `NizeImportService.java`
+
+Mutual exchange of spam reports with a partner service (design: `docs/plans/2026-11-23-partner-report-exchange-design.md`). PhoneBlock offers the reports of its own users at `GET /api/partner/reports?from=<ms>&to=<ms>` and imports the partner Nize's feed once a day. Both directions carry only reports made directly by users, never imported data, so no report is echoed back.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `exchange/secret` | String | - | HMAC secret for the anonymized `id` and `senderId` of the exported reports. Without it, `/api/partner/reports` answers HTTP 503. Changing it changes all exported ids. |
+| `nize/enabled` | Boolean | `false` | Enable the daily import of the Nize feed |
+| `nize/url` | String | `https://callerid.cubeapps.io/api/v1/external/comments` | URL of the Nize feed |
+| `nize/token` | String | - | Bearer token for the Nize feed (required when enabled) |
+| `nize/schedule/hour` | Integer | `7` | Hour of day (server time) to run the daily import (0-23) |
+| `nize/schedule/minute` | Integer | `0` | Minute of hour to run the daily import (0-59) |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="exchange/secret" value="a-long-random-secret" type="java.lang.String"/>
+  <Environment name="nize/enabled" value="true" type="java.lang.Boolean"/>
+  <Environment name="nize/token" value="token-received-from-nize" type="java.lang.String"/>
+  <Environment name="nize/schedule/hour" value="7" type="java.lang.Integer"/>
+  <Environment name="nize/schedule/minute" value="0" type="java.lang.Integer"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Dexchange.secret=a-long-random-secret \
+-Dnize.enabled=true \
+-Dnize.token=token-received-from-nize
+```
+
+**Note:**
+- The partner's access to `/api/partner/reports` is an API token with the partner capability. It cannot be created through the settings UI: create an ordinary API token for the partner's account in the settings, then grant the capability by a DB update, e.g. `UPDATE TOKENS SET ACCESS_PARTNER = true WHERE LABEL = '<chosen label>' AND USERID = (SELECT ID FROM USERS WHERE LOGIN = '<partner login>');`.
+- Export source: the blocked personal block-list entries of PhoneBlock users (no wildcards), windowed on their creation time, for numbers with at least 2 votes.
+- Corroboration filter of the export: a user's report is only included if its number has at least 2 community votes (`NUMBERS.VOTES`, all sources including imports; constant `PartnerExport.MIN_VOTES`, not configurable), so that single test blocks (e.g. a user blocking the own number) never leave PhoneBlock — an exported report cannot be withdrawn. The filter is evaluated when the feed is requested; a report whose number has fewer than 2 votes at that time is simply not delivered.
+- The import fetches one full UTC day at a time, starting with the first day not yet imported (property `nize.sync.next_day`, first run: yesterday), at most 10 days back (the partner's history limit). A day whose fetch fails (non-200 status, or an `"error"` field in the response) is logged at WARN and retried with the next run.
+- Only spam reports are counted (score 1-2, or no score and a spam category); trustworthy and unrated reports are skipped and not stored. A counted report is recorded in `EXTERNAL_REPORTS` (deduplicated by the partner's id) and counts as one vote; it creates a `COMMENTS` row with `SERVICE = 'nize'` only when it has a text.
+
+---
+
 ## External Links
 
 **JNDI Prefix:** `link/`
