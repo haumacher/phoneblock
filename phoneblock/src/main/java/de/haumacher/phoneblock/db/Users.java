@@ -160,13 +160,13 @@ public interface Users {
 			insert into TOKENS (
 				USERID, LABEL, CREATED, PWHASH,
 				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN,
-				ACCESS_DIAGNOSTICS, ACCESS_ADMIN,
+				ACCESS_DIAGNOSTICS, ACCESS_ADMIN, ACCESS_PARTNER,
 				LASTACCESS, USERAGENT
 			)
 			values (
 				#{userId}, #{label}, #{created}, #{pwHash},
 				#{implicit}, #{accessQuery}, #{accessDownload}, #{accessCarddav},#{accessRate},#{accessLogin},
-				#{accessDiagnostics}, #{accessAdmin},
+				#{accessDiagnostics}, #{accessAdmin}, #{accessPartner},
 				#{lastAccess}, #{userAgent}
 			)
 			""")
@@ -250,7 +250,7 @@ public interface Users {
 				ID,
 				USERID, LABEL, CREATED, PWHASH,
 				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN,
-				ACCESS_DIAGNOSTICS, ACCESS_ADMIN,
+				ACCESS_DIAGNOSTICS, ACCESS_ADMIN, ACCESS_PARTNER,
 				LASTACCESS, USERAGENT
 			from TOKENS
 			where ID=#{id}
@@ -262,7 +262,7 @@ public interface Users {
 				ID,
 				USERID, LABEL, CREATED, PWHASH,
 				IMPLICIT, ACCESS_QUERY, ACCESS_DOWNLOAD, ACCESS_CARDDAV, ACCESS_RATE, ACCESS_LOGIN,
-				ACCESS_DIAGNOSTICS, ACCESS_ADMIN,
+				ACCESS_DIAGNOSTICS, ACCESS_ADMIN, ACCESS_PARTNER,
 				LASTACCESS, USERAGENT
 			from TOKENS
 			where USERID=#{userId} and not IMPLICIT
