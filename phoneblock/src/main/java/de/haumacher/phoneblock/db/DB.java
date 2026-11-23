@@ -3814,15 +3814,17 @@ public class DB {
 		}
 	}
 
-	/** Distinct active dongles on a platform. */
-	public record DonglePlatformCounts(DonglePlatform platform, int days30, int days60, int days90) {
+	/**
+	 * Distinct dongles on a platform: active in the last 30 days, and last seen 31 to 90 days ago.
+	 */
+	public record DonglePlatformCounts(DonglePlatform platform, int active, int inactive) {
 	}
 
 	record DongleAgent(DonglePlatform platform, String deviceId) {
 	}
 
 	/**
-	 * Counts distinct dongles by platform in the last 30, 60 and 90 days.
+	 * Counts distinct dongles by platform: active in the last 30 days, and last seen 31 to 90 days ago.
 	 */
 	public List<DonglePlatformCounts> getActiveDonglesByPlatform() {
 		return getActiveDonglesByPlatform(System.currentTimeMillis());
@@ -3843,21 +3845,19 @@ public class DB {
 			if (agent.deviceId() != null && !seenDevices.add(agent.deviceId())) {
 				continue;
 			}
-			int[] count = counts.computeIfAbsent(agent.platform(), k -> new int[3]);
+			int[] count = counts.computeIfAbsent(agent.platform(), k -> new int[2]);
 			if (access.lastAccess() >= now - 30 * MILLIS_PER_DAY) {
 				count[0]++;
-			}
-			if (access.lastAccess() >= now - 60 * MILLIS_PER_DAY) {
+			} else {
 				count[1]++;
 			}
-			count[2]++;
 		}
 
 		List<DonglePlatformCounts> result = new ArrayList<>();
 		for (DonglePlatform platform : DonglePlatform.values()) {
 			int[] count = counts.get(platform);
 			if (count != null) {
-				result.add(new DonglePlatformCounts(platform, count[0], count[1], count[2]));
+				result.add(new DonglePlatformCounts(platform, count[0], count[1]));
 			}
 		}
 		return result;

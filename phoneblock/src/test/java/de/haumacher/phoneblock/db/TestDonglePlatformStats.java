@@ -112,14 +112,14 @@ public class TestDonglePlatformStats {
 		addToken("Another-Agent/1.0 (ESP32) (other)", NOW - DAY, false);
 
 		assertEquals(List.of(
-			new DonglePlatformCounts(DonglePlatform.ESP32, 1, 1, 1),
-			new DonglePlatformCounts(DonglePlatform.ESP32_C3, 0, 1, 1),
-			new DonglePlatformCounts(DonglePlatform.ESP32_S3, 0, 0, 1),
-			new DonglePlatformCounts(DonglePlatform.LINUX, 0, 1, 1),
-			new DonglePlatformCounts(DonglePlatform.LINUX_HA, 1, 1, 1),
-			new DonglePlatformCounts(DonglePlatform.LINUX_DOCKER, 1, 1, 1),
-			new DonglePlatformCounts(DonglePlatform.OTHER, 3, 3, 5),
-			new DonglePlatformCounts(DonglePlatform.UNKNOWN, 2, 3, 3)
+			new DonglePlatformCounts(DonglePlatform.ESP32, 1, 0),
+			new DonglePlatformCounts(DonglePlatform.ESP32_C3, 0, 1),
+			new DonglePlatformCounts(DonglePlatform.ESP32_S3, 0, 1),
+			new DonglePlatformCounts(DonglePlatform.LINUX, 0, 1),
+			new DonglePlatformCounts(DonglePlatform.LINUX_HA, 1, 0),
+			new DonglePlatformCounts(DonglePlatform.LINUX_DOCKER, 1, 0),
+			new DonglePlatformCounts(DonglePlatform.OTHER, 3, 2),
+			new DonglePlatformCounts(DonglePlatform.UNKNOWN, 2, 1)
 		), _db.getActiveDonglesByPlatform(NOW));
 	}
 
