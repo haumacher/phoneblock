@@ -27,9 +27,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBPersonalization;
 import de.haumacher.phoneblock.db.DBPhoneComment;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.DBUserComment;
 import de.haumacher.phoneblock.db.DBUserSettings;
-import de.haumacher.phoneblock.db.Ratings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -327,46 +325,13 @@ public class PersonalizationServlet extends HttpServlet {
 
 			BlockList blockList = session.getMapper(BlockList.class);
 
-			// Capture the user's tracked activity before removal so the residual capped evidence
-			// contribution (increment(1, lastActivity)) can be reversed.
-			DBPersonalization existing = phoneId == null ? null : blockList.getPersonalizationActivity(userId, phoneId);
-
 			// Safety: DB content may be inconsistent: Try also deletion of invalid phone numbers.
-			boolean deleted = blockList.removePersonalization(userId, phoneId == null ? phoneText : phoneId);
+			SpamReports spamReports = session.getMapper(SpamReports.class);
+			boolean deleted = db.removePersonalEntry(blockList, spamReports, userId,
+				phoneId == null ? phoneText : phoneId, phoneId, dialPrefix, System.currentTimeMillis());
 			String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
 
 			if (deleted) {
-				// Also delete the user's comment and decrement vote counts
-				SpamReports spamReports = session.getMapper(SpamReports.class);
-				long now = System.currentTimeMillis();
-
-				int voteDelta = 0;
-				DBUserComment userComment = spamReports.getUserComment(userId, phoneId);
-				if (userComment != null) {
-					// Delete the comment
-					spamReports.deleteUserComments(userId, phoneId);
-
-					if (phoneId != null) {
-						// Roll back the legacy VOTES/rating counters for the user's rating.
-						Rating rating = userComment.getRating();
-						voteDelta = -Ratings.getVotes(rating);
-						spamReports.updateRating(phoneId, rating, -1, now);
-						LOG.debug("Decremented rating {} for {} (vote delta: {})", rating, phoneId, voteDelta);
-					}
-				}
-
-				if (phoneId != null && existing != null) {
-					// Reverse the user's residual capped evidence contribution from the matching
-					// axis (and the per-region row), folding the VOTES rollback into the same update.
-					de.haumacher.phoneblock.app.api.model.PhoneNumer number = NumberAnalyzer.parsePhoneId(phoneId);
-					byte[] hash = number != null ? NumberAnalyzer.getPhoneHash(number) : null;
-					db.revertPersonalContribution(spamReports, phoneId, hash, dialPrefix,
-						existing.isBlocked(), existing.getLastActivity(), voteDelta, now);
-				} else if (voteDelta != 0) {
-					// No tracked entry (legacy/inconsistent data) — keep the plain VOTES rollback.
-					spamReports.addVote(phoneId, voteDelta, now, 0.0, 0.0, 0.0);
-				}
-
 				session.commit();
 				LOG.info("Removed {} from {} for user '{}'", phoneId, listType, userName);
 

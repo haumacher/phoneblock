@@ -1164,6 +1164,57 @@ public class DB {
 	}
 
 	/**
+	 * Removes a user's personal block or allow entry for a number and rolls back everything the
+	 * user's rating contributed: the user's comment, the rating tally, the legacy {@code VOTES}
+	 * counter and the residual capped evidence.
+	 *
+	 * <p>Shared by every removal path (settings page, {@code /api/blacklist} and
+	 * {@code /api/whitelist}), so that block, remove, block again by the same user does not add up
+	 * to several votes.</p>
+	 *
+	 * @param key The stored key of the entry; normally the phone ID, for inconsistent legacy data
+	 *        the raw stored value.
+	 * @param phoneId The phone ID of the number, or {@code null} if the key is no valid number (only
+	 *        the entry is removed then).
+	 * @return Whether an entry was removed.
+	 */
+	public boolean removePersonalEntry(BlockList blocklist, SpamReports reports, long userId, String key,
+			String phoneId, String dialPrefix, long now) {
+		// Capture the user's tracked activity before removal so the residual capped evidence
+		// contribution (increment(1, lastActivity)) can be reversed.
+		DBPersonalization existing = phoneId == null ? null : blocklist.getPersonalizationActivity(userId, phoneId);
+
+		if (!blocklist.removePersonalization(userId, key)) {
+			return false;
+		}
+
+		int voteDelta = 0;
+		DBUserComment userComment = phoneId == null ? null : reports.getUserComment(userId, phoneId);
+		if (userComment != null) {
+			reports.deleteUserComments(userId, phoneId);
+
+			// Roll back the legacy VOTES/rating counters for the user's rating.
+			Rating rating = userComment.getRating();
+			voteDelta = -Ratings.getVotes(rating);
+			reports.updateRating(phoneId, rating, -1, now);
+			LOG.debug("Decremented rating {} for {} (vote delta: {})", rating, phoneId, voteDelta);
+		}
+
+		if (phoneId != null && existing != null) {
+			// Reverse the user's residual capped evidence contribution from the matching axis (and
+			// the per-region row), folding the VOTES rollback into the same update.
+			PhoneNumer number = NumberAnalyzer.parsePhoneId(phoneId);
+			byte[] hash = number != null ? NumberAnalyzer.getPhoneHash(number) : null;
+			revertPersonalContribution(reports, phoneId, hash, dialPrefix,
+				existing.isBlocked(), existing.getLastActivity(), voteDelta, now);
+		} else if (voteDelta != 0) {
+			// No tracked entry (legacy/inconsistent data) — keep the plain VOTES rollback.
+			reports.addVote(phoneId, voteDelta, now, 0.0, 0.0, 0.0);
+		}
+		return true;
+	}
+
+	/**
 	 * Reverses a user's capped evidence contribution when their personalization entry is removed or
 	 * flipped to the opposite list.
 	 *

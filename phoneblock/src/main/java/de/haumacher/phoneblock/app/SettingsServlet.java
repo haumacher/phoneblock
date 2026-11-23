@@ -19,7 +19,6 @@ import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBPersonalization;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.SpamReports;
@@ -331,15 +330,7 @@ public class SettingsServlet extends HttpServlet {
 	 */
 	private static void removeWithEvidence(DB db, BlockList blocklist, SpamReports spamReports,
 			long owner, String phone, String dialPrefix) {
-		DBPersonalization existing = blocklist.getPersonalizationActivity(owner, phone);
-		boolean removed = blocklist.removePersonalization(owner, phone);
-		if (removed && existing != null) {
-			long now = System.currentTimeMillis();
-			PhoneNumer number = NumberAnalyzer.parsePhoneId(phone);
-			byte[] hash = number != null ? NumberAnalyzer.getPhoneHash(number) : null;
-			db.revertPersonalContribution(spamReports, phone, hash, dialPrefix,
-				existing.isBlocked(), existing.getLastActivity(), 0, now);
-		}
+		db.removePersonalEntry(blocklist, spamReports, owner, phone, phone, dialPrefix, System.currentTimeMillis());
 	}
 
 	/**

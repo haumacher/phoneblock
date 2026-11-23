@@ -1433,18 +1433,37 @@ public class TestDB {
 		assertEquals(0.0, Ema.decode(rawEmas(id)[2], now, tau), 1e-9, "removal subtracts the residual legit contribution");
 	}
 
-	/** Mirrors the servlet delete path: drop the entry and reverse the user's residual contribution. */
+	@Test
+	void testRemoveAndBlockAgainCountsOneVote() {
+		// Block, remove, block again by the same user must leave exactly one vote: the removal rolls
+		// back the user's vote, rating tally and comment (settings page and API share this path).
+		_db.createUser("re-user", "RE", "de", "+49");
+		long t = Ema.T0_MILLIS;
+		String raw = "030777000333";
+		PhoneNumer number = NumberAnalyzer.analyze(raw, "+49");
+		String id = NumberAnalyzer.getPhoneId(number);
+
+		addRating("re-user", raw, Rating.G_FRAUD, "test", t);
+		assertEquals(1, _db.getVotesFor(id));
+
+		removePersonalization("re-user", id, number, t + 1000);
+		assertEquals(0, _db.getVotesFor(id), "removal rolls back the user's vote");
+		try (SqlSession tx = _db.openSession()) {
+			long userId = tx.getMapper(Users.class).getUserId("re-user").longValue();
+			assertNull(tx.getMapper(SpamReports.class).getUserComment(userId, id), "removal deletes the user's comment");
+		}
+
+		addRating("re-user", raw, Rating.G_FRAUD, null, t + 2000);
+		assertEquals(1, _db.getVotesFor(id), "blocking again counts as one vote, not two");
+	}
+
+	/** Removes the entry through the shared removal path of the settings page and the API. */
 	private void removePersonalization(String userName, String phoneId, PhoneNumer number, long now) {
 		try (SqlSession tx = _db.openSession()) {
 			BlockList bl = tx.getMapper(BlockList.class);
 			SpamReports reports = tx.getMapper(SpamReports.class);
 			long userId = tx.getMapper(Users.class).getUserId(userName).longValue();
-			DBPersonalization entry = bl.getPersonalizationActivity(userId, phoneId);
-			bl.removePersonalization(userId, phoneId);
-			if (entry != null) {
-				_db.revertPersonalContribution(reports, phoneId, NumberAnalyzer.getPhoneHash(number),
-					"+49", entry.isBlocked(), entry.getLastActivity(), 0, now);
-			}
+			assertTrue(_db.removePersonalEntry(bl, reports, userId, phoneId, phoneId, "+49", now));
 			tx.commit();
 		}
 	}
