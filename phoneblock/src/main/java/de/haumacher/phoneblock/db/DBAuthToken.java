@@ -7,7 +7,7 @@ public class DBAuthToken extends AuthToken {
 	public DBAuthToken(long id, long userId, String label, long created,
 			byte[] pwHash, boolean implicit,
 			boolean accessQuery, boolean accessDownload, boolean accessCarddav, boolean accessRate, boolean accessLogin,
-			boolean accessDiagnostics, boolean accessAdmin,
+			boolean accessDiagnostics, boolean accessAdmin, boolean accessPartner,
 			long lastAccess, String userAgent) {
 		setId(id);
 		setUserId(id);
@@ -22,6 +22,7 @@ public class DBAuthToken extends AuthToken {
 		setAccessLogin(accessLogin);
 		setAccessDiagnostics(accessDiagnostics);
 		setAccessAdmin(accessAdmin);
+		setAccessPartner(accessPartner);
 		setLastAccess(lastAccess);
 		setUserAgent(userAgent);
 	}

@@ -224,6 +224,7 @@ public class DB {
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(FtcReports.class);
+		configuration.addMapper(ExternalReports.class);
 		configuration.addMapper(de.haumacher.phoneblock.diag.DiagnosticsMapper.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
@@ -574,6 +575,10 @@ public class DB {
 
 					// migration 44 adds PERSONALIZATION.LAST_ACTIVITY (seeded from CREATED)
 					// for the per-user spam-evidence cap via the script; no Java hook needed.
+
+					// migration 54 adds the partner-exchange ledger EXTERNAL_REPORTS,
+					// PERSONALIZATION_CREATED_IDX for the partner export and the
+					// TOKENS.ACCESS_PARTNER capability via the script; no Java hook needed.
 
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();

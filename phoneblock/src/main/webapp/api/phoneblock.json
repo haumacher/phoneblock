@@ -1136,6 +1136,114 @@
 			},
 			"parameters": []
 		},
+		"/partner/reports": {
+			"get": {
+				"summary": "Partner report exchange feed",
+				"description": "Incremental feed of the spam reports made directly by PhoneBlock users, for the mutual exchange with a partner service. The feed consists of the blocked personal block-list entries of PhoneBlock users (no wildcards), windowed on their creation time. Imported data (meta search, other partner feeds) is never included, so reports supplied by a partner are not echoed back. A report is only delivered if its number has at least 2 community votes (all sources) at the time the feed is requested; otherwise it is not delivered. Legitimate (whitelist) reports are never included. The window is clamped to [today 00:00 UTC - 10 days, today 00:00 UTC]; reports become available the day after they are made. Items are sorted by 'created' in ascending order. Requires an API key with the partner capability, which is granted by the PhoneBlock operator only.",
+				"parameters": [
+					{
+						"name": "from",
+						"in": "query",
+						"description": "Start of the window (inclusive), Unix timestamp in milliseconds (UTC). Defaults to the start of the previous UTC day.",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"format": "int64"
+						}
+					},
+					{
+						"name": "to",
+						"in": "query",
+						"description": "End of the window (exclusive), Unix timestamp in milliseconds (UTC). Defaults to the start of the current UTC day.",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"format": "int64"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The reports in the requested window.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"comments": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string",
+														"description": "Stable anonymized report ID (32 hex characters), use for deduplication."
+													},
+													"phone": {
+														"type": "string",
+														"description": "The phone number in E.164 format."
+													},
+													"senderId": {
+														"type": "string",
+														"description": "Stable anonymized reporter ID (32 hex characters)."
+													},
+													"created": {
+														"type": "integer",
+														"format": "int64",
+														"description": "Report creation time, Unix timestamp in milliseconds (UTC)."
+													},
+													"text": {
+														"type": "string",
+														"description": "The reporter's comment, absent if there is none."
+													},
+													"score": {
+														"type": "integer",
+														"description": "Always 1 (spam)."
+													},
+													"typeId": {
+														"type": "integer",
+														"description": "Report category: 1 unknown, 3 sweepstakes, 5 aggressive advertising, 6 survey, 8 cost trap, 10 ping calls."
+													}
+												},
+												"required": ["id", "phone", "senderId", "created", "score", "typeId"]
+											}
+										}
+									}
+								},
+								"example": {
+									"comments": [
+										{
+											"id": "3f9a0c4e1b2d7a6c5e8f9a0b1c2d3e4f",
+											"phone": "+4930123456789",
+											"senderId": "7c1e2a9b4d3f6e5a8b0c1d2e3f4a5b6c",
+											"created": 1763856000000,
+											"text": "Calls about a prize draw.",
+											"score": 1,
+											"typeId": 3
+										}
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid 'from' or 'to' parameter."
+					},
+					"401": {
+						"description": "No API key or an API key without the partner capability."
+					},
+					"503": {
+						"description": "The partner exchange is not configured on this server."
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": []
+		},
 		"/blacklist": {
 			"get": {
 				"summary": "Retrieves the current user's personalized blacklist.",

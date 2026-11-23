@@ -32,6 +32,7 @@ import de.haumacher.phoneblock.db.DBHealthMonitor;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.diag.DiagnosticsService;
 import de.haumacher.phoneblock.dns.DnsService;
+import de.haumacher.phoneblock.exchange.NizeImportService;
 import de.haumacher.phoneblock.ftc.FtcImportService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
@@ -130,6 +131,7 @@ public class Application implements ServletContextListener {
 			new CallRetentionService(scheduler, db),
 			new BlocklistVersionService(scheduler, db),
 			new FtcImportService(scheduler, db),
+			new NizeImportService(scheduler, db, indexer),
 			new DiagnosticsService(scheduler, db, mail)
 		};
 

@@ -89,6 +89,9 @@ message AuthToken {
 	/** Whether this token holds the elevated admin capability (e.g. promoting a diagnostics rule to LIVE). */
 	boolean accessAdmin;
 
+	/** Whether this token may read the partner report exchange feed (granted by the operator only, no UI). */
+	boolean accessPartner;
+
 	/** When this token was used or updated the last time. */
 	long lastAccess;
 	
