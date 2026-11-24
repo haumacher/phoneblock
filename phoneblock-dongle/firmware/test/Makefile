@@ -402,6 +402,9 @@ test: $(BINS)
 	@# The web UI's status poll pausing in a hidden tab (#573, needs node).
 	@if command -v node >/dev/null; then echo "→ poll_visibility_js_check.js"; node poll_visibility_js_check.js; \
 	 else echo "→ poll_visibility_js_check.js skipped (no node)"; fi
+	@# The Wi-Fi power field is prefilled once, not overwritten by status polls (#794, needs node).
+	@if command -v node >/dev/null; then echo "→ wifi_power_js_check.js"; node wifi_power_js_check.js; \
+	 else echo "→ wifi_power_js_check.js skipped (no node)"; fi
 	@# The call recordings' A-law decode and WAV builder (#663, needs node).
 	@if command -v node >/dev/null; then echo "→ rec_js_check.js"; node rec_js_check.js; \
 	 else echo "→ rec_js_check.js skipped (no node)"; fi

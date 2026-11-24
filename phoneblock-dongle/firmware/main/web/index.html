@@ -1855,6 +1855,7 @@ function renderStatus(){
   // Freshly (re)built DOM — let the next poll prefill the mail form once.
   mailPrefilled = false;
   dialogPrefilled = false;
+  wifiPowerPrefilled = false;
   dlgReset();   // the speaker list and the editor are new elements, unwired
   applyLangStatus();   // restore the translation bubble after the rebuild
   refreshAll();
@@ -1902,6 +1903,7 @@ let tokenLink = false;
 let mailPrefilled = false;
 let namesPrefilled = false;
 let webhookPrefilled = false;
+let wifiPowerPrefilled = false;
 // The host name the device runs under, from the last status poll.
 let hostnameCurrent = '';
 let dialogPrefilled = false;
@@ -2816,9 +2818,13 @@ async function refreshAll(){
     if (powerRow && powerInput && powerSave) {
       const available = Number.isInteger(txPower);
       powerRow.style.display = available ? '' : 'none';
-      if (available && document.activeElement !== powerInput) {
+      // Keep the user's edited value across status polls (#794).
+      // <wifi-power-lib>
+      if (available && !wifiPowerPrefilled) {
         powerInput.value = String(txPower);
+        wifiPowerPrefilled = true;
       }
+      // </wifi-power-lib>
       if (!powerSave.onclick) {
         powerSave.onclick = async () => {
           const msg = $('wifiPowerMsg');
