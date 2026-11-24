@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = configure ]; then
+    if [ -e /etc/systemd/system/phoneblock-watchdog.service ]; then
+        echo "WARNING: /etc/systemd/system/phoneblock-watchdog.service overrides the packaged unit." >&2
+        echo "         Remove it (and /usr/local/bin/phoneblock-watchdog) to use the package:" >&2
+        echo "         sudo rm /etc/systemd/system/phoneblock-watchdog.service && sudo systemctl daemon-reload" >&2
+    fi
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload
+        systemctl enable phoneblock-watchdog.service
+        systemctl restart phoneblock-watchdog.service
+    fi
+fi
+
+exit 0

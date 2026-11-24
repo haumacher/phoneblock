@@ -1,0 +1,71 @@
+name: Watchdog packages
+
+# Tests the watchdog (phoneblock-watchdog/) on every pull request that touches it.
+# On a watchdog-vX.Y.Z tag it builds the Debian packages (static Go binary, one
+# package per architecture for every Debian/Ubuntu release) and attaches them
+# with their SHA-256 sums to the GitHub release. The release is not marked as
+# "latest", so that badge stays with the server releases.
+#
+# Release:  git tag watchdog-v1.0.0 && git push origin watchdog-v1.0.0
+
+on:
+  push:
+    tags:
+      - 'watchdog-v*'
+  pull_request:
+    paths:
+      - 'phoneblock-watchdog/**'
+      - '.github/workflows/watchdog-release.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: phoneblock-watchdog
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: phoneblock-watchdog/go.sum
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build packages
+        id: build
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/watchdog-v* ]]; then
+            version=${GITHUB_REF_NAME#watchdog-v}
+          else
+            version=0.0.0~dev+$(git rev-parse --short HEAD)
+          fi
+          for arch in amd64 arm64 armhf; do
+            debian/build-deb.sh "$version" "$arch" dist
+          done
+          (cd dist && sha256sum *.deb > SHA256SUMS)
+          ls -l dist
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Attach to GitHub release
+        if: startsWith(github.ref, 'refs/tags/watchdog-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: PhoneBlock Watchdog ${{ steps.build.outputs.version }}
+          make_latest: false
+          files: |
+            phoneblock-watchdog/dist/*.deb
+            phoneblock-watchdog/dist/SHA256SUMS
+
+      - name: Keep packages as workflow artifact
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: phoneblock-watchdog-debs
+          path: phoneblock-watchdog/dist/

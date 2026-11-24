@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+# On upgrade the new postinst restarts the service; stop it only on removal.
+if [ "$1" = remove ] && [ -d /run/systemd/system ]; then
+    systemctl stop phoneblock-watchdog.service || true
+    systemctl disable phoneblock-watchdog.service || true
+fi
+
+exit 0

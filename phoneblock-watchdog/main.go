@@ -19,6 +19,9 @@ import (
 	"github.com/nxadm/tail"
 )
 
+// version is set at build time (-ldflags "-X main.version=...", see debian/build-deb.sh).
+var version = "dev"
+
 type IPInfo struct {
 	LastAccess        time.Time
 	Count             int
@@ -579,6 +582,7 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
+	log.Printf("PhoneBlock watchdog %s", version)
 	log.Printf("Starting with minimum access threshold: %d", *minAccesses)
 	if *enableFirewall {
 		log.Printf("Firewall management: ENABLED (initial block: %d minutes, doubles on re-block, max: 30 days)", *initialBlockMinutes)

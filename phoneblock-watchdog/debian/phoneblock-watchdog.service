@@ -1,0 +1,16 @@
+[Unit]
+Description=PhoneBlock Watchdog - blocks IPs that do not solve the access challenge
+Documentation=https://github.com/haumacher/phoneblock/tree/master/phoneblock-watchdog
+After=network.target ufw.service
+
+[Service]
+Type=simple
+# Root is needed to manage the ufw rules (-enable-firewall).
+User=root
+EnvironmentFile=/etc/default/phoneblock-watchdog
+ExecStart=/usr/bin/phoneblock-watchdog -continuous $WATCHDOG_OPTS ${WATCHDOG_LOG}
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
