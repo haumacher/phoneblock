@@ -10,7 +10,7 @@ A Go program that continuously monitors Apache access log files and tracks IP ad
 - Maintains access count and last access timestamp per IP
 - Automatically removes IPs from tracking when they access URLs containing `solution=`
 - Thread-safe IP tracking with concurrent access support
-- Fast startup: processes only the last 5000 lines of existing log file
+- Fast startup: `-limit` restricts the initial pass to the last N lines of the existing log file
 - Automatically handles log file rotation
 - Silent operation with periodic status reporting every minute
 - Optional automatic firewall blocking using ufw
@@ -18,40 +18,56 @@ A Go program that continuously monitors Apache access log files and tracks IP ad
 
 ## Installation
 
-### Build from Source
+### Debian package (recommended for the server)
+
+Every tag `watchdog-vX.Y.Z` builds Debian packages for `amd64`, `arm64` (aarch64) and `armhf`
+(`.github/workflows/watchdog-release.yml`) and attaches them to the GitHub release. The binary is
+static, so the same package runs on every Debian/Ubuntu release.
 
 ```bash
-# Download dependencies
-go mod download
+# release (developer machine)
+git tag watchdog-v1.0.0 && git push origin watchdog-v1.0.0
 
-# Build for current system
-go build -o phoneblock-watchdog
+# install / update (server)
+V=1.0.0; A=$(dpkg --print-architecture)
+curl -fLO https://github.com/haumacher/phoneblock/releases/download/watchdog-v$V/phoneblock-watchdog_${V}_$A.deb
+sudo apt install ./phoneblock-watchdog_${V}_$A.deb
+```
 
-# Or build optimized (smaller binary)
+The package installs `/usr/bin/phoneblock-watchdog`, the systemd unit `phoneblock-watchdog.service`
+(enabled and started on install, restarted on update) and the settings
+`/etc/default/phoneblock-watchdog` (log file and options; kept on update):
+
+```bash
+sudo nano /etc/default/phoneblock-watchdog
+sudo systemctl restart phoneblock-watchdog
+sudo journalctl -u phoneblock-watchdog -f
+```
+
+**Migrating from a hand-installed service:** a unit in `/etc/systemd/system/` overrides the packaged
+one (the package warns about it). Remove it after taking over its options into
+`/etc/default/phoneblock-watchdog`:
+
+```bash
+sudo systemctl stop phoneblock-watchdog
+sudo rm /etc/systemd/system/phoneblock-watchdog.service /usr/local/bin/phoneblock-watchdog
+sudo systemctl daemon-reload
+sudo systemctl restart phoneblock-watchdog
+```
+
+Build a package locally (needs `go` and `dpkg-deb`; output in `dist/`):
+
+```bash
+debian/build-deb.sh 1.0.0 arm64
+```
+
+### Build from source
+
+```bash
 go build -ldflags="-s -w" -o phoneblock-watchdog
-```
 
-### Cross-Compilation for Server
-
-If building on one machine to deploy on another:
-
-```bash
-# For Linux 64-bit server (most common)
-GOOS=linux GOARCH=amd64 go build -o phoneblock-watchdog
-
-# For Linux ARM64 (e.g., Raspberry Pi)
+# Cross-compile, e.g. for a Linux ARM64 server
 GOOS=linux GOARCH=arm64 go build -o phoneblock-watchdog
-
-# For macOS (Intel)
-GOOS=darwin GOARCH=amd64 go build -o phoneblock-watchdog
-
-# For macOS (Apple Silicon)
-GOOS=darwin GOARCH=arm64 go build -o phoneblock-watchdog
-```
-
-After building, transfer the `phoneblock-watchdog` binary to your server and make it executable:
-```bash
-chmod +x phoneblock-watchdog
 ```
 
 ## Usage
@@ -64,6 +80,9 @@ chmod +x phoneblock-watchdog
 
 - `-min-accesses <number>` - Minimum number of challenge accesses to trigger reporting (default: 5)
 - `-enable-firewall` - Enable automatic firewall blocking using ufw (default: false)
+- `-initial-block-minutes <number>` - First block duration; doubles on each re-block, max 30 days (default: 30)
+- `-continuous` - Keep tailing the log file; without it the existing log is processed once and the program exits
+- `-limit <number>` - Lines read from the end of the existing log at startup (default: 0 = whole file)
 
 ### Examples
 
@@ -110,58 +129,9 @@ Shutdown complete
 
 ## Running in Background
 
-### Using nohup (simple)
-```bash
-sudo nohup ./phoneblock-watchdog -enable-firewall /var/log/apache2/access.log > watchdog.log 2>&1 &
-```
-
-To stop:
-```bash
-sudo pkill phoneblock-watchdog
-```
-
-### Using screen (recommended for testing)
-```bash
-sudo screen -S phoneblock
-./phoneblock-watchdog -enable-firewall /var/log/apache2/access.log
-
-# Press Ctrl+A, then D to detach
-# Reattach later with: sudo screen -r phoneblock
-```
-
-### Using systemd (recommended for production)
-
-Create `/etc/systemd/system/phoneblock-watchdog.service`:
-```ini
-[Unit]
-Description=PhoneBlock Watchdog - Apache Log Monitor
-After=network.target ufw.service
-
-[Service]
-Type=simple
-User=root
-ExecStart=/usr/local/bin/phoneblock-watchdog -enable-firewall -min-accesses 5 /var/log/apache2/access.log
-Restart=always
-RestartSec=10
-StandardOutput=append:/var/log/phoneblock-watchdog.log
-StandardError=append:/var/log/phoneblock-watchdog.log
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable phoneblock-watchdog
-sudo systemctl start phoneblock-watchdog
-sudo systemctl status phoneblock-watchdog
-```
-
-View logs:
-```bash
-sudo journalctl -u phoneblock-watchdog -f
-```
+Use the Debian package (see *Installation*), which runs the watchdog as a systemd service. Note that
+the watchdog only keeps monitoring with `-continuous`; without it, it processes the existing log once
+and exits.
 
 ## How It Works
 
@@ -202,7 +172,7 @@ Processed 5000 existing log lines (last 5000 of 15234 total)
 ```
 
 **Notes**:
-- Only the last 5000 lines of the existing log file are processed on startup for faster initialization
+- With `-limit 5000`, only the last 5000 lines of the existing log file are processed on startup
 - Firewall blocking messages only appear when `-enable-firewall` is used
 
 ### Periodic Status (every minute)

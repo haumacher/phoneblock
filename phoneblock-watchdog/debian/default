@@ -1,0 +1,12 @@
+# Settings of the phoneblock-watchdog service (installed as /etc/default/phoneblock-watchdog).
+# Apply changes with: sudo systemctl restart phoneblock-watchdog
+
+# The Apache access log to monitor.
+WATCHDOG_LOG=/var/log/apache2/access.log
+
+# Options, see: phoneblock-watchdog -h
+#   -min-accesses N            challenge accesses without solution before an IP is reported/blocked
+#   -enable-firewall           block such IPs with ufw
+#   -initial-block-minutes N   first block duration, doubles on each re-block (max 30 days)
+#   -limit N                   lines read from the end of the existing log at startup (0 = all)
+WATCHDOG_OPTS="-enable-firewall -min-accesses 5"

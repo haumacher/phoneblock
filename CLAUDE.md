@@ -113,6 +113,13 @@ java -jar phoneblock-accounting/target/phoneblock-accounting-*-jar-with-dependen
 ```
 Imports contribution data from CSV bank exports for accounting purposes.
 
+### Watchdog (phoneblock-watchdog/)
+
+Go program that blocks IPs not solving the access challenge (Apache log → ufw). Released as Debian
+packages (amd64/arm64/armhf) by `.github/workflows/watchdog-release.yml` on a tag
+`watchdog-vX.Y.Z`; installation and settings (`/etc/default/phoneblock-watchdog`) in
+`phoneblock-watchdog/README.md`. Local package: `phoneblock-watchdog/debian/build-deb.sh <version> <arch>`.
+
 ### Flutter Applications
 
 **Answer Bot UI:**
