@@ -65,80 +65,80 @@ func TestExtractRequestMethodAndURI(t *testing.T) {
 
 func TestProcessLogLine(t *testing.T) {
 	tests := []struct {
-		name                string
-		logLine             string
-		expectChallenge     bool
-		expectSolution      bool
-		shouldProcessLine   bool
+		name              string
+		logLine           string
+		expectChallenge   bool
+		expectSolution    bool
+		shouldProcessLine bool
 	}{
 		{
-			name:                "GET request with challenge in URI",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
-			expectChallenge:     true,
-			expectSolution:      false,
-			shouldProcessLine:   true,
+			name:              "GET request with challenge in URI",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page?challenge=abc HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			expectChallenge:   true,
+			expectSolution:    false,
+			shouldProcessLine: true,
 		},
 		{
-			name:                "GET request with solution in URI",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /submit?solution=xyz HTTP/1.1" 200 567 "-" "Mozilla/5.0"`,
-			expectChallenge:     false,
-			expectSolution:      true,
-			shouldProcessLine:   true,
+			name:              "GET request with solution in URI",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /submit?solution=xyz HTTP/1.1" 200 567 "-" "Mozilla/5.0"`,
+			expectChallenge:   false,
+			expectSolution:    true,
+			shouldProcessLine: true,
 		},
 		{
-			name:                "POST request with solution (should NOT be processed)",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "POST /submit?solution=xyz HTTP/1.1" 200 567 "-" "Mozilla/5.0"`,
-			expectChallenge:     false,
-			expectSolution:      false,
-			shouldProcessLine:   false,
+			name:              "POST request with solution (should NOT be processed)",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "POST /submit?solution=xyz HTTP/1.1" 200 567 "-" "Mozilla/5.0"`,
+			expectChallenge:   false,
+			expectSolution:    false,
+			shouldProcessLine: false,
 		},
 		{
-			name:                "POST request with challenge (should NOT be processed)",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "POST /page?challenge=abc HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
-			expectChallenge:     false,
-			expectSolution:      false,
-			shouldProcessLine:   false,
+			name:              "POST request with challenge (should NOT be processed)",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "POST /page?challenge=abc HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			expectChallenge:   false,
+			expectSolution:    false,
+			shouldProcessLine: false,
 		},
 		{
-			name:                "Challenge only in referer (should NOT be detected)",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page HTTP/1.1" 200 1234 "http://example.com?challenge=abc" "Mozilla/5.0"`,
-			expectChallenge:     false,
-			expectSolution:      false,
-			shouldProcessLine:   false,
+			name:              "Challenge only in referer (should NOT be detected)",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page HTTP/1.1" 200 1234 "http://example.com?challenge=abc" "Mozilla/5.0"`,
+			expectChallenge:   false,
+			expectSolution:    false,
+			shouldProcessLine: false,
 		},
 		{
-			name:                "Solution only in referer (should NOT be detected)",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page HTTP/1.1" 200 1234 "http://example.com?solution=xyz" "Mozilla/5.0"`,
-			expectChallenge:     false,
-			expectSolution:      false,
-			shouldProcessLine:   false,
+			name:              "Solution only in referer (should NOT be detected)",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page HTTP/1.1" 200 1234 "http://example.com?solution=xyz" "Mozilla/5.0"`,
+			expectChallenge:   false,
+			expectSolution:    false,
+			shouldProcessLine: false,
 		},
 		{
-			name:                "API request with challenge parameter (should NOT be processed)",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /phoneblock/api/test?challenge=abc HTTP/1.1" 200 1234 "-" "ESP32 HTTP Client/1.0"`,
-			expectChallenge:     false,
-			expectSolution:      false,
-			shouldProcessLine:   false,
+			name:              "API request with challenge parameter (should NOT be processed)",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /phoneblock/api/test?challenge=abc HTTP/1.1" 200 1234 "-" "ESP32 HTTP Client/1.0"`,
+			expectChallenge:   false,
+			expectSolution:    false,
+			shouldProcessLine: false,
 		},
 		{
-			name:                "Challenge value containing /api/ only in query (should be processed)",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /phoneblock/nums/123?challenge=x/api/y HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
-			expectChallenge:     true,
-			expectSolution:      false,
-			shouldProcessLine:   true,
+			name:              "Challenge value containing /api/ only in query (should be processed)",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /phoneblock/nums/123?challenge=x/api/y HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			expectChallenge:   true,
+			expectSolution:    false,
+			shouldProcessLine: true,
 		},
 		{
-			name:                "No challenge or solution",
-			logLine:             `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
-			expectChallenge:     false,
-			expectSolution:      false,
-			shouldProcessLine:   false,
+			name:              "No challenge or solution",
+			logLine:           `192.168.1.100 - - [03/Nov/2025:10:15:30 +0000] "GET /page HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`,
+			expectChallenge:   false,
+			expectSolution:    false,
+			shouldProcessLine: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tracker := NewIPTracker(false)
+			tracker := NewIPTracker(false, time.Hour)
 
 			// Add a dummy challenge entry for solution test
 			if tt.expectSolution {
@@ -427,7 +427,7 @@ func TestBlockingLogicWithLogLines(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create tracker with firewall disabled for testing
-			tracker := NewIPTracker(false)
+			tracker := NewIPTracker(false, time.Hour)
 
 			// Process all log lines
 			for _, logLine := range tt.logLines {
@@ -456,14 +456,114 @@ func TestBlockingLogicWithLogLines(t *testing.T) {
 				t.Errorf("Expected count %d, got %d", tt.expectedCount, ipInfo.Count)
 			}
 
-			// Simulate blocking logic from ManageFirewallRules
-			// Condition: !info.Blocked && info.Count > threshold && info.Count > info.LastBlockCheck
-			shouldBlock := !ipInfo.Blocked && ipInfo.Count > tt.threshold && ipInfo.Count > ipInfo.LastBlockCheck
+			// Simulate blocking logic from ManageFirewallRules, evaluated right after the last access
+			recent := tracker.recentCount(&ipInfo, ipInfo.LastAccess)
+			shouldBlock := !ipInfo.Blocked && recent > tt.threshold && ipInfo.Count > ipInfo.LastBlockCheck
 
 			if shouldBlock != tt.expectedBlocked {
 				t.Errorf("Expected blocked=%v, but blocking logic would block=%v (count=%d, threshold=%d, lastBlockCheck=%d)",
 					tt.expectedBlocked, shouldBlock, ipInfo.Count, tt.threshold, ipInfo.LastBlockCheck)
 			}
 		})
+	}
+}
+
+func challengeLine(ip string, ts time.Time) string {
+	return ip + ` - - [` + ts.UTC().Format("02/Jan/2006:15:04:05 -0700") + `] "GET /phoneblock/nums/123?challenge=x HTTP/1.1" 200 1234 "-" "Mozilla/5.0"`
+}
+
+// shouldBlock evaluates the blocking condition of ManageFirewallRules at the tracker's clock.
+func shouldBlock(tracker *IPTracker, ip string, threshold int) bool {
+	info, ok := tracker.challengeIPs[ip]
+	if !ok {
+		return false
+	}
+	return !info.Blocked && tracker.recentCount(info, tracker.now()) > threshold && info.Count > info.LastBlockCheck
+}
+
+func TestAccidentalAccessesSpreadOverDaysDoNotBlock(t *testing.T) {
+	tracker := NewIPTracker(false, time.Hour)
+	start := time.Date(2026, time.November, 1, 8, 0, 0, 0, time.UTC)
+	var last time.Time
+	// 30 unsolved challenges, one every 3 hours: far more than the threshold in total.
+	for i := 0; i < 30; i++ {
+		last = start.Add(time.Duration(i) * 3 * time.Hour)
+		processLogLine(challengeLine("203.0.113.7", last), tracker)
+	}
+	tracker.now = func() time.Time { return last }
+
+	info := tracker.challengeIPs["203.0.113.7"]
+	if info.Count != 30 {
+		t.Fatalf("expected total count 30, got %d", info.Count)
+	}
+	if n := tracker.recentCount(info, last); n != 1 {
+		t.Errorf("expected 1 access in window, got %d", n)
+	}
+	if shouldBlock(tracker, "203.0.113.7", 10) {
+		t.Errorf("accesses spread over days must not block")
+	}
+}
+
+func TestBurstWithinWindowBlocks(t *testing.T) {
+	tracker := NewIPTracker(false, time.Hour)
+	start := time.Date(2026, time.November, 1, 8, 0, 0, 0, time.UTC)
+	var last time.Time
+	// 11 unsolved challenges within 55 minutes.
+	for i := 0; i < 11; i++ {
+		last = start.Add(time.Duration(i) * 330 * time.Second)
+		processLogLine(challengeLine("203.0.113.8", last), tracker)
+	}
+	tracker.now = func() time.Time { return last }
+	if !shouldBlock(tracker, "203.0.113.8", 10) {
+		t.Errorf("11 accesses within the window must block at threshold 10")
+	}
+
+	// Evaluated much later, the same accesses no longer count.
+	tracker.now = func() time.Time { return last.Add(2 * time.Hour) }
+	if shouldBlock(tracker, "203.0.113.8", 10) {
+		t.Errorf("accesses outside the window must not block")
+	}
+}
+
+func TestPruneForgetsQuietIPs(t *testing.T) {
+	tracker := NewIPTracker(false, time.Hour)
+	start := time.Date(2026, time.November, 1, 8, 0, 0, 0, time.UTC)
+	processLogLine(challengeLine("203.0.113.1", start), tracker)                     // quiet, never blocked
+	processLogLine(challengeLine("203.0.113.2", start.Add(50*time.Minute)), tracker) // still in window
+	processLogLine(challengeLine("203.0.113.3", start), tracker)                     // was blocked before
+	tracker.challengeIPs["203.0.113.3"].BlockDuration = 30 * time.Minute
+	processLogLine(challengeLine("203.0.113.4", start), tracker) // currently blocked
+	tracker.challengeIPs["203.0.113.4"].Blocked = true
+
+	tracker.now = func() time.Time { return start.Add(90 * time.Minute) }
+	if removed := tracker.Prune(); removed != 1 {
+		t.Errorf("expected 1 removed IP, got %d", removed)
+	}
+	for ip, want := range map[string]bool{"203.0.113.1": false, "203.0.113.2": true, "203.0.113.3": true, "203.0.113.4": true} {
+		if _, ok := tracker.challengeIPs[ip]; ok != want {
+			t.Errorf("%s tracked=%v, want %v", ip, ok, want)
+		}
+	}
+
+	// A former offender is forgotten after the maximum block duration.
+	tracker.now = func() time.Time { return start.Add(maxBlockDuration + time.Hour) }
+	tracker.Prune()
+	if _, ok := tracker.challengeIPs["203.0.113.3"]; ok {
+		t.Errorf("former offender must be forgotten after the maximum block duration")
+	}
+}
+
+func TestRecentIsBounded(t *testing.T) {
+	tracker := NewIPTracker(false, time.Hour)
+	start := time.Date(2026, time.November, 1, 8, 0, 0, 0, time.UTC)
+	for i := 0; i < 3*maxRecent; i++ {
+		tracker.AddChallengeAccess("203.0.113.9", start.Add(time.Duration(i)*time.Millisecond))
+	}
+	info := tracker.challengeIPs["203.0.113.9"]
+	if len(info.Recent) != maxRecent {
+		t.Errorf("expected %d remembered accesses, got %d", maxRecent, len(info.Recent))
+	}
+	if info.Count != 3*maxRecent {
+		t.Errorf("expected total count %d, got %d", 3*maxRecent, info.Count)
 	}
 }
