@@ -30,6 +30,7 @@ git tag watchdog-v1.0.0 && git push origin watchdog-v1.0.0
 
 # install / update (server)
 V=1.0.0; A=$(dpkg --print-architecture)
+cd /tmp   # readable for apt's _apt user (not /root), avoids the "unsandboxed" notice
 curl -fLO https://github.com/haumacher/phoneblock/releases/download/watchdog-v$V/phoneblock-watchdog_${V}_$A.deb
 sudo apt install ./phoneblock-watchdog_${V}_$A.deb
 ```
