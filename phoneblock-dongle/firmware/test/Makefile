@@ -411,6 +411,9 @@ test: $(BINS)
 	@# The sign-in screen only for the dongle's own 401, not ingress's (#703, needs node).
 	@if command -v node >/dev/null; then echo "→ login_gate_js_check.js"; node login_gate_js_check.js; \
 	 else echo "→ login_gate_js_check.js skipped (no node)"; fi
+	@# Password fields must not receive saved browser passwords (#792, needs node).
+	@if command -v node >/dev/null; then echo "→ password_autofill_js_check.js"; node password_autofill_js_check.js; \
+	 else echo "→ password_autofill_js_check.js skipped (no node)"; fi
 	@# Only comments are stripped from the embedded web UI (#676, needs node).
 	@if command -v node >/dev/null; then echo "→ strip_web_comments_js_check.js"; node strip_web_comments_js_check.js; \
 	 else echo "→ strip_web_comments_js_check.js skipped (no node)"; fi
