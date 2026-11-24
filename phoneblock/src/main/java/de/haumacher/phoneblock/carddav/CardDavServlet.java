@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,16 +216,16 @@ public class CardDavServlet extends HttpServlet {
 
 		RenderContext ctx = renderContextOf(req);
 		beginMultiStatus(resp, etag);
-		XMLStreamWriter writer = MultiStatusWriter.open(resp.getOutputStream());
+		MultiStatusWriter out = MultiStatusWriter.open(resp.getOutputStream());
 		try {
-			resource.propfind(ctx, null, writer, properties);
+			resource.propfind(ctx, null, out, properties);
 			if (depth != Depth.EMPTY) {
 				for (Resource content : resource.list()) {
-					content.propfind(ctx, resource, writer, properties);
+					content.propfind(ctx, resource, out, properties);
 				}
 			}
 		} finally {
-			MultiStatusWriter.close(writer);
+			out.close();
 		}
 	}
 
@@ -294,11 +293,11 @@ public class CardDavServlet extends HttpServlet {
 
 		RenderContext ctx = renderContextOf(req);
 		beginMultiStatus(resp, collectionEtag);
-		XMLStreamWriter writer = MultiStatusWriter.open(resp.getOutputStream());
+		MultiStatusWriter out = MultiStatusWriter.open(resp.getOutputStream());
 		try {
-			addressBook.renderMultiGet(ctx, writer, report.hrefs(), report.properties());
+			addressBook.renderMultiGet(ctx, out, report.hrefs(), report.properties());
 		} finally {
-			MultiStatusWriter.close(writer);
+			out.close();
 		}
 	}
 

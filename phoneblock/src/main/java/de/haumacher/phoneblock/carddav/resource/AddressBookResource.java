@@ -3,9 +3,11 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
@@ -50,6 +52,18 @@ public class AddressBookResource extends AbstractAddressBook {
 	 */
 	public AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal,
 			List<NumberBlock> numbers, String etag) {
+		this(rootUrl, serverRoot, resourcePath, principal, numbers, etag, block -> null);
+	}
+
+	/**
+	 * Creates a {@link AddressBookResource} whose blocks may use shared pre-rendered fragments.
+	 *
+	 * @param fragments
+	 *        Lookup of the shared {@link BlockFragments} for a block, returning {@code null}
+	 *        for blocks that are rendered per request.
+	 */
+	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal,
+			List<NumberBlock> numbers, String etag, Function<NumberBlock, BlockFragments> fragments) {
 		super(rootUrl, resourcePath);
 		_serverRoot = serverRoot;
 		_principal = principal;
@@ -57,12 +71,12 @@ public class AddressBookResource extends AbstractAddressBook {
 
 		_addressById = numbers
 			.stream()
-			.map(r -> newAddressResource(r, r.getName()))
+			.map(r -> newAddressResource(r, r.getName(), fragments.apply(r)))
 			.collect(Collectors.toMap(AddressResource::getId, r -> r));
 	}
 
-	private AddressResource newAddressResource(NumberBlock block, String id) {
-		return new AddressResource(block, getRootUrl(), getResourcePath() + id, _principal);
+	private AddressResource newAddressResource(NumberBlock block, String id, BlockFragments fragments) {
+		return new AddressResource(block, getRootUrl(), getResourcePath() + id, _principal, fragments);
 	}
 
 	@Override
@@ -107,7 +121,7 @@ public class AddressBookResource extends AbstractAddressBook {
 		AddressResource result = _addressById.get(id);
 		if (result == null) {
 			// Maybe this is a put operation, create an empty entry.
-			return newAddressResource(new NumberBlock(id, java.util.List.of(id)), id);
+			return newAddressResource(new NumberBlock(id, java.util.List.of(id)), id, null);
 		}
 		return result;
 	}
@@ -122,8 +136,9 @@ public class AddressBookResource extends AbstractAddressBook {
 	 * request: one {@code <d:response>} per addressed href, with the requested
 	 * properties of the resolved child resource (or 404 if it does not exist).
 	 */
-	public void renderMultiGet(RenderContext ctx, XMLStreamWriter writer,
-			List<String> hrefs, List<QName> properties) throws XMLStreamException {
+	public void renderMultiGet(RenderContext ctx, MultiStatusWriter out,
+			List<String> hrefs, List<QName> properties) throws XMLStreamException, IOException {
+		XMLStreamWriter writer = out.xml();
 		for (String url : hrefs) {
 			writer.writeStartElement(DavSchema.DAV_NS, "response");
 			writer.writeStartElement(DavSchema.DAV_NS, "href");
@@ -131,30 +146,13 @@ public class AddressBookResource extends AbstractAddressBook {
 			writer.writeEndElement();
 
 			Resource content = get(url);
-			writer.writeStartElement(DavSchema.DAV_NS, "propstat");
 			if (content != null) {
-				writer.writeStartElement(DavSchema.DAV_NS, "prop");
-
-				String etag = content.getEtag();
-				if (etag != null) {
-					writer.writeStartElement(DavSchema.DAV_NS, "getetag");
-					writer.writeCharacters(quote(etag));
-					writer.writeEndElement();
-				}
-
-				for (QName qname : properties) {
-					if (DavSchema.DAV_GETETAG.equals(qname)) {
-						// Unconditionally added above.
-						continue;
-					}
-					content.fillProperty(ctx, writer, qname);
-				}
-				writer.writeEndElement();
-				writeStatus(writer, HttpServletResponse.SC_OK, "OK");
+				content.writeMultiGetPropstat(ctx, out, properties);
 			} else {
+				writer.writeStartElement(DavSchema.DAV_NS, "propstat");
 				writeStatus(writer, HttpServletResponse.SC_NOT_FOUND, "Not Found");
+				writer.writeEndElement();
 			}
-			writer.writeEndElement();
 			writer.writeEndElement();
 		}
 	}

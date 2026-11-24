@@ -116,18 +116,38 @@ public abstract class Resource {
 	 *        The parent resource in which context a property of this resource
 	 *        was requested. {@code null}, if this is the top-level requested
 	 *        resource.
-	 * @param writer
-	 *        The {@link XMLStreamWriter} positioned inside the open
+	 * @param out
+	 *        The multistatus output positioned inside the open
 	 *        {@code <d:multistatus>} element.
 	 * @param properties
 	 *        The qualified names of the properties to retrieve.
 	 */
-	public void propfind(RenderContext ctx, Resource parent, XMLStreamWriter writer,
-			List<QName> properties) throws XMLStreamException {
+	public void propfind(RenderContext ctx, Resource parent, MultiStatusWriter out,
+			List<QName> properties) throws XMLStreamException, IOException {
+		XMLStreamWriter writer = out.xml();
 		writer.writeStartElement(DavSchema.DAV_NS, "response");
 		writer.writeStartElement(DavSchema.DAV_NS, "href");
 		writer.writeCharacters(url(parent));
 		writer.writeEndElement();
+		writePropstats(ctx, out, properties);
+		writer.writeEndElement();
+	}
+
+	/**
+	 * Writes the {@code <d:propstat>} elements of a PROPFIND response, one per
+	 * requested property.
+	 */
+	protected void writePropstats(RenderContext ctx, MultiStatusWriter out, List<QName> properties)
+			throws XMLStreamException, IOException {
+		writePropstats(ctx, out.xml(), properties);
+	}
+
+	/**
+	 * Renders the {@code <d:propstat>} elements of a PROPFIND response directly to
+	 * the given writer.
+	 */
+	protected final void writePropstats(RenderContext ctx, XMLStreamWriter writer, List<QName> properties)
+			throws XMLStreamException {
 		for (QName property : properties) {
 			writer.writeStartElement(DavSchema.DAV_NS, "propstat");
 			writer.writeStartElement(DavSchema.DAV_NS, "prop");
@@ -139,6 +159,44 @@ public abstract class Resource {
 			writer.writeEndElement();
 			writer.writeEndElement();
 		}
+	}
+
+	/**
+	 * Writes the single {@code <d:propstat>} element of an
+	 * {@code addressbook-multiget} response: the ETag followed by the requested
+	 * properties, with status 200.
+	 */
+	protected void writeMultiGetPropstat(RenderContext ctx, MultiStatusWriter out, List<QName> properties)
+			throws XMLStreamException, IOException {
+		writeMultiGetPropstat(ctx, out.xml(), properties);
+	}
+
+	/**
+	 * Renders the multiget {@code <d:propstat>} element directly to the given writer.
+	 */
+	protected final void writeMultiGetPropstat(RenderContext ctx, XMLStreamWriter writer, List<QName> properties)
+			throws XMLStreamException {
+		writer.writeStartElement(DavSchema.DAV_NS, "propstat");
+		writer.writeStartElement(DavSchema.DAV_NS, "prop");
+
+		String etag = getEtag();
+		if (etag != null) {
+			writer.writeStartElement(DavSchema.DAV_NS, "getetag");
+			writer.writeCharacters(quote(etag));
+			writer.writeEndElement();
+		}
+
+		for (QName qname : properties) {
+			if (DavSchema.DAV_GETETAG.equals(qname)) {
+				// Unconditionally added above.
+				continue;
+			}
+			fillProperty(ctx, writer, qname);
+		}
+		writer.writeEndElement();
+		writer.writeStartElement(DavSchema.DAV_NS, "status");
+		writer.writeCharacters("HTTP/1.1 200 OK");
+		writer.writeEndElement();
 		writer.writeEndElement();
 	}
 

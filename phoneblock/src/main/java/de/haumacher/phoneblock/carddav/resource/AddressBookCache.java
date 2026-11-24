@@ -6,10 +6,13 @@ package de.haumacher.phoneblock.carddav.resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
@@ -105,7 +108,7 @@ public class AddressBookCache implements ServletContextListener {
 		LOG.info("Address book computed for: " + principal
 			+ " (" + result.path + ", " + result.blocks.size() + " blocks)");
 		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal,
-				result.blocks, result.etag);
+				result.blocks, result.etag, result.fragments);
 		return _userCache.put(principal, addressBook);
 	}
 
@@ -152,7 +155,7 @@ public class AddressBookCache implements ServletContextListener {
 				int settingsHash = listType.hashCode();
 				String etag = CollectionEtag.compose(common.blocksHash(),
 					CollectionEtag.hashPersonalSingletons(List.of()), settingsHash);
-				return new LoadResult(common.blocks(), settingsHash, etag, "common-only");
+				return new LoadResult(common.blocks(), settingsHash, etag, "common-only", common::fragments);
 			}
 
 			CommonList common = getCommonList(reports, listType, now);
@@ -164,7 +167,7 @@ public class AddressBookCache implements ServletContextListener {
 				// per-user pipeline.
 				List<NumberBlock> blocks = loadNumbersFull(reports, personalizations, exclusions, wildcards, listType, now);
 				String etag = CollectionEtag.forFullPipeline(blocks, settingsHash);
-				return new LoadResult(blocks, settingsHash, etag, "full pipeline");
+				return new LoadResult(blocks, settingsHash, etag, "full pipeline", block -> null);
 			}
 
 			// Common buckets + personal singletons (deduplicated against common).
@@ -188,7 +191,7 @@ public class AddressBookCache implements ServletContextListener {
 			}
 			String etag = CollectionEtag.compose(common.blocksHash(),
 				CollectionEtag.hashPersonalSingletons(personalSingletons), settingsHash);
-			return new LoadResult(blocks, settingsHash, etag, "common+personal");
+			return new LoadResult(blocks, settingsHash, etag, "common+personal", common::fragments);
 		}
 	}
 
@@ -197,12 +200,15 @@ public class AddressBookCache implements ServletContextListener {
 		final int settingsHash;
 		final String etag;
 		final String path;
+		final Function<NumberBlock, BlockFragments> fragments;
 
-		LoadResult(List<NumberBlock> blocks, int settingsHash, String etag, String path) {
+		LoadResult(List<NumberBlock> blocks, int settingsHash, String etag, String path,
+				Function<NumberBlock, BlockFragments> fragments) {
 			this.blocks = blocks;
 			this.settingsHash = settingsHash;
 			this.etag = etag;
 			this.path = path;
+			this.fragments = fragments;
 		}
 	}
 
@@ -340,9 +346,15 @@ public class AddressBookCache implements ServletContextListener {
 		private final Set<String> _concrete;
 		private final List<String> _wildcardPrefixes;
 		private final String _blocksHash;
+		private final Map<NumberBlock, BlockFragments> _fragments;
 
 		CommonList(List<NumberBlock> blocks) {
 			_blocks = blocks;
+			Map<NumberBlock, BlockFragments> fragments = new IdentityHashMap<>();
+			for (NumberBlock b : blocks) {
+				fragments.put(b, new BlockFragments());
+			}
+			_fragments = fragments;
 			Set<String> concrete = new HashSet<>();
 			List<String> wildcards = new ArrayList<>();
 			for (NumberBlock b : blocks) {
@@ -362,6 +374,15 @@ public class AddressBookCache implements ServletContextListener {
 
 		List<NumberBlock> blocks() {
 			return _blocks;
+		}
+
+		/**
+		 * The shared pre-rendered response fragments of the given block, or
+		 * {@code null}, if the block is not part of this list (e.g. a personal
+		 * singleton added for a single user).
+		 */
+		BlockFragments fragments(NumberBlock block) {
+			return _fragments.get(block);
 		}
 
 		/**

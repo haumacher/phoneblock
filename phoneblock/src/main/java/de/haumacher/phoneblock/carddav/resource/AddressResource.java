@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.carddav.resource;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -41,15 +42,33 @@ public class AddressResource extends Resource {
 	private NumberBlock _block;
 
 	/**
+	 * Pre-rendered response fragments shared with all users of the same common
+	 * list, or {@code null}, if this block is personal and rendered per request.
+	 */
+	private final BlockFragments _fragments;
+
+	/**
 	 * Creates a {@link AddressResource}.
 	 *
 	 * @param block The block of numbers represented by this resource.
 	 * @param principal The user name of the address books owner.
 	 */
 	public AddressResource(NumberBlock block, String rootUrl, String resourcePath, String principal) {
+		this(block, rootUrl, resourcePath, principal, null);
+	}
+
+	/**
+	 * Creates a {@link AddressResource}.
+	 *
+	 * @param block The block of numbers represented by this resource.
+	 * @param principal The user name of the address books owner.
+	 * @param fragments Shared pre-rendered fragments of the block, or {@code null}.
+	 */
+	AddressResource(NumberBlock block, String rootUrl, String resourcePath, String principal, BlockFragments fragments) {
 		super(rootUrl, resourcePath);
 		_block = block;
 		_principal = principal;
+		_fragments = fragments;
 	}
 
 	public String getId() {
@@ -74,6 +93,38 @@ public class AddressResource extends Resource {
 		resp.setHeader("ETag", quote(getEtag()));
 
 		resp.getWriter().append(_block.vCardContent());
+	}
+
+	@Override
+	protected void writePropstats(RenderContext ctx, MultiStatusWriter out, List<QName> properties)
+			throws XMLStreamException, IOException {
+		if (_fragments == null || !BlockFragments.isShareable(properties)) {
+			super.writePropstats(ctx, out, properties);
+			return;
+		}
+
+		byte[] fragment = _fragments.getPropfind(properties);
+		if (fragment == null) {
+			fragment = MultiStatusWriter.renderFragment(writer -> writePropstats(ctx, writer, properties));
+			_fragments.putPropfind(properties, fragment);
+		}
+		out.writeRaw(fragment);
+	}
+
+	@Override
+	protected void writeMultiGetPropstat(RenderContext ctx, MultiStatusWriter out, List<QName> properties)
+			throws XMLStreamException, IOException {
+		if (_fragments == null || !BlockFragments.isShareable(properties)) {
+			super.writeMultiGetPropstat(ctx, out, properties);
+			return;
+		}
+
+		byte[] fragment = _fragments.getMultiGet(properties);
+		if (fragment == null) {
+			fragment = MultiStatusWriter.renderFragment(writer -> writeMultiGetPropstat(ctx, writer, properties));
+			_fragments.putMultiGet(properties, fragment);
+		}
+		out.writeRaw(fragment);
 	}
 
 	@Override
