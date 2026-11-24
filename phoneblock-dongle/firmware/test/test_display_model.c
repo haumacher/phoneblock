@@ -450,6 +450,163 @@ static void test_layout(void)
     }
 }
 
+static void test_connection(void)
+{
+    dm_connection_state_t s = {0};
+    int64_t grace = DM_CONNECTION_GRACE_US;
+    printf("connection indicator:\n");
+    CHECK(dm_connection_update(&s, 0, false, false, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "Wi-Fi loss starts grace period");
+    CHECK(dm_connection_update(&s, grace - 1, false, false, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "short Wi-Fi loss keeps logo");
+    CHECK(dm_connection_update(&s, grace, false, false, true, true, false, true)
+          == DM_CONNECTION_WIFI,
+          "Wi-Fi loss wins over SIP loss");
+    CHECK(dm_connection_visible(DM_CONNECTION_WIFI, true) == DM_CONNECTION_OK,
+          "caller screen has priority");
+    CHECK(dm_connection_visible(DM_CONNECTION_WIFI, false) == DM_CONNECTION_WIFI,
+          "indicator appears after caller hold");
+    CHECK(dm_connection_update(&s, grace + 1, false, true, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "changing fault restarts grace period");
+    CHECK(dm_connection_update(&s, 2 * grace, false, true, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "SIP loss shorter than grace keeps logo");
+    CHECK(dm_connection_update(&s, 2 * grace + 1, false, true, true, true, false, true)
+          == DM_CONNECTION_SIP,
+          "persistent SIP loss shows phone");
+    CHECK(dm_connection_update(&s, 2 * grace + 2, false, true, true, true, true, true)
+          == DM_CONNECTION_OK,
+          "registration recovery restores logo");
+    CHECK(dm_connection_update(&s, 3 * grace, false, true, true, false, false, true)
+          == DM_CONNECTION_OK,
+          "unconfigured SIP keeps logo");
+    CHECK(dm_connection_update(&s, 4 * grace, true, false, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "WPS pairing suppresses Wi-Fi loss");
+    CHECK(dm_connection_update(&s, 5 * grace, false, false, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "pairing ends before new grace period");
+    CHECK(dm_connection_update(&s, 6 * grace, false, false, true, true, false, true)
+          == DM_CONNECTION_WIFI,
+          "Wi-Fi loss after pairing gets its own grace period");
+    CHECK(dm_connection_update(&s, 6 * grace + 1, false, true, true, false, false, true)
+          == DM_CONNECTION_OK,
+          "Wi-Fi recovery in setup restores logo");
+    CHECK(dm_connection_update(&s, 7 * grace, false, true, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "SIP loss starts new grace period");
+    CHECK(dm_connection_update(&s, 7 * grace + 1, false, true, true, true, true, true)
+          == DM_CONNECTION_OK,
+          "short SIP glitch recovers");
+    CHECK(dm_connection_update(&s, 8 * grace, false, true, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "a second SIP glitch does not reuse the previous grace period");
+    CHECK(dm_connection_update(&s, 9 * grace, false, true, true, true, false, true)
+          == DM_CONNECTION_SIP,
+          "second SIP loss eventually shows phone");
+    CHECK(dm_connection_update(&s, 9 * grace + 1, true, false, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "WPS hides an existing indicator immediately");
+    CHECK(dm_connection_update(&s, 10 * grace, false, false, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "Wi-Fi glitch starts grace");
+    CHECK(dm_connection_update(&s, 10 * grace + 1, false, true, true, true, true, true)
+          == DM_CONNECTION_OK,
+          "short Wi-Fi glitch recovers");
+    CHECK(dm_connection_update(&s, 11 * grace, false, false, true, true, false, true)
+          == DM_CONNECTION_OK,
+          "new Wi-Fi loss gets a fresh grace period");
+
+    dm_connection_state_t token = {0};
+    CHECK(dm_connection_update(&token, 0, false, true, true, true, true, false)
+          == DM_CONNECTION_OK, "rejected token starts grace");
+    CHECK(dm_connection_update(&token, grace - 1, false, true, true, true, true, false)
+          == DM_CONNECTION_OK, "rejected token waits for grace");
+    CHECK(dm_connection_update(&token, grace, false, true, true, true, true, false)
+          == DM_CONNECTION_TOKEN, "persistent rejected token shows key");
+    CHECK(dm_connection_visible(DM_CONNECTION_TOKEN, true) == DM_CONNECTION_OK,
+          "caller takes priority over token fault");
+    CHECK(dm_connection_update(&token, grace + 1, false, true, true, true, false, false)
+          == DM_CONNECTION_OK, "SIP loss starts a fresh grace over token fault");
+    CHECK(dm_connection_update(&token, 2 * grace + 1, false, true, true, true, false, false)
+          == DM_CONNECTION_SIP, "SIP loss takes priority over rejected token");
+    CHECK(dm_connection_update(&token, 2 * grace + 2, false, true, true, true, true, false)
+          == DM_CONNECTION_OK, "registration recovery starts token grace");
+    CHECK(dm_connection_update(&token, 3 * grace + 2, false, true, true, true, true, false)
+          == DM_CONNECTION_TOKEN, "token fault returns after its own grace");
+    CHECK(dm_connection_update(&token, 3 * grace + 3, false, true, true, true, true, true)
+          == DM_CONNECTION_OK, "valid token restores logo");
+    CHECK(dm_connection_update(&token, 4 * grace, false, true, false, true, false, false)
+          == DM_CONNECTION_OK, "missing token suppresses SIP and token faults");
+    CHECK(dm_connection_update(&token, 5 * grace, false, true, true, false, true, false)
+          == DM_CONNECTION_OK, "unconfigured SIP suppresses token fault");
+    CHECK(dm_connection_update(&token, 6 * grace, false, false, false, false, false, false)
+          == DM_CONNECTION_OK, "Wi-Fi loss in setup starts grace");
+    CHECK(dm_connection_update(&token, 7 * grace, false, false, false, false, false, false)
+          == DM_CONNECTION_WIFI, "Wi-Fi loss takes priority over setup");
+    CHECK(dm_connection_update(&token, 8 * grace, true, false, false, false, false, false)
+          == DM_CONNECTION_OK, "WPS takes priority over every fault");
+
+    const int sizes[][2] = {{160, 80}, {240, 135}};
+    for (int i = 0; i < 2; i++) {
+        dm_layout_t l;
+        dm_layout(sizes[i][0], sizes[i][1], &l);
+        CHECK(l.icon_size > 0 && l.icon_x >= 0 && l.icon_y >= 0
+              && l.icon_x + l.icon_size <= l.width
+              && l.icon_y + l.icon_size <= l.height
+              && abs(2 * l.icon_x + l.icon_size - l.width) <= 1
+              && abs(2 * l.icon_y + l.icon_size - l.height) <= 1,
+              i == 0 ? "160x80 icon centered and inside"
+                     : "240x135 icon centered and inside");
+    }
+}
+
+static void test_connection_icons(void)
+{
+    const int sizes[] = {60, 101};
+    printf("connection icon geometry:\n");
+    for (int k = DM_CONNECTION_WIFI; k <= DM_CONNECTION_TOKEN; k++) {
+        for (int i = 0; i < 2; i++) {
+            int size = sizes[i];
+            int counts[DM_ICON_OUTLINE + 1] = {0};
+            bool outside = false, quadrant = true, mark_inside = true;
+            for (int y = -1; y <= size; y++) {
+                for (int x = -1; x <= size; x++) {
+                    dm_icon_pixel_t p = dm_icon_pixel(k, size, x, y);
+                    if (x < 0 || y < 0 || x >= size || y >= size) {
+                        if (p != DM_ICON_NONE) outside = true;
+                        continue;
+                    }
+                    counts[p]++;
+                    if ((p == DM_ICON_TRIANGLE || p == DM_ICON_MARK
+                         || p == DM_ICON_OUTLINE)
+                        && (x < size / 2 || y < size / 2)) quadrant = false;
+                    if (p == DM_ICON_MARK) {
+                        int px = (2 * x + 1) * 500 / size;
+                        int py = (2 * y + 1) * 500 / size;
+                        int dx = abs(px - 800);
+                        if (py < 640 || py > 915
+                            || dx * 340 > (py - 640) * 190) mark_inside = false;
+                    }
+                }
+            }
+            CHECK(counts[DM_ICON_GLYPH] > 0, "glyph exists");
+            CHECK(counts[DM_ICON_TRIANGLE] > 0 && quadrant,
+                  "warning triangle is in lower right quadrant");
+            CHECK(counts[DM_ICON_OUTLINE] > 0, "warning has an outline");
+            CHECK(counts[DM_ICON_MARK] > 0 && mark_inside, "mark is inside triangle");
+            CHECK(!outside, "no pixels outside icon square");
+        }
+    }
+    CHECK(dm_icon_pixel(DM_CONNECTION_OK, 60, 30, 30) == DM_ICON_NONE,
+          "healthy connection has no icon");
+    CHECK(dm_icon_pixel(DM_CONNECTION_WIFI, 0, 0, 0) == DM_ICON_NONE,
+          "empty icon has no pixels");
+}
+
 int main(void)
 {
     stats_setup();
@@ -459,6 +616,8 @@ int main(void)
     test_call_screen_wide();
     test_name_wrap();
     test_layout();
+    test_connection();
+    test_connection_icons();
     test_utf8();
     test_glyphs();
     printf("\n%d tests, %d failures\n", tests_run, tests_failed);

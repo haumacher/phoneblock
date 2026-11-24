@@ -117,7 +117,9 @@ S3-Boards mit 16 MB Flash (ESP32-S3 Super Mini N16R8, #730). Status-LED
 Firmware rät nur den Vorgabewert (S3 ohne PSRAM → T-Dongle-S3 mit APA102 an
 40/39 und Display, S3 mit PSRAM → WS2812 an GPIO 48, kein Display). Das
 Display zeigt das PhoneBlock-Logo mit
-Spam-Zähler und während eines Anrufs den Anrufer (`main/display.c`,
+Spam-Zähler, während eines Anrufs den Anrufer und, wenn WLAN, Anmeldung an
+der Fritz!Box oder PhoneBlock-Token länger als 30 s gestört sind, ein
+Warnsymbol (#775) (`main/display.c`,
 `main/display_model.c`, im S3- und ESP32-Build; auf dem ESP32 ist das
 Display standardmäßig aus und kann für das LilyGO T-Display V1.1 unter
 System ▸ Board eingeschaltet werden; Logo neu erzeugen mit

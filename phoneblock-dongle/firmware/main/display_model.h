@@ -28,6 +28,47 @@
 #define DM_MARGIN       3
 #define DM_TEXT_MAX_PX(width) ((width) - 2 * DM_MARGIN)
 
+// DM_CONNECTION_GRACE_US is how long a fault must persist to replace the logo.
+#define DM_CONNECTION_GRACE_US (30LL * 1000 * 1000)
+
+// dm_connection_t identifies the connection indicator on the idle screen.
+typedef enum {
+    DM_CONNECTION_OK,      // No fault shown.
+    DM_CONNECTION_WIFI,    // Wi-Fi has no IP address.
+    DM_CONNECTION_SIP,     // SIP is not registered.
+    DM_CONNECTION_TOKEN,   // PhoneBlock rejected the token.
+} dm_connection_t;
+
+// dm_connection_state_t holds the continuous-fault grace period.
+typedef struct {
+    dm_connection_t pending;
+    int64_t since_us;
+} dm_connection_state_t;
+
+// dm_connection_update derives the indicator at monotonic time now_us,
+// restarting the grace period when the fault changes or is suppressed.
+dm_connection_t dm_connection_update(dm_connection_state_t *state,
+                                     int64_t now_us,
+                                     bool pairing, bool wifi_up,
+                                     bool token_set, bool sip_configured,
+                                     bool sip_registered, bool token_valid);
+
+// dm_connection_visible gives the caller screen priority over an indicator.
+dm_connection_t dm_connection_visible(dm_connection_t connection,
+                                      bool call_shown);
+
+// dm_icon_pixel_t names colour roles; outline uses the panel background.
+typedef enum {
+    DM_ICON_NONE,       // No icon pixel.
+    DM_ICON_GLYPH,      // White connection glyph.
+    DM_ICON_TRIANGLE,   // Orange warning triangle.
+    DM_ICON_MARK,       // Dark exclamation mark.
+    DM_ICON_OUTLINE,    // Background-coloured triangle outline.
+} dm_icon_pixel_t;
+
+// dm_icon_pixel returns the colour role at (x, y) in a square of side size.
+dm_icon_pixel_t dm_icon_pixel(dm_connection_t kind, int size, int x, int y);
+
 // --- layout ---------------------------------------------------------
 
 // Where things go on a panel of the given size. For 160x80 these are the
@@ -39,6 +80,8 @@ typedef struct {
     // (logo_x, logo_y); the rest of the panel is the logo's background.
     int logo_num, logo_den;
     int logo_x, logo_y, logo_w, logo_h;
+    // Square connection indicator, centered in the panel.
+    int icon_x, icon_y, icon_size;
     // Spam badge: a pill badge_h high, right-aligned at badge_right (last
     // column), its top at badge_top; the digits' cell top at badge_text_y.
     int badge_top, badge_h, badge_right, badge_text_y;
