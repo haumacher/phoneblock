@@ -31,19 +31,87 @@ type IPInfo struct {
 	BlockedAt         time.Time     // When this IP was blocked
 	LastBlockCheck    int           // Count value when last checked for blocking
 	BlockDuration     time.Duration // Current block duration (doubles on each re-block)
+	Recent            []time.Time   // Challenge accesses within the window, oldest first
 }
+
+// maxRecent bounds the remembered accesses per IP; only the count up to the
+// threshold matters, so a fast scraper cannot grow the list without limit.
+const maxRecent = 1000
+
+// maxBlockDuration is the upper bound of the doubling block duration. An IP
+// that was blocked before is remembered that long after its last access, so
+// that a repeat offender gets the doubled duration.
+const maxBlockDuration = 30 * 24 * time.Hour
 
 type IPTracker struct {
-	mu               sync.RWMutex
-	challengeIPs     map[string]*IPInfo // IPs that accessed challenge=
-	firewallEnabled  bool               // Whether to manage firewall rules
+	mu              sync.RWMutex
+	challengeIPs    map[string]*IPInfo // IPs that accessed challenge=
+	firewallEnabled bool               // Whether to manage firewall rules
+	window          time.Duration      // Only challenge accesses within this window count
+	now             func() time.Time   // Clock, replaceable in tests
 }
 
-func NewIPTracker(firewallEnabled bool) *IPTracker {
+func NewIPTracker(firewallEnabled bool, window time.Duration) *IPTracker {
 	return &IPTracker{
 		challengeIPs:    make(map[string]*IPInfo),
 		firewallEnabled: firewallEnabled,
+		window:          window,
+		now:             time.Now,
 	}
+}
+
+// addRecent remembers a challenge access at timestamp and forgets accesses
+// that fell out of the window before it.
+func (t *IPTracker) addRecent(info *IPInfo, timestamp time.Time) {
+	info.Recent = append(info.Recent, timestamp)
+	cutoff := timestamp.Add(-t.window)
+	drop := 0
+	for drop < len(info.Recent) && !info.Recent[drop].After(cutoff) {
+		drop++
+	}
+	if extra := len(info.Recent) - drop - maxRecent; extra > 0 {
+		drop += extra
+	}
+	if drop > 0 {
+		info.Recent = append(info.Recent[:0], info.Recent[drop:]...)
+	}
+}
+
+// recentCount returns the number of challenge accesses of info within the
+// window before now. Accidental single requests spread over days never add
+// up to the threshold this way.
+func (t *IPTracker) recentCount(info *IPInfo, now time.Time) int {
+	cutoff := now.Add(-t.window)
+	n := 0
+	for i := len(info.Recent) - 1; i >= 0 && info.Recent[i].After(cutoff); i-- {
+		n++
+	}
+	return n
+}
+
+// Prune forgets IPs that are not blocked and had no challenge access within
+// the window - or, for an IP that was blocked before, within the maximum
+// block duration, to keep its doubled block duration for a repeat offence.
+func (t *IPTracker) Prune() int {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	now := t.now()
+	removed := 0
+	for ip, info := range t.challengeIPs {
+		if info.Blocked {
+			continue
+		}
+		retention := t.window
+		if info.BlockDuration > 0 {
+			retention = maxBlockDuration
+		}
+		if now.Sub(info.LastAccess) > retention {
+			delete(t.challengeIPs, ip)
+			removed++
+		}
+	}
+	return removed
 }
 
 // AddChallengeAccess records or updates a challenge access for an IP
@@ -51,17 +119,14 @@ func (t *IPTracker) AddChallengeAccess(ip string, timestamp time.Time) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	if info, exists := t.challengeIPs[ip]; exists {
-		// Update existing entry
-		info.Count++
-		info.LastAccess = timestamp
-	} else {
-		// New entry
-		t.challengeIPs[ip] = &IPInfo{
-			LastAccess: timestamp,
-			Count:      1,
-		}
+	info, exists := t.challengeIPs[ip]
+	if !exists {
+		info = &IPInfo{}
+		t.challengeIPs[ip] = info
 	}
+	info.Count++
+	info.LastAccess = timestamp
+	t.addRecent(info, timestamp)
 }
 
 // AddSolutionAccess records a solution access and removes the IP from challenge tracking
@@ -169,8 +234,7 @@ func (t *IPTracker) ManageFirewallRules(threshold int, initialBlockDuration time
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	now := time.Now()
-	maxBlockDuration := 30 * 24 * time.Hour // 1 month
+	now := t.now()
 	maxUnblocksPerCycle := 10
 	unblockedCount := 0
 
@@ -192,9 +256,9 @@ func (t *IPTracker) ManageFirewallRules(threshold int, initialBlockDuration time
 
 		// Check if IP should be blocked:
 		// - Not already blocked
-		// - Count exceeds threshold
+		// - Accesses within the window exceed the threshold
 		// - Has NEW accesses since last block check (Count > LastBlockCheck)
-		if !info.Blocked && info.Count > threshold && info.Count > info.LastBlockCheck {
+		if !info.Blocked && t.recentCount(info, now) > threshold && info.Count > info.LastBlockCheck {
 			if err := blockIP(ip); err != nil {
 				log.Printf("Error blocking IP %s: %v", ip, err)
 			} else {
@@ -498,7 +562,7 @@ func printStatus(tracker *IPTracker, showAll bool, minAccesses int) {
 	log.Printf("=== STATUS: %d unique IPs currently tracked for challenge access ===", count)
 
 	if count > 0 {
-		now := time.Now()
+		now := tracker.now()
 
 		// Collect IPs to display
 		type ipDisplay struct {
@@ -508,8 +572,8 @@ func printStatus(tracker *IPTracker, showAll bool, minAccesses int) {
 		var toDisplay []ipDisplay
 
 		for ip, info := range tracker.challengeIPs {
-			// Only show IPs with more than minAccesses accesses
-			if info.Count <= minAccesses {
+			// Only show IPs with more than minAccesses accesses within the window
+			if tracker.recentCount(info, now) <= minAccesses {
 				continue
 			}
 
@@ -531,7 +595,8 @@ func printStatus(tracker *IPTracker, showAll bool, minAccesses int) {
 		// Print sorted IPs
 		newActivityCount := 0
 		for _, item := range toDisplay {
-			log.Printf("  - %s: %d accesses, last: %s", item.ip, item.info.Count, item.info.LastAccess.Format(time.RFC3339))
+			log.Printf("  - %s: %d accesses in window (%d total), last: %s", item.ip,
+				tracker.recentCount(item.info, now), item.info.Count, item.info.LastAccess.Format(time.RFC3339))
 
 			hasNewActivity := item.info.Count > item.info.LastReportedCount
 			if hasNewActivity {
@@ -545,9 +610,9 @@ func printStatus(tracker *IPTracker, showAll bool, minAccesses int) {
 
 		if len(toDisplay) > 0 {
 			if showAll {
-				log.Printf("=== %d IPs with more than %d challenge accesses ===", len(toDisplay), minAccesses)
+				log.Printf("=== %d IPs with more than %d challenge accesses in %v ===", len(toDisplay), minAccesses, tracker.window)
 			} else {
-				log.Printf("=== %d IPs with new accesses (>%d total) ===", newActivityCount, minAccesses)
+				log.Printf("=== %d IPs with new accesses (>%d in %v) ===", newActivityCount, minAccesses, tracker.window)
 			}
 		}
 	}
@@ -555,7 +620,8 @@ func printStatus(tracker *IPTracker, showAll bool, minAccesses int) {
 
 func main() {
 	// Define command line flags
-	minAccesses := flag.Int("min-accesses", 5, "Minimum number of challenge accesses to trigger reporting")
+	minAccesses := flag.Int("min-accesses", 10, "Challenge accesses without solution within the window that trigger reporting/blocking (must be exceeded)")
+	window := flag.Duration("window", 60*time.Minute, "Time window in which challenge accesses are counted (e.g. 60m, 2h)")
 	enableFirewall := flag.Bool("enable-firewall", false, "Enable automatic firewall blocking using ufw")
 	initialBlockMinutes := flag.Int("initial-block-minutes", 30, "Initial blocking duration in minutes (doubles on each re-block, max 30 days)")
 	continuousMode := flag.Bool("continuous", false, "Enable continuous mode (tail log file and monitor indefinitely)")
@@ -577,13 +643,13 @@ func main() {
 	}
 
 	logFile := flag.Arg(0)
-	tracker := NewIPTracker(*enableFirewall)
+	tracker := NewIPTracker(*enableFirewall, *window)
 
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	log.Printf("PhoneBlock watchdog %s", version)
-	log.Printf("Starting with minimum access threshold: %d", *minAccesses)
+	log.Printf("Starting with minimum access threshold: %d within %v", *minAccesses, *window)
 	if *enableFirewall {
 		log.Printf("Firewall management: ENABLED (initial block: %d minutes, doubles on re-block, max: 30 days)", *initialBlockMinutes)
 	} else {
@@ -614,6 +680,11 @@ func main() {
 	// Print initial status (show all IPs)
 	printStatus(tracker, true, *minAccesses)
 
+	// Forget IPs whose challenge accesses all lie outside the window
+	if removed := tracker.Prune(); removed > 0 {
+		log.Printf("Forgot %d IPs without challenge accesses in the last %v", removed, *window)
+	}
+
 	// If not in continuous mode, exit after processing existing log
 	if !*continuousMode {
 		log.Printf("One-time processing complete. Use --continuous to monitor log file continuously.")
@@ -632,6 +703,7 @@ func main() {
 	go func() {
 		for range ticker.C {
 			tracker.ManageFirewallRules(*minAccesses, initialBlockDuration)
+			tracker.Prune()
 			printStatus(tracker, false, *minAccesses)
 		}
 	}()

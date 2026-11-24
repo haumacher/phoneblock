@@ -5,8 +5,10 @@
 WATCHDOG_LOG=/var/log/apache2/access.log
 
 # Options, see: phoneblock-watchdog -h
-#   -min-accesses N            challenge accesses without solution before an IP is reported/blocked
+#   -min-accesses N            challenge accesses without solution within the window that, when
+#                              exceeded, get an IP reported/blocked
+#   -window D                  window in which challenge accesses count (e.g. 60m, 2h)
 #   -enable-firewall           block such IPs with ufw
 #   -initial-block-minutes N   first block duration, doubles on each re-block (max 30 days)
 #   -limit N                   lines read from the end of the existing log at startup (0 = all)
-WATCHDOG_OPTS="-enable-firewall -min-accesses 5"
+WATCHDOG_OPTS="-enable-firewall -min-accesses 10 -window 60m"

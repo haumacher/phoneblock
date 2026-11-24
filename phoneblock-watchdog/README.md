@@ -78,7 +78,8 @@ GOOS=linux GOARCH=arm64 go build -o phoneblock-watchdog
 
 ### Options
 
-- `-min-accesses <number>` - Minimum number of challenge accesses to trigger reporting (default: 5)
+- `-min-accesses <number>` - Challenge accesses without solution within the window that, when exceeded, trigger reporting/blocking (default: 10)
+- `-window <duration>` - Time window in which challenge accesses count, e.g. `60m`, `2h` (default: 60m)
 - `-enable-firewall` - Enable automatic firewall blocking using ufw (default: false)
 - `-initial-block-minutes <number>` - First block duration; doubles on each re-block, max 30 days (default: 30)
 - `-continuous` - Keep tailing the log file; without it the existing log is processed once and the program exits
@@ -86,14 +87,14 @@ GOOS=linux GOARCH=arm64 go build -o phoneblock-watchdog
 
 ### Examples
 
-Basic usage (default threshold of 5):
+Basic usage (default: more than 10 unsolved challenges within 60 minutes):
 ```bash
 ./phoneblock-watchdog /var/log/apache2/access.log
 ```
 
-Custom threshold (report IPs with more than 10 accesses):
+Custom threshold (report IPs with more than 20 accesses within 2 hours):
 ```bash
-./phoneblock-watchdog -min-accesses 10 /var/log/apache2/access.log
+./phoneblock-watchdog -min-accesses 20 -window 2h /var/log/apache2/access.log
 ```
 
 Enable automatic firewall blocking:
@@ -142,14 +143,19 @@ and exits.
 5. **Solution Access**: When a GET request URI contains `solution=`, the IP is removed from the tracking set
 6. **Tracking**: Each IP stores:
    - Total number of challenge accesses
+   - The timestamps (from the log) of the challenge accesses within the window (`-window`, default 60m)
    - Timestamp of the most recent access
-7. **Status Reports**:
-   - **Initial report**: Shows all IPs exceeding the minimum access threshold
-   - **Periodic reports** (every minute): Shows only IPs with NEW accesses since last report (and exceeding the threshold)
-   - Threshold is configurable via `-min-accesses` flag (default: 5)
-8. **Firewall Management** (optional, requires `-enable-firewall` flag):
-   - Automatically blocks IPs exceeding the threshold using `ufw deny from <ip>`
-   - Blocks are automatically removed after 30 minutes
+7. **Sliding window**: Only challenge accesses within the window count against the threshold
+   (`-min-accesses`, default 10). Single accidental requests that do not solve the challenge
+   therefore never add up over days. Every minute, IPs that are not blocked and had no challenge
+   access within the window are forgotten; an IP that was blocked before is kept for 30 days after
+   its last access, so that a repeat offence still doubles the block duration.
+8. **Status Reports**:
+   - **Initial report**: Shows all IPs exceeding the threshold within the window
+   - **Periodic reports** (every minute): Shows only IPs with NEW accesses since last report (and exceeding the threshold within the window)
+9. **Firewall Management** (optional, requires `-enable-firewall` flag):
+   - Automatically blocks IPs exceeding the threshold within the window using `ufw deny from <ip>`
+   - Blocks are automatically removed after `-initial-block-minutes` (default 30), doubling on each re-block up to 30 days
    - Requires root/sudo privileges to manage firewall rules
 
 ## Output
@@ -158,17 +164,17 @@ The program runs silently and only prints status summaries:
 
 ### Initial Status (on startup)
 ```
-Starting with minimum access threshold: 5
-Firewall management: ENABLED (30 minute block duration)
+Starting with minimum access threshold: 10 within 1h0m0s
+Firewall management: ENABLED (initial block: 30 minutes, doubles on re-block, max: 30 days)
 Processed 5000 existing log lines (last 5000 of 15234 total)
 [FIREWALL] Blocked IP: 192.168.1.101
 [FIREWALL] Blocked IP: 192.168.1.102
 [FIREWALL] Blocked IP: 192.168.1.103
 === STATUS: 12 unique IPs currently tracked for challenge access ===
-  - 192.168.1.101: 8 accesses, last: 2025-11-03T10:20:00Z
-  - 192.168.1.102: 15 accesses, last: 2025-11-03T10:18:30Z
-  - 192.168.1.103: 6 accesses, last: 2025-11-03T10:19:15Z
-=== 3 IPs with more than 5 challenge accesses ===
+  - 192.168.1.101: 18 accesses in window (18 total), last: 2025-11-03T10:20:00Z
+  - 192.168.1.102: 25 accesses in window (31 total), last: 2025-11-03T10:18:30Z
+  - 192.168.1.103: 11 accesses in window (40 total), last: 2025-11-03T10:19:15Z
+=== 3 IPs with more than 10 challenge accesses in 1h0m0s ===
 ```
 
 **Notes**:
@@ -179,9 +185,9 @@ Processed 5000 existing log lines (last 5000 of 15234 total)
 ```
 [FIREWALL] Blocked IP: 192.168.1.104
 === STATUS: 15 unique IPs currently tracked for challenge access ===
-  - 192.168.1.101: 12 accesses, last: 2025-11-03T10:21:00Z
-  - 192.168.1.104: 7 accesses, last: 2025-11-03T10:20:45Z
-=== 2 IPs with new accesses (>5 total) ===
+  - 192.168.1.101: 22 accesses in window (22 total), last: 2025-11-03T10:21:00Z
+  - 192.168.1.104: 12 accesses in window (12 total), last: 2025-11-03T10:20:45Z
+=== 2 IPs with new accesses (>10 in 1h0m0s) ===
 ```
 
 After 30 minutes:
@@ -192,9 +198,9 @@ After 30 minutes:
 
 **Notes**:
 - Periodic reports only show IPs that have had new activity since the last report
-- Only IPs with more than the threshold total challenge accesses are shown
+- Only IPs with more than the threshold challenge accesses within the window are shown
 - If no IPs have new activity, the report shows only the total count
-- IPs are automatically unblocked after 30 minutes
+- IPs are automatically unblocked after the block duration (30 minutes initially)
 
 ## Apache Log Format
 
