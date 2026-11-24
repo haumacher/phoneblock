@@ -204,6 +204,7 @@ public class DefaultController implements WebController {
         			users.setLang(login, lang.tag);
         			tx.commit();
         		}
+        		db.flushAuthCache(login);
         	}
         }
 
@@ -283,6 +284,7 @@ public class DefaultController implements WebController {
 					users.setDialPrefix(login, dialPrefix);
 					tx.commit();
 				}
+				db.flushAuthCache(login);
 			}
 		}
 		

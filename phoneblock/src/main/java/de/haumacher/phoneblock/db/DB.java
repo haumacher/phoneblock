@@ -161,6 +161,11 @@ public class DB {
 	public static final long RATE_LIMIT_MS = 1000*60*60;
 
 	private final SecureRandom _rnd;
+
+	/**
+	 * Short-lived cache of successful basic authentications, see {@link #basicAuth(String, String)}.
+	 */
+	private final AuthCache _authCache = new AuthCache();
 	
 	private SchedulerService _scheduler;
 	
@@ -664,6 +669,7 @@ public class DB {
 			users.deleteUser(login);
 			session.commit();
 		}
+		_authCache.flushUser(login);
 	}
 
 	/** 
@@ -700,6 +706,7 @@ public class DB {
 			List<Long> outdatedIds = users.getOutdatedLoginTokens(userId);
 			if (outdatedIds != null && !outdatedIds.isEmpty()) {
 				int tokens = users.deleteTokens(outdatedIds);
+				outdatedIds.forEach(_authCache::flushToken);
 				
 				LOG.info("Deleted {} outdated login tokens for user {}.", tokens, userId);
 			}
@@ -864,6 +871,7 @@ public class DB {
 			users.invalidateAuthToken(id);
 			session.commit();
 		}
+		_authCache.flushToken(id);
 	}
 	
 	public void logoutAll(String login) {
@@ -874,6 +882,7 @@ public class DB {
 			if (userId != null) {
 				users.invalidateAllTokens(userId.longValue());
 				session.commit();
+				_authCache.flushUser(userId.longValue());
 			}
 		}
 	}
@@ -3043,6 +3052,7 @@ public class DB {
 				
 				users.setPassword(userId.longValue(), pwhash(passwd));
 				session.commit();
+				_authCache.flushUser(userId.longValue());
 				return passwd;
 			}
 		}
@@ -3152,6 +3162,7 @@ public class DB {
 			users.updateSettings(settings.getId(), settings.getMinVotes(), settings.getMaxLength(), settings.isWildcards(), settings.getDialPrefix(), settings.isNationalOnly());
 			session.commit();
 		}
+		_authCache.flushUser(settings.getId());
 	}
 	
 	/**
@@ -3162,6 +3173,35 @@ public class DB {
 	 * @return The authentication context if authorization was successful, <code>null</code> otherwise.
 	 */
 	public AuthContext basicAuth(String authHeader, String userAgent) throws IOException {
+		long now = System.currentTimeMillis();
+		String key = AuthCache.key(authHeader);
+		AuthContext cached = _authCache.lookup(key, now);
+		if (cached != null) {
+			return cached;
+		}
+
+		long generation = _authCache.generation();
+		AuthContext result = basicAuthUncached(authHeader, userAgent);
+		if (result != null) {
+			_authCache.put(key, result, now, generation);
+		}
+		return result;
+	}
+
+	/**
+	 * Drops cached authentications of the given user, so that a change to the user's
+	 * tokens or settings becomes visible to the next request.
+	 *
+	 * <p>
+	 * Must be called by code that changes the user's tokens, password or settings
+	 * directly through a mapper instead of a method of this class.
+	 * </p>
+	 */
+	public void flushAuthCache(String login) {
+		_authCache.flushUser(login);
+	}
+
+	private AuthContext basicAuthUncached(String authHeader, String userAgent) throws IOException {
 		if (authHeader.startsWith(BASIC_AUTH_PREFIX)) {
 			String credentials = authHeader.substring(BASIC_AUTH_PREFIX.length());
 			byte[] decodedBytes = Base64.getDecoder().decode(credentials);

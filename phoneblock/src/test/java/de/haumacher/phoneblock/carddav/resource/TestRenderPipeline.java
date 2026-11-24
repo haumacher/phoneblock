@@ -15,7 +15,6 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -62,11 +61,11 @@ class TestRenderPipeline {
 
 	private static Document render(RenderHook hook) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		XMLStreamWriter writer = MultiStatusWriter.open(out);
+		MultiStatusWriter writer = MultiStatusWriter.open(out);
 		try {
 			hook.write(writer);
 		} finally {
-			MultiStatusWriter.close(writer);
+			writer.close();
 		}
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -75,7 +74,7 @@ class TestRenderPipeline {
 
 	@FunctionalInterface
 	private interface RenderHook {
-		void write(XMLStreamWriter writer) throws Exception;
+		void write(MultiStatusWriter writer) throws Exception;
 	}
 
 	@Test

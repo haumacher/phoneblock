@@ -154,6 +154,7 @@ public class SettingsServlet extends HttpServlet {
 				}
 
 				session.commit();
+				db.flushAuthCache(userName);
 			}
 		}
 		forwardToSettings(req, resp, "myAPIKeys");

@@ -73,6 +73,45 @@ Erwartete Effekte (zu verifizieren nach Deploy):
   neuen ETag-Wert (Komposition geändert), machen einen Vollsync, danach
   stationärer Zustand.
 
+## Status Nov 2026: Messung + Hebel C (Fragment-Cache) + Auth-Cache + Hebel D
+
+Apache-Log 24.11.2026 (00:00–21:29, 2.0 Mio Requests, 1.61 Mio CardDAV):
+
+- FritzBox 1.49 Mio Requests/Tag (93 % von CardDAV, ×2.8 gegenüber April),
+  ~19.900 Accounts, Welle 00–05 Uhr mit 80–100 RPS, tagsüber ~10k/h.
+- **Jeder FritzBox-Sync ist ein Volldownload:** 2× PROPFIND Depth 1
+  (~527 KB) + ~25 multiget-REPORTs (~515 KB). Von 22.926 Sync-Sessions hat
+  keine auf den Download verzichtet, auch nicht Zweit-Syncs am selben Tag
+  ohne Release dazwischen. Kein `If-None-Match`. ETag-Arbeit (Hebel A, E)
+  wirkt bei der FritzBox also prinzipiell nicht; der Hebel sind die
+  Renderkosten pro Sync.
+- 401-Anteil der FritzBox weiterhin 50 %; jede 401 kommt auf einer neuen
+  TLS-Verbindung (`%O` im Debian-`combined`-Format enthält den ~4.4 KB
+  Handshake). ECDSA-P-256-Zertifikat, Handshakes daher billig.
+- iOS: zusätzlich zu den 18-min-Depth-0-Polls ~7 volle Depth-1-Listings
+  (1.26 MB) pro Nutzer und Tag, unabhängig vom ctag.
+
+Umgesetzt:
+
+- **Hebel C als Fragment-Cache** (`BlockFragments`): Der `<propstat>`-Teil
+  jeder Karte (PROPFIND und multiget) wird pro Block der geteilten
+  `CommonList` und angefragter Property-Liste einmal gerendert und danach als
+  Bytes kopiert. Nur `href` (enthält den User) wird pro Request geschrieben;
+  Properties mit User-Bezug (`current-user-principal`) werden nie geteilt.
+  Persönliche Blöcke und der Full-Pipeline-Pfad rendern weiter live. Die
+  Fragmente leben mit dem `CommonList`-Cache-Eintrag (Release-Flush, TTL).
+  Der Multistatus-Envelope wird dafür als feste Bytes geschrieben
+  (byte-identisch zur bisherigen StAX-Ausgabe, Test `envelope_isUnchanged`).
+- **Auth-Cache** (`AuthCache` in `DB.basicAuth`): erfolgreiche Basic-Auths
+  30 s ab Erzeugung, Schlüssel SHA-256 des Headers. Flush bei Token-Widerruf,
+  Passwort-Reset, Settings-Änderung, `logoutAll`, Konto-Löschung und den
+  Mapper-direkten Änderungen in Servlets (`DB.flushAuthCache`); ein
+  Generationszähler verhindert, dass ein während eines Flushs geprüftes
+  Ergebnis gecacht wird.
+- **Hebel D in Apache:** `<LocationMatch>` unter `/contacts` beantwortet
+  Requests ohne `Authorization` und ohne `Cookie` selbst mit 401
+  (`cloud-settings/.../000-default-le-ssl.conf`).
+
 ## Nächste Schritte
 
 In dieser Reihenfolge, jeweils mit klarer Wirkungs-Hypothese:

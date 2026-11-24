@@ -184,6 +184,7 @@ public class AccountManagementServlet extends HttpServlet {
 
 			if (updated) {
 				session.commit();
+				db.flushAuthCache(userName);
 			}
 
 			// Fetch updated settings to return and refresh session cache
