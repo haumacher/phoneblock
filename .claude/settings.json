@@ -67,5 +67,8 @@
         "/tmp"
       ]
     }
+  },
+  "enabledPlugins": {
+    "android-cli@android-cli-plugin": true
   }
 }
