@@ -207,3 +207,22 @@ Description: PhoneBlock Linux SIP spam-call blocker
  Registers as a SIP endpoint, checks callers against PhoneBlock, and can
  stream a G.711 A-law announcement for spam calls.
 
+Package: phoneblock-dongle
+Architecture: arm64
+Version: 2.0.3~rc3
+Priority: optional
+Section: net
+Maintainer: Bernhard Haumacher <haui@haumacher.de>
+Installed-Size: 499
+Depends: libc6 (>= 2.34), libcjson1 (>= 1.7.13), libcurl4 (>= 7.66.0), libmicrohttpd12 (>= 0.9.50), libsrtp2-1 (>= 2.0.0), libssl3 (>= 3.0.0), adduser, ca-certificates
+Filename: pool/bookworm/beta/phoneblock-dongle_2.0.3~rc3_arm64.deb
+Size: 192264
+MD5sum: ffb65b425ed889902f63efe9abda722b
+SHA1: 979d32f05492a067d779706ca5302aef1062f5e4
+SHA256: 603b0f3ecd0f299add9183e50b21a3929e9d48f9eccdd66d793deaf6b03004e4
+SHA512: a587b7cab2859e17b1289da1751c3146cd4a80707c4055df92e067aab2ec4c9b8877a8d269767377b209926c91340d4319aade2e2d8b3376380a24c9f7108f25
+Description: PhoneBlock Linux SIP spam-call blocker
+ Shared PhoneBlock dongle firmware modules running as a native Linux service.
+ Registers as a SIP endpoint, checks callers against PhoneBlock, and can
+ stream a G.711 A-law announcement for spam calls.
+
