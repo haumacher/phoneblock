@@ -1,5 +1,6 @@
 #include "display_model.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "strbuf.h"
@@ -497,4 +498,66 @@ void dm_call_screen(const stats_call_t *call, const dm_layout_t *l,
         sb_appendf(&sb, "%s", call->location);
     }
     if (band[0]) set_line(&out->band, &lcd_font_small, scale, band, width);
+}
+
+// --- backlight timeout ----------------------------------------------
+
+static int dim_parse(const char *value, bool always_ok)
+{
+    if (!value || !value[0]) return DM_DIM_DEFAULT_S;
+    if (strcmp(value, "always") == 0) return always_ok ? DM_DIM_ALWAYS : -1;
+    static const char *const k_values[] = { "30", "60", "120", "300" };
+    for (size_t i = 0; i < sizeof(k_values) / sizeof(k_values[0]); i++) {
+        if (strcmp(value, k_values[i]) == 0) return atoi(k_values[i]);
+    }
+    return -1;
+}
+
+bool dm_dim_valid(const char *value, bool always_ok)
+{
+    return dim_parse(value, always_ok) >= 0;
+}
+
+int dm_dim_seconds(const char *value, bool always_ok)
+{
+    int s = dim_parse(value, always_ok);
+    return s < 0 ? DM_DIM_DEFAULT_S : s;
+}
+
+// --- buttons and paging ---------------------------------------------
+
+int dm_page_press(int index, dm_button_t button, bool lit, bool calling,
+                  int count)
+{
+    int n = count < DM_BADGE_CALLS ? count : DM_BADGE_CALLS;
+    if (n < 0) n = 0;
+    if (!lit) return n > 0 ? 0 : DM_PAGE_NONE;
+    if (calling) return index;
+    // The list may have shrunk (cleared) since the position was set.
+    if (index >= n) index = n - 1;
+    if (index < DM_PAGE_NONE) index = DM_PAGE_NONE;
+    if (button == DM_BUTTON_OLDER) {
+        return index + 1 < n ? index + 1 : index;
+    }
+    return index > DM_PAGE_NONE ? index - 1 : DM_PAGE_NONE;
+}
+
+int dm_page_of_call(const stats_call_t *call)
+{
+    return call && call->seq != 0 ? 0 : DM_PAGE_NONE;
+}
+
+bool dm_button_sample(dm_button_state_t *state, bool low)
+{
+    if (!low) {
+        state->low_samples = 0;
+        if (state->high_samples < DM_BUTTON_STABLE) state->high_samples++;
+        if (state->high_samples == DM_BUTTON_STABLE) state->reported = false;
+        return false;
+    }
+    state->high_samples = 0;
+    if (state->low_samples < DM_BUTTON_STABLE) state->low_samples++;
+    if (state->low_samples < DM_BUTTON_STABLE || state->reported) return false;
+    state->reported = true;
+    return true;
 }

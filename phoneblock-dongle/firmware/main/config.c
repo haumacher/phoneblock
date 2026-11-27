@@ -62,6 +62,7 @@ static const char *NS   = "phoneblock";
 #define K_LOG_INFO      "log_info"
 #define K_LED_QUIET     "led_quiet"
 #define K_LCD_FLIP      "lcd_flip"
+#define K_DISPLAY_DIM   "display_dim"
 #define K_LED_HW        "led_hw"
 #define K_DISPLAY       "display"
 #define K_AUTH_ENABLED  "auth_enabled"
@@ -177,6 +178,9 @@ typedef struct {
     char log_info[4];        // "1" = also mirror INFO lines to the log panel (default off)
     char led_quiet[4];       // "1" = LED dark when READY (default off = solid on)
     char lcd_flip[4];        // "1" = display rotated 180° (default off)
+#if DISPLAY_PRESENT
+    char display_dim[8];     // "30" | "60" | "120" | "300" | "always"; "" = default
+#endif
     char led_hw[24];         // status LED spec (board_hw.h); "" = detected
     char display[4];         // "1" | "0"; "" = detected
     char auth_enabled[4];    // "1" | "0" (or empty = default off)
@@ -408,6 +412,9 @@ static void load_values(void)
         s_config.log_info[0]      = '\0';
         s_config.led_quiet[0]     = '\0';
         s_config.lcd_flip[0]      = '\0';
+#if DISPLAY_PRESENT
+        s_config.display_dim[0]   = '\0';
+#endif
         s_config.led_hw[0]        = '\0';
         s_config.display[0]       = '\0';
         s_config.auth_enabled[0]  = '\0';
@@ -501,6 +508,10 @@ static void load_values(void)
              s_config.led_quiet, sizeof(s_config.led_quiet));
     load_str(h, K_LCD_FLIP, "",
              s_config.lcd_flip, sizeof(s_config.lcd_flip));
+#if DISPLAY_PRESENT
+    load_str(h, K_DISPLAY_DIM, "",
+             s_config.display_dim, sizeof(s_config.display_dim));
+#endif
     load_str(h, K_LED_HW, "",
              s_config.led_hw, sizeof(s_config.led_hw));
     load_str(h, K_DISPLAY, "",
@@ -639,6 +650,9 @@ bool        config_lcd_flipped(void)
     // explicit "1" turns the display upside down.
     return s_config.lcd_flip[0] == '1';
 }
+#if DISPLAY_PRESENT
+const char *config_display_dim(void) { return s_config.display_dim; }
+#endif
 const char *config_led_hw(void)  { return s_config.led_hw; }
 const char *config_display(void) { return s_config.display; }
 bool        config_auth_enabled(void)
@@ -1058,6 +1072,10 @@ int config_update(const config_update_t *u)
                                         s_config.led_quiet, sizeof(s_config.led_quiet));
     if (err == PB_KV_OK) err = set_str_if(h, K_LCD_FLIP, u->lcd_flip,
                                         s_config.lcd_flip, sizeof(s_config.lcd_flip));
+#if DISPLAY_PRESENT
+    if (err == PB_KV_OK) err = set_str_if(h, K_DISPLAY_DIM, u->display_dim,
+                                        s_config.display_dim, sizeof(s_config.display_dim));
+#endif
     if (err == PB_KV_OK) err = set_str_if(h, K_LED_HW, u->led_hw,
                                         s_config.led_hw, sizeof(s_config.led_hw));
     if (err == PB_KV_OK) err = set_str_if(h, K_DISPLAY, u->display,

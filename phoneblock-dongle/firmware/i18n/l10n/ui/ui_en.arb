@@ -522,5 +522,14 @@
   "status.system.wifi_power.save": "Apply transmission power",
   "status.system.wifi_power.saved": "Transmit power saved and applied.",
   "status.system.wifi_power.invalid": "Please enter an integer value between 8 and 20 dBm.",
-  "status.system.wifi_power.failed": "Transmit power not applied: {reason}"
+  "status.system.wifi_power.failed": "Transmit power not applied: {reason}",
+  "status.system.display.dim": "Turn off the display after",
+  "status.system.display.dim.30": "30 seconds",
+  "status.system.display.dim.60": "60 seconds (default)",
+  "status.system.display.dim.120": "2 minutes",
+  "status.system.display.dim.300": "5 minutes",
+  "status.system.display.dim.always": "Never (always on)",
+  "status.system.display.dim.hint": "How long the display stays lit after boot, a call or a button press.",
+  "status.system.display.dim.hint.buttons": "The buttons on the device bring it back and page through the recent calls.",
+  "status.system.display.wake": "Turn on display"
 }

@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "call_rec_cfg.h"   // PB_CALL_RECORDING
+#include "display_cfg.h"    // DISPLAY_PRESENT
 
 
 // Runtime configuration with a two-stage source of truth:
@@ -132,6 +133,14 @@ bool        config_wifi_tx_power_dbm_valid(int dbm);
 // USB port is oriented, the stick sits upside down; this turns the logo the
 // right way up. Default off; only meaningful with a display (display.h).
 bool        config_lcd_flipped(void);
+
+#if DISPLAY_PRESENT
+// Seconds until the display's backlight dims (#773), as stored: "30", "60",
+// "120", "300" or "always"; "" = the default. Raw value; the display
+// resolves it per board with dm_dim_seconds() (display_model.h), which
+// ignores what the board does not offer.
+const char *config_display_dim(void);
+#endif
 
 // Board hardware settings (#730, board.h): the status LED spec
 // ("none", "gpio:<pin>[:low]", "apa102:<data>:<clock>", "ws2812:<pin>")
@@ -448,6 +457,11 @@ typedef struct {
     // "1" = display rotated 180°, "0" = normal orientation.
     // NULL = leave unchanged. Default when unset is "off".
     const char *lcd_flip;
+#if DISPLAY_PRESENT
+    // Backlight timeout, see config_display_dim(). NULL = leave unchanged.
+    // Checked by the caller (dm_dim_valid) before storing.
+    const char *display_dim;
+#endif
     // Status LED spec / display "1"|"0" (board.h); "" = back to the
     // detected default. NULL = leave unchanged. Checked by the caller
     // (board_check_settings) before storing.

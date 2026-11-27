@@ -4,9 +4,7 @@
 
 #include "stats.h"
 
-#ifdef ESP_PLATFORM
-#include "sdkconfig.h"
-#endif
+#include "display_cfg.h"
 
 // The board's TFT: on the ESP32-S3 build the LilyGO T-Dongle-S3's 0.96"
 // ST7735 (160x80), always; on the classic ESP32 build the LilyGO T-Display
@@ -27,17 +25,18 @@
 //           (CANCEL, the spam call's teardown) or a 60 s fallback timeout
 //           runs out, it stays, so a call that ended at once (a fax, another
 //           phone picking up) can still be read; it goes back to the logo
-//           when the backlight dims a minute later. A new call replaces it.
-// The backlight is full while a call is shown and for a minute after boot
-// or a call, dimmed otherwise (off on the T-Display, which switches it by
-// GPIO). Drawing runs from an esp_timer callback, so
-// the SIP task and the web server never wait for the panel. Failures are
+//           when the backlight dims after the set time. A new call replaces it.
+// The backlight is full while a call is shown and for the dim timeout (the
+// "display_dim" setting, 60 s by default) after boot or a call, dimmed
+// otherwise (off on the T-Display, which switches it by GPIO). The
+// T-Display's two buttons (#773) bring it back and page through the recent
+// calls; the web UI can wake it and show the newest call. Button drawing
+// runs in the esp_timer task; the web wake handler draws synchronously.
+// Other notifications schedule drawing. Failures are
 // logged once and leave the display as it is — the dongle works without it
 // (the board also exists without a display).
 
-#if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32
-
-#define DISPLAY_PRESENT 1
+#if DISPLAY_PRESENT
 
 // The board's wiring. The status LED must keep off these pins while the
 // display is on (board.c).
@@ -49,6 +48,13 @@
 #define PIN_DC        2
 #define PIN_RST       1
 #define PIN_BACKLIGHT 38    // active-low
+// No buttons: the dongle has no free one.
+#define PIN_BUTTON_NEWER (-1)
+#define PIN_BUTTON_OLDER (-1)
+#define DISPLAY_BUTTON_MASK 0ULL
+// The dimmed backlight still shows the logo, and full brightness all the
+// time means heat (#606): "always on" is not offered.
+#define DISPLAY_DIM_ALWAYS_OK 0
 #else
 // T-Display V1.1, as in LilyGO's TTGO-T-Display examples.
 #define PIN_MOSI      19
@@ -57,9 +63,20 @@
 #define PIN_DC        16    // the flash on chips with embedded flash (board.c)
 #define PIN_RST       23
 #define PIN_BACKLIGHT 4     // active-high
+// The two buttons, active-low with a pull-up on the board. GPIO 35 is
+// input-only and has no internal pull, so none is used.
+#define PIN_BUTTON_NEWER 0
+#define PIN_BUTTON_OLDER 35
+// GPIO 35 is input-only (and forbidden for the LED anyway): counting it
+// would make board_display_fits() refuse the board.
+#define DISPLAY_BUTTON_MASK (1ULL << PIN_BUTTON_NEWER)
+// Dimmed is dark here, so keeping it lit all the time is a plain choice.
+#define DISPLAY_DIM_ALWAYS_OK 1
 #endif
+// The pins the status LED must keep off, the buttons' included.
 #define DISPLAY_PIN_MASK ((1ULL << PIN_MOSI) | (1ULL << PIN_SCLK) | (1ULL << PIN_CS) \
-                          | (1ULL << PIN_DC) | (1ULL << PIN_RST) | (1ULL << PIN_BACKLIGHT))
+                          | (1ULL << PIN_DC) | (1ULL << PIN_RST) \
+                          | (1ULL << PIN_BACKLIGHT) | DISPLAY_BUTTON_MASK)
 
 // Brings the panel up and shows the logo. Called only where the display is
 // on (board_effective()).
@@ -81,6 +98,16 @@ void display_set_enabled(bool on);
 // (board.c refuses it until the next restart).
 bool display_was_started(void);
 
+// The "display_dim" setting changed (config_display_dim()): the backlight
+// comes on and the new timeout runs from now. Does nothing without a display.
+void display_dim_changed(void);
+
+// Wakes the display like a button press does: the backlight on, the newest
+// listed call (the logo if there is none), the dim timeout restarted. While
+// a call is on only the backlight is touched. Returns false if no display
+// is running or the screen could not be drawn.
+bool display_wake(void);
+
 // A new incoming call was screened; `call` is its entry as the call list
 // would show it (copied). Replaces any call on screen.
 void display_call_started(const stats_call_t *call);
@@ -94,8 +121,6 @@ void display_call_ended(void);
 void display_calls_changed(void);
 
 #else
-
-#define DISPLAY_PRESENT 0
 
 static inline void display_call_started(const stats_call_t *call) { (void)call; }
 static inline void display_call_ended(void) {}

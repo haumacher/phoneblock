@@ -68,17 +68,21 @@ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=mbedtls_ssl_setup")
 # same-origin. German is NOT embedded — it is a normal downloaded locale like
 # any other (its source ui_de.arb is the translation source).
 # The strings of the call recordings (status.rec.*, #663) only where they
-# exist: the 4 MB boards drop them.
+# exist: the 4 MB boards drop them. Those without a display (the C3) also drop
+# the display's (status.system.display.*, #773). _ui_drop is a '|'-separated
+# list of key prefixes.
 set(_ui_en_arb  "${CMAKE_CURRENT_SOURCE_DIR}/../i18n/l10n/ui/ui_en.arb")
 set(_ui_en_json "${CMAKE_CURRENT_BINARY_DIR}/ui_en.json")
 if(_target STREQUAL "esp32s3")
     set(_ui_drop "-")
-else()
+elseif(_target STREQUAL "esp32")
     set(_ui_drop "status.rec.")
+else()
+    set(_ui_drop "status.rec.|status.system.display.")
 endif()
 add_custom_command(
     OUTPUT  "${_ui_en_json}"
-    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));p=sys.argv[3];json.dump({k:v for k,v in d.items() if (k=='@@locale' or not k.startswith('@')) and not k.startswith(p)},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_ui_en_arb}" "${_ui_en_json}" "${_ui_drop}"
+    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));p=sys.argv[3];json.dump({k:v for k,v in d.items() if (k=='@@locale' or not k.startswith('@')) and not k.startswith(tuple(p.split('|')))},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_ui_en_arb}" "${_ui_en_json}" "${_ui_drop}"
     DEPENDS "${_ui_en_arb}"
     COMMENT "Stripping ui_en.arb -> ui_en.json (embedded English UI fallback)"
     VERBATIM)
@@ -111,9 +115,16 @@ set(strip_js_comments "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/strip-js-comments.
 set(index_html_src "${CMAKE_CURRENT_SOURCE_DIR}/web/index.html")
 set(index_html_stripped "${CMAKE_CURRENT_BINARY_DIR}/index.stripped.html")
 set(index_html_gz "${CMAKE_CURRENT_BINARY_DIR}/index.html.gz")
+# The loader of the display's part (web/display.js, #773) is dropped where
+# there is no display.
+if(_target STREQUAL "esp32" OR _target STREQUAL "esp32s3")
+    set(_index_drop "")
+else()
+    set(_index_drop --drop display-ui)
+endif()
 add_custom_command(
     OUTPUT "${index_html_gz}"
-    COMMAND python3 "${strip_js_comments}" "${index_html_src}" "${index_html_stripped}"
+    COMMAND python3 "${strip_js_comments}" "${index_html_src}" "${index_html_stripped}" ${_index_drop}
     COMMAND gzip -9 -n -c "${index_html_stripped}" > "${index_html_gz}"
     MAIN_DEPENDENCY "${index_html_src}"
     DEPENDS "${strip_js_comments}"
@@ -138,4 +149,23 @@ if(_target STREQUAL "esp32s3")
         VERBATIM)
     target_add_binary_data(${COMPONENT_LIB} "${rec_js_gz}" BINARY
         DEPENDS "${rec_js_gz}")
+endif()
+
+# The display's part of the web UI (web/display.js, #773): the backlight
+# timeout and the wake button, served at /display.js on the boards with a
+# display (the T-Dongle-S3 and the classic ESP32).
+if(_target STREQUAL "esp32" OR _target STREQUAL "esp32s3")
+    set(display_js_src "${CMAKE_CURRENT_SOURCE_DIR}/web/display.js")
+    set(display_js_stripped "${CMAKE_CURRENT_BINARY_DIR}/display.stripped.js")
+    set(display_js_gz "${CMAKE_CURRENT_BINARY_DIR}/display.js.gz")
+    add_custom_command(
+        OUTPUT "${display_js_gz}"
+        COMMAND python3 "${strip_js_comments}" "${display_js_src}" "${display_js_stripped}"
+        COMMAND gzip -9 -n -c "${display_js_stripped}" > "${display_js_gz}"
+        MAIN_DEPENDENCY "${display_js_src}"
+        DEPENDS "${strip_js_comments}"
+        COMMENT "Gzipping the display's web UI (web/display.js)"
+        VERBATIM)
+    target_add_binary_data(${COMPONENT_LIB} "${display_js_gz}" BINARY
+        DEPENDS "${display_js_gz}")
 endif()

@@ -3255,6 +3255,22 @@ async function refreshAll(){
       refreshAll();
     };
   }
+  // <display-ui>
+  // The backlight timeout and the wake button (#773) are display.js, loaded
+  // the first time /api/status reports a display; the C3 has none of it.
+  if (s.display && s.display.dim !== undefined){
+    if (window.PBDisplay) window.PBDisplay.status(s.display);
+    else if (!window.pbDisplayLoading){
+      window.pbDisplayLoading = true;
+      const sc = document.createElement('script');
+      sc.src = 'display.js';
+      sc.onload = () => refreshAll();
+      // A failed load is retried by a later status poll.
+      sc.onerror = () => { window.pbDisplayLoading = false; sc.remove(); };
+      document.head.appendChild(sc);
+    }
+  } else if (window.PBDisplay) window.PBDisplay.status(null);
+  // </display-ui>
 
   // Board hardware (#730). A chip cannot tell which board it sits on, so
   // the LED (and the S3's display) is a setting; the firmware's guess is

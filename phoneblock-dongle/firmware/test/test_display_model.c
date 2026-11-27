@@ -9,6 +9,8 @@
 //   * the layout: the T-Dongle-S3's positions from before #708, and the
 //     T-Display's derived from its size;
 //   * which board a chip may drive;
+//   * the backlight timeout setting and the buttons' paging through the
+//     recent calls, with their debounce (#773);
 //   * UTF-8 decoding never runs past the string, whatever the input.
 //
 // Built with AddressSanitizer (see the Makefile), so an overrun aborts.
@@ -667,6 +669,100 @@ static void test_connection_icons(void)
           "empty icon has no pixels");
 }
 
+static void test_dim_setting(void)
+{
+    puts("dim timeout");
+    CHECK(dm_dim_seconds("", true) == 60 && dm_dim_seconds("", false) == 60,
+          "empty is the default 60 s");
+    CHECK(dm_dim_seconds("30", false) == 30 && dm_dim_seconds("120", false) == 120
+          && dm_dim_seconds("300", false) == 300, "listed values map to seconds");
+    CHECK(dm_dim_valid("", false) && dm_dim_valid("30", false)
+          && dm_dim_valid("60", false) && dm_dim_valid("120", false)
+          && dm_dim_valid("300", false), "listed values are valid everywhere");
+    CHECK(dm_dim_valid("always", true) && dm_dim_seconds("always", true) == DM_DIM_ALWAYS,
+          "always is accepted where the board allows it");
+    CHECK(!dm_dim_valid("always", false), "the T-Dongle-S3 refuses always");
+    CHECK(dm_dim_seconds("always", false) == DM_DIM_ALWAYS + 60,
+          "a forged always on the T-Dongle-S3 gives the default");
+    CHECK(!dm_dim_valid("45", true) && !dm_dim_valid("0", true)
+          && !dm_dim_valid("-1", true) && !dm_dim_valid("60s", true)
+          && !dm_dim_valid("ALWAYS", true), "other values are refused");
+    CHECK(dm_dim_seconds("45", true) == 60 && dm_dim_seconds("0", true) == 60,
+          "unknown stored values give the default");
+}
+
+static void test_paging(void)
+{
+    puts("paging");
+    const dm_button_t NEWER = DM_BUTTON_NEWER, OLDER = DM_BUTTON_OLDER;
+    CHECK(dm_page_press(DM_PAGE_NONE, OLDER, false, false, 5) == 0
+          && dm_page_press(3, NEWER, false, false, 5) == 0,
+          "a press on a dark display shows the newest call, whatever was shown");
+    CHECK(dm_page_press(2, OLDER, false, false, 0) == DM_PAGE_NONE,
+          "a press on a dark display with no calls shows the logo");
+    CHECK(dm_page_press(DM_PAGE_NONE, OLDER, true, false, 5) == 0,
+          "older from the logo goes to the newest");
+    CHECK(dm_page_press(0, OLDER, true, false, 5) == 1
+          && dm_page_press(3, OLDER, true, false, 5) == 4, "older goes one call back");
+    CHECK(dm_page_press(4, OLDER, true, false, 5) == 4, "older stops at the last call");
+    CHECK(dm_page_press(9, OLDER, true, false, 50) == 9
+          && dm_page_press(8, OLDER, true, false, 50) == 9,
+          "only the DM_BADGE_CALLS newest are paged");
+    CHECK(dm_page_press(3, NEWER, true, false, 5) == 2, "newer goes one call forward");
+    CHECK(dm_page_press(0, NEWER, true, false, 5) == DM_PAGE_NONE,
+          "newer from the newest goes to the logo");
+    CHECK(dm_page_press(DM_PAGE_NONE, NEWER, true, false, 5) == DM_PAGE_NONE,
+          "newer on the logo stays there");
+    CHECK(dm_page_press(DM_PAGE_NONE, OLDER, true, false, 0) == DM_PAGE_NONE
+          && dm_page_press(DM_PAGE_NONE, NEWER, true, false, 0) == DM_PAGE_NONE,
+          "no calls: always the logo");
+    CHECK(dm_page_press(7, OLDER, true, false, 3) == 2
+          && dm_page_press(7, NEWER, true, false, 3) == 1
+          && dm_page_press(7, OLDER, true, false, 0) == DM_PAGE_NONE,
+          "a position past a shrunk list is clamped first");
+    CHECK(dm_page_press(2, OLDER, true, true, 5) == 2
+          && dm_page_press(2, NEWER, true, true, 5) == 2
+          && dm_page_press(DM_PAGE_NONE, OLDER, true, true, 5) == DM_PAGE_NONE,
+          "during a call the buttons do not page");
+    CHECK(dm_page_press(2, OLDER, false, true, 5) == 0,
+          "a dark display wakes on the newest even if a call is flagged");
+
+    stats_call_t listed, unlisted;
+    memset(&listed, 0, sizeof(listed));
+    memset(&unlisted, 0, sizeof(unlisted));
+    listed.seq = 7;
+    CHECK(dm_page_of_call(&listed) == 0, "a listed call is the newest");
+    CHECK(dm_page_of_call(&unlisted) == DM_PAGE_NONE
+          && dm_page_of_call(NULL) == DM_PAGE_NONE,
+          "a counters-only call is not in the paging");
+}
+
+static void test_button_debounce(void)
+{
+    puts("button debounce");
+    dm_button_state_t b = {0};
+    CHECK(!dm_button_sample(&b, false), "released: nothing");
+    CHECK(!dm_button_sample(&b, true), "the first low sample is not yet a press");
+    CHECK(dm_button_sample(&b, true), "the second confirms the press");
+    CHECK(!dm_button_sample(&b, true) && !dm_button_sample(&b, true),
+          "holding gives no repeats");
+    CHECK(!dm_button_sample(&b, false), "release");
+    CHECK(!dm_button_sample(&b, false), "release confirmed");
+    CHECK(!dm_button_sample(&b, true) && dm_button_sample(&b, true),
+          "the next press counts again");
+    dm_button_state_t bounce = {0};
+    int bounced_presses = 0;
+    const bool samples[] = { true, true, false, true, true };
+    for (size_t i = 0; i < sizeof(samples) / sizeof(samples[0]); i++) {
+        bounced_presses += dm_button_sample(&bounce, samples[i]);
+    }
+    CHECK(bounced_presses == 1, "release bounce does not repeat the press");
+    dm_button_state_t g = {0};
+    int presses = 0;
+    for (int i = 0; i < 20; i++) presses += dm_button_sample(&g, i % 2 == 0);
+    CHECK(presses == 0, "a glitching contact gives no press");
+}
+
 int main(void)
 {
     stats_setup();
@@ -681,6 +777,9 @@ int main(void)
     test_connection_icons();
     test_utf8();
     test_glyphs();
+    test_dim_setting();
+    test_paging();
+    test_button_debounce();
     printf("\n%d tests, %d failures\n", tests_run, tests_failed);
     calls_test_cleanup();
     return tests_failed ? 1 : 0;
