@@ -22,6 +22,7 @@
 #include "lcd_font.h"
 #include "lcd_logo.h"
 #include "sip_register.h"
+#include "time_sync.h"
 #include "wifi.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -145,6 +146,8 @@ typedef struct {
     // esp_timer task's stack.
     stats_call_t     draw_call;
     dm_call_screen_t screen;
+    char             call_time[DM_CALL_TIME_CAP];
+    bool             time_failure_logged;
     dm_connection_state_t connection_state;
     dm_connection_t connection;
     uint16_t         logo_row[LCD_LOGO_W];  // one decoded logo row
@@ -506,6 +509,7 @@ static uint16_t band_colour(dm_class_t cls)
 static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
 {
     const dm_layout_t *l = &s_mem->layout;
+    bool show_time = l->time_y >= 0 && !scr->name2.font && s_mem->call_time[0];
     uint16_t band = band_colour(scr->cls);
     for (int r = 0; r < STRIP_ROWS; r++) {
         uint16_t c = y0 + r < l->band_y ? C_BACKGROUND : band;
@@ -517,11 +521,19 @@ static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
         draw_line(strip, y0, &scr->name2, l->wrap_y2, C_WHITE);
         draw_line(strip, y0, &scr->sub, l->wrap_number_y, C_NUMBER);
     } else if (scr->named) {
-        draw_line(strip, y0, &scr->main, l->name_y, C_WHITE);
-        draw_line(strip, y0, &scr->sub, l->name_number_y, C_NUMBER);
+        draw_line(strip, y0, &scr->main, show_time ? l->name_time_y : l->name_y, C_WHITE);
+        draw_line(strip, y0, &scr->sub,
+                  show_time ? l->name_number_time_y : l->name_number_y, C_NUMBER);
     } else {
-        int y = scr->main.font == &lcd_font_large ? l->number_large_y : l->number_small_y;
+        int y = scr->main.font == &lcd_font_large
+            ? (show_time ? l->number_large_time_y : l->number_large_y)
+            : (show_time ? l->number_small_time_y : l->number_small_y);
         draw_line(strip, y0, &scr->main, y, C_WHITE);
+    }
+    if (show_time) {
+        int width = dm_text_width(&lcd_font_small, l->text_scale, s_mem->call_time);
+        draw_text(strip, y0, &lcd_font_small, l->text_scale, s_mem->call_time,
+                  (W - width) / 2, l->time_y, C_NUMBER);
     }
     draw_line(strip, y0, &scr->band, l->band_text_y,
               scr->cls == DM_CLASS_SUSPECT ? C_BLACK : C_WHITE);
@@ -591,12 +603,41 @@ static bool draw_screen(bool force)
     xSemaphoreGive(s_state);
     dm_connection_t connection = dm_connection_visible(s_mem->connection, call);
 
+    char call_time[DM_CALL_TIME_CAP] = "";
+    if (call && s_mem->layout.time_y >= 0) {
+        int64_t now_epoch = time_sync_now_epoch();
+        int64_t call_epoch = dm_call_epoch(s_mem->draw_call.epoch_s,
+            s_mem->draw_call.this_boot ? s_mem->draw_call.at_us : 0,
+            now_epoch, esp_timer_get_time());
+        if (call_epoch) {
+            time_t epoch = (time_t)call_epoch;
+            time_t now = (time_t)now_epoch;
+            struct tm call_local, now_local;
+            time_sync_tz_lock();
+            bool converted = (int64_t)epoch == call_epoch
+                && localtime_r(&epoch, &call_local);
+            bool now_converted = now != 0 && localtime_r(&now, &now_local);
+            time_sync_tz_unlock();
+            if (converted) {
+                dm_format_call_time(call_epoch, &call_local,
+                                    now_converted ? &now_local : NULL, call_time);
+            }
+            bool failed = !converted || (now != 0 && !now_converted);
+            if (failed && !s_mem->time_failure_logged) {
+                ESP_LOGW(TAG, "cannot convert display time");
+                s_mem->time_failure_logged = true;
+            } else if (!failed) {
+                s_mem->time_failure_logged = false;
+            }
+        }
+    }
     if (!force && s_drawn_valid && s_drawn_call == call
-        && (call ? s_drawn_gen == gen
+        && (call ? s_drawn_gen == gen && strcmp(call_time, s_mem->call_time) == 0
                  : s_drawn_connection == connection
                    && (connection != DM_CONNECTION_OK || s_drawn_badge == badge))) {
         return true;
     }
+    memcpy(s_mem->call_time, call_time, sizeof(call_time));
     if (call) dm_call_screen(&s_mem->draw_call, &s_mem->layout, &s_mem->screen);
     if (!send_frame(call, badge, connection)) {
         s_drawn_valid = false;
