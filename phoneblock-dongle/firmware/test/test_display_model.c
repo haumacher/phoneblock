@@ -417,6 +417,7 @@ static void test_layout(void)
           "160x80: name and number as before");
     CHECK(l.name_lines == 1 && l.wrap_y1 == 0 && l.wrap_y2 == 0
           && l.wrap_number_y == 0, "160x80: one name line");
+    CHECK(l.time_y == -1, "160x80: no time line");
 
     // The T-Display: the logo by 3/2, centred; the text centred above the
     // band at the bottom.
@@ -434,6 +435,15 @@ static void test_layout(void)
     CHECK(l.name_lines == 2 && l.wrap_y1 == 2 && l.wrap_y2 == 38
           && l.wrap_number_y == 76,
           "240x135: two name lines, 100 px block centred in 105 px");
+    CHECK(l.time_y == 0 && l.name_time_y == 26 && l.name_number_time_y == 76,
+          "240x135: time and one-line name positions");
+    CHECK(l.time_y + lcd_font_small.h * l.text_scale == l.name_time_y
+          && l.band_y - (l.name_number_time_y + lcd_font_small.h * l.text_scale) == 3,
+          "240x135: name below time, three-pixel gap above band");
+    CHECK(l.number_large_time_y == 47 && l.number_small_time_y == 52,
+          "240x135: numbers centred between time and band");
+    CHECK(l.time_y + lcd_font_small.h * l.text_scale > l.wrap_y1,
+          "240x135: wrapped name has no room for time");
 
     // Everything inside the panel, for both sizes.
     int sizes[][2] = { { DM_TDONGLE_W, DM_TDONGLE_H }, { DM_TDISPLAY_W, DM_TDISPLAY_H } };
@@ -448,6 +458,56 @@ static void test_layout(void)
         CHECK(inside, i == 0 ? "160x80: all inside the panel"
                              : "240x135: all inside the panel");
     }
+}
+
+static void test_call_time(void)
+{
+    printf("call time:\n");
+    CHECK(dm_call_epoch(123, 0, 0, 0) == 123, "recorded epoch takes precedence");
+    CHECK(dm_call_epoch(0, 1500000, 1000, 4100000) == 998,
+          "epoch derived from monotonic age");
+    CHECK(dm_call_epoch(0, 1500000, 0, 4100000) == 0, "clock unknown");
+    CHECK(dm_call_epoch(0, 0, 1000, 4100000) == 0, "call uptime unknown");
+    CHECK(dm_call_epoch(0, 4100001, 1000, 4100000) == 0, "call uptime in future");
+    CHECK(dm_call_epoch(0, 4100000, 1000, 4100000) == 1000,
+          "call uptime equals current uptime");
+    char text[DM_CALL_TIME_CAP];
+    struct tm call = { .tm_year = 126, .tm_mon = 10, .tm_mday = 27,
+                       .tm_hour = 14, .tm_min = 5 };
+    struct tm now = call;
+    now.tm_hour = 23;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "14:05") == 0, "today: time only");
+    now.tm_mday = 28;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "27.11. 14:05") == 0, "yesterday: date and time");
+    dm_format_call_time(0, &call, &now, text);
+    CHECK(text[0] == '\0', "unknown epoch: no time");
+    dm_format_call_time(1, NULL, &now, text);
+    CHECK(text[0] == '\0', "missing call time: no time");
+    call.tm_hour = 23;
+    call.tm_min = 59;
+    now.tm_hour = 0;
+    now.tm_min = 0;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "27.11. 23:59") == 0, "across midnight: date shown");
+    call.tm_year = 125;
+    call.tm_mon = 11;
+    call.tm_mday = 31;
+    now.tm_year = 126;
+    now.tm_mon = 0;
+    now.tm_mday = 1;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "31.12. 23:59") == 0, "year change: date shown");
+    now = call;
+    now.tm_year++;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "31.12. 23:59") == 0, "same day in another year: date shown");
+    dm_format_call_time(1, &call, NULL, text);
+    CHECK(strcmp(text, "31.12. 23:59") == 0, "unknown current time: date shown");
+    call.tm_min = 60;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(text[0] == '\0', "invalid local time: no partial output");
 }
 
 static void test_connection(void)
@@ -616,6 +676,7 @@ int main(void)
     test_call_screen_wide();
     test_name_wrap();
     test_layout();
+    test_call_time();
     test_connection();
     test_connection_icons();
     test_utf8();

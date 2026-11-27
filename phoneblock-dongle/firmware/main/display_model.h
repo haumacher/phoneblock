@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "lcd_font.h"
 #include "stats.h"
@@ -95,6 +96,11 @@ typedef struct {
     int name_lines;
     int wrap_y1, wrap_y2, wrap_number_y;
     int number_large_y, number_small_y;
+    // Scaled small-font time line, or -1 if the panel has no room.
+    // A one-line name uses these alternate positions when time is shown;
+    // a two-line name takes the time's space and keeps its wrap positions.
+    int time_y, name_time_y, name_number_time_y;
+    int number_large_time_y, number_small_time_y;
     // The fonts are drawn with every pixel as a text_scale x text_scale
     // block: 2 on the 240x135 panel, where the 160x80 fonts are too small
     // to read, 1 otherwise. The text positions above and the dm_text_width()
@@ -104,6 +110,19 @@ typedef struct {
 } dm_layout_t;
 
 void dm_layout(int width, int height, dm_layout_t *out);
+
+// dm_call_epoch returns the recorded epoch, or derives it from the call's
+// monotonic age when the current epoch and call time are known.
+int64_t dm_call_epoch(int64_t epoch_s, int64_t at_us,
+                      int64_t now_epoch_s, int64_t now_us);
+
+// dm_format_call_time formats a known call's local time, adding its date
+// unless now_local is the same local calendar day. A zero epoch or missing
+// call_local produces an empty string; a missing now_local includes the date.
+#define DM_CALL_TIME_CAP 13
+void dm_format_call_time(int64_t epoch, const struct tm *call_local,
+                         const struct tm *now_local,
+                         char out[DM_CALL_TIME_CAP]);
 
 // --- UTF-8 and glyphs -----------------------------------------------
 

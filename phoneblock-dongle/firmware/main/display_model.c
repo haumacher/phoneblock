@@ -274,6 +274,7 @@ void dm_layout(int width, int height, dm_layout_t *out)
     memset(out, 0, sizeof(*out));
     out->width  = width;
     out->height = height;
+    out->time_y = -1;
 
     out->icon_size = (width < height ? width : height) * 3 / 4;
     out->icon_x = (width - out->icon_size) / 2;
@@ -322,10 +323,53 @@ void dm_layout(int width, int height, dm_layout_t *out)
     out->name_number_y  = out->name_y + NAME_TO_NUMBER * s;
     out->number_large_y = (out->band_y - large_h) / 2;
     out->number_small_y = (out->band_y - small_h) / 2;
+    if (s >= 2 && small_h + block <= out->band_y
+        && out->number_large_y >= small_h
+        && out->number_small_y >= small_h) {
+        out->time_y = 0;
+        out->name_time_y = small_h;
+        out->name_number_time_y = out->name_time_y + NAME_TO_NUMBER * s;
+        out->number_large_time_y = (small_h + out->band_y - large_h) / 2;
+        out->number_small_time_y = (small_h + out->band_y - small_h) / 2;
+    }
     if (out->name_lines == 2) {
         out->wrap_y1       = (out->band_y - wrap_block) / 2;
         out->wrap_y2       = out->wrap_y1 + large_h;
         out->wrap_number_y = out->wrap_y2 + large_h + NUMBER_GAP_WRAP;
+    }
+}
+
+int64_t dm_call_epoch(int64_t epoch_s, int64_t at_us,
+                      int64_t now_epoch_s, int64_t now_us)
+{
+    if (epoch_s) return epoch_s;
+    if (now_epoch_s && at_us > 0 && at_us <= now_us)
+        return now_epoch_s - (now_us - at_us) / 1000000;
+    return 0;
+}
+
+void dm_format_call_time(int64_t epoch, const struct tm *call_local,
+                         const struct tm *now_local,
+                         char out[DM_CALL_TIME_CAP])
+{
+    out[0] = '\0';
+    if (!epoch || !call_local
+        || call_local->tm_mon < 0 || call_local->tm_mon > 11
+        || call_local->tm_mday < 1 || call_local->tm_mday > 31
+        || call_local->tm_hour < 0 || call_local->tm_hour > 23
+        || call_local->tm_min < 0 || call_local->tm_min > 59) return;
+
+    unsigned day = (unsigned)call_local->tm_mday;
+    unsigned month = (unsigned)call_local->tm_mon + 1;
+    unsigned hour = (unsigned)call_local->tm_hour;
+    unsigned minute = (unsigned)call_local->tm_min;
+    if (now_local && call_local->tm_year == now_local->tm_year
+        && call_local->tm_mon == now_local->tm_mon
+        && call_local->tm_mday == now_local->tm_mday) {
+        snprintf(out, DM_CALL_TIME_CAP, "%02u:%02u", hour, minute);
+    } else {
+        snprintf(out, DM_CALL_TIME_CAP, "%02u.%02u. %02u:%02u",
+                 day, month, hour, minute);
     }
 }
 
