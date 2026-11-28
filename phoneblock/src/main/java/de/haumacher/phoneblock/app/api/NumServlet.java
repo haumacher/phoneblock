@@ -70,17 +70,7 @@ public class NumServlet extends HttpServlet {
 				SpamReports reports = session.getMapper(SpamReports.class);
 				Boolean state = blocklist.getPersonalizationState(auth.getUserId(), phoneId);
 				if (state != null) {
-					PhoneInfo info;
-					if (state.booleanValue()) {
-						// User has personally blocked this number — return real community data
-						// with blackListed flag so the client can force-block.
-						info = db.getPhoneApiInfo(reports, phoneId);
-						info.setBlackListed(true);
-					} else {
-						// User has personally whitelisted this number.
-						info = NumberAnalyzer.phoneInfoFromId(phoneId)
-							.setRating(Rating.A_LEGITIMATE);
-					}
+					PhoneInfo info = SpamCheckServlet.personalInfo(db, reports, phoneId, state.booleanValue());
 					info.setLabel(number.getShortcut());
 					if (number.hasCity()) {
 						info.setLocation(number.getCity());

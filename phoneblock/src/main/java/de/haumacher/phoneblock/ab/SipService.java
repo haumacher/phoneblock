@@ -223,6 +223,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 							LOG.info("Call form white-listed number of {}.", botName);
 							info = NumberAnalyzer.phoneInfoFromId(phoneId)
 								.setRating(Rating.A_LEGITIMATE)
+								.setWhiteListed(true)
 								.setVotes(0);
 						}
 					} else {
