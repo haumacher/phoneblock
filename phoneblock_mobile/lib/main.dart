@@ -22,6 +22,7 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:phoneblock_mobile/blocklist_sync_service.dart';
+import 'package:phoneblock_mobile/wildcard_sync_service.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/logging/crash_handler.dart';
 import 'package:phoneblock_mobile/logging/log_viewer_screen.dart';
@@ -560,9 +561,15 @@ void callbackDispatcher() {
       if (task == 'blocklistSync') {
         final packageInfo = await PackageInfo.fromPlatform();
         appVersion = packageInfo.version;
-        return await BlocklistSyncService.instance.sync();
+        // Syncs the community blocklist and the personal wildcard rules. Always report success:
+        // false maps to Result.retry, and WorkManager's backoff then re-runs the expensive
+        // `?since=` query again and again (#388). The next periodic run retries anyway.
+        if (!await BlocklistSyncService.instance.sync()) {
+          AppLogger.instance.warn('app', 'workmanager task=$task: sync failed, retrying with the next periodic run');
+        }
+        return true;
       }
-      return Future.value(true);
+      return true;
     } catch (e, s) {
       AppLogger.instance.error('app', 'workmanager task=$task crashed', e, s);
       rethrow;
@@ -852,12 +859,16 @@ class _AppLauncherState extends State<AppLauncher> {
     // Check if permission is granted
     bool hasPermission = await checkPermission();
 
-    // Trigger blocklist sync if cache is empty (migration or first run)
     if (hasValidToken && hasPermission) {
       final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
       if ((syncInfo['version'] as int) == 0) {
+        // Cache is empty (migration or first run): full sync, including the wildcard rules.
         BlocklistSyncService.instance.sync();
         registerBlocklistSync();
+      } else {
+        // Bring the personal wildcard rules up to date, so a rule created on the website or
+        // on another device blocks without opening the blacklist screen (#487).
+        WildcardSyncService.instance.sync();
       }
     }
 
@@ -2867,12 +2878,6 @@ Future<void> registerBlocklistSync() async {
   );
 }
 
-/// Syncs wildcard prefixes from SQLite to SharedPreferences for CallChecker access.
-Future<void> syncWildcardPrefixesToNative() async {
-  final prefixes = await ScreenedCallsDatabase.instance.getWildcardPrefixes();
-  await platform.invokeMethod('setWildcardPrefixes', {'prefixes': prefixes});
-}
-
 Future<bool> checkPermission() async {
   try {
     return await platform.invokeMethod("checkPermission");
@@ -3944,8 +3949,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
         List<WildcardBlock> wildcards = [];
         if (_isBlacklist) {
-          await _syncWildcards(serverWildcards);
-          wildcards = await ScreenedCallsDatabase.instance.getAllWildcardBlocks();
+          wildcards = await WildcardSyncService.instance.reconcile(serverWildcards, widget.authToken);
         }
 
         setState(() {
@@ -3966,51 +3970,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         _isLoading = false;
       });
     }
-  }
-
-  /// Reconciles local wildcard blocks with the server (#377).
-  ///
-  /// The server is the source of truth; the local copy exists only so the native
-  /// CallScreeningService can block offline. The app's pre-existing local-only wildcards are
-  /// lifted to the server once (migration); afterwards the local set mirrors the server, so
-  /// wildcards added or removed on any of the user's devices propagate here.
-  Future<void> _syncWildcards(List<api.PersonalizedNumber> serverWildcards) async {
-    final db = ScreenedCallsDatabase.instance;
-    final prefs = await SharedPreferences.getInstance();
-
-    // One-time migration of the app's existing local-only wildcards to the server.
-    if (!(prefs.getBool('wildcards_migrated') ?? false)) {
-      final onServer = serverWildcards.map((w) => w.phone).toSet();
-      for (final local in await db.getAllWildcardBlocks()) {
-        if (!onServer.contains(local.prefix) && await addWildcardToServer(local.prefix, widget.authToken)) {
-          serverWildcards.add(api.PersonalizedNumber(
-              phone: local.prefix, wildcard: true, created: local.created.millisecondsSinceEpoch));
-        }
-      }
-      await prefs.setBool('wildcards_migrated', true);
-    }
-
-    // Mirror the server set into the local store: add server-only, drop local-only.
-    final serverPrefixes = serverWildcards.map((w) => w.phone).toSet();
-    final local = await db.getAllWildcardBlocks();
-    final localPrefixes = local.map((w) => w.prefix).toSet();
-
-    for (final sw in serverWildcards) {
-      if (!localPrefixes.contains(sw.phone)) {
-        await db.insertWildcardBlock(WildcardBlock(
-          prefix: sw.phone,
-          comment: null,
-          created: sw.created > 0 ? DateTime.fromMillisecondsSinceEpoch(sw.created) : DateTime.now(),
-        ));
-      }
-    }
-    for (final lw in local) {
-      if (!serverPrefixes.contains(lw.prefix)) {
-        await db.deleteWildcardBlock(lw.id!);
-      }
-    }
-
-    await syncWildcardPrefixesToNative();
   }
 
   /// Edit the comment for a number in the list.
@@ -4260,7 +4219,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     );
 
     await ScreenedCallsDatabase.instance.insertWildcardBlock(block);
-    await syncWildcardPrefixesToNative();
     // Sync the wildcard to the server (#377) so the user's other devices honor it too.
     await addWildcardToServer(prefix, widget.authToken);
     await _loadNumbers();
@@ -4742,7 +4700,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         if (confirmed != true) return false;
 
         await ScreenedCallsDatabase.instance.deleteWildcardBlock(block.id!);
-        await syncWildcardPrefixesToNative();
         // Remove the wildcard on the server too (#377), so the deletion propagates.
         await removeWildcardFromServer(block.prefix, widget.authToken);
 

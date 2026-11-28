@@ -4,3 +4,4 @@ phoneblock/.settings/org.eclipse.wst.common.component
 /.playwright-mcp
 /tmp/
 tmp/
+/phoneblock/.phoneblock

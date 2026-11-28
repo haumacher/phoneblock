@@ -40,6 +40,31 @@ public class SpamCheckServlet extends HttpServlet {
 
 	public static final String PATH = "/api/check";
 
+	/**
+	 * The answer for a number on the user's personal block or white list.
+	 *
+	 * <p>
+	 * A personal block returns the real community data with {@link PhoneInfo#isBlackListed()} set,
+	 * so the client force-blocks. A personal whitelist entry returns a legitimate record with
+	 * {@link PhoneInfo#isWhiteListed()} set, so the client can tell "allowed by the user" from
+	 * "unknown number" (e.g. to let it pass a personal wildcard block).
+	 * </p>
+	 */
+	static PhoneInfo personalInfo(DB db, SpamReports reports, String phoneId, boolean blocked) {
+		if (blocked) {
+			// A personal block overrides the community whitelist: the flags never contradict
+			// each other, so a client allows on whiteListed and blocks on blackListed.
+			PhoneInfo info = db.getPhoneApiInfo(reports, phoneId);
+			info.setBlackListed(true);
+			info.setWhiteListed(false);
+			return info;
+		} else {
+			return NumberAnalyzer.phoneInfoFromId(phoneId)
+				.setRating(Rating.A_LEGITIMATE)
+				.setWhiteListed(true);
+		}
+	}
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String userName = LoginFilter.getAuthenticatedUser(req);
@@ -74,17 +99,7 @@ public class SpamCheckServlet extends HttpServlet {
 				SpamReports reports = session.getMapper(SpamReports.class);
 				DBPersonalization personalized = blocklist.resolvePersonalizationByHash(auth.getUserId(), hash);
 				if (personalized != null) {
-					PhoneInfo info;
-					if (personalized.isBlocked()) {
-						// User has personally blocked this number — return real community data
-						// with blackListed flag. The client uses the flag to force-block.
-						info = db.getPhoneApiInfo(reports, personalized.getPhone());
-						info.setBlackListed(true);
-					} else {
-						// User has personally whitelisted this number.
-						info = NumberAnalyzer.phoneInfoFromId(personalized.getPhone())
-							.setRating(Rating.A_LEGITIMATE);
-					}
+					PhoneInfo info = personalInfo(db, reports, personalized.getPhone(), personalized.isBlocked());
 					NumServlet.applyUserComment(reports, auth, info, personalized.getPhone());
 					ServletUtil.sendResult(req, resp, info);
 					return;
