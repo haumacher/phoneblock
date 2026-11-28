@@ -193,8 +193,9 @@ class ScreenedCall {
 
 /// A locally stored wildcard blocking rule.
 ///
-/// Blocks all phone numbers starting with [prefix] during call screening.
-/// Stored only on the device (not synced to the server).
+/// Blocks all phone numbers starting with [prefix] during call screening. The native
+/// `CallChecker` reads this table directly; its contents mirror the user's wildcard rules on
+/// the server (#377), see `WildcardSyncService`.
 class WildcardBlock {
   final int? id;
 
@@ -663,11 +664,14 @@ class ScreenedCallsDatabase {
     return maps.map((m) => WildcardBlock.fromMap(m)).toList();
   }
 
-  /// Returns all wildcard prefixes as a list of strings.
-  Future<List<String>> getWildcardPrefixes() async {
+  /// Inserts a wildcard blocking rule unless one with the same prefix already exists.
+  ///
+  /// Used by the server sync, which may race with the other isolate (foreground app vs.
+  /// WorkManager task) adopting the same rule.
+  Future<void> insertWildcardBlockIfAbsent(WildcardBlock block) async {
     final db = await database;
-    final maps = await db.query('wildcard_blocks', columns: ['prefix'], orderBy: 'prefix ASC');
-    return maps.map((m) => m['prefix'] as String).toList();
+    await db.insert('wildcard_blocks', block.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   /// Updates the comment for a wildcard blocking rule.
