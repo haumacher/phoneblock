@@ -64,9 +64,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         id: changelog
         run: |
-          VERSION=$(sed -n -E 's/^version:(.+)\+([0-9]+)$/\1/p' phoneblock_mobile/pubspec.yaml | tr -d ' ')
           VERSION_CODE=$(sed -n -E 's/^version:.+\+([0-9]+)$/\1/p' phoneblock_mobile/pubspec.yaml)
-          echo "name=PhoneBlock Mobile $VERSION" >> "$GITHUB_OUTPUT"
+          # A pre-release tag (pb-mobile-1.4.0-rc1) names the release after the tag.
+          echo "name=PhoneBlock Mobile ${GITHUB_REF_NAME#pb-mobile-}" >> "$GITHUB_OUTPUT"
           CHANGELOG_FILE="fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
           if [ -f "$CHANGELOG_FILE" ]; then
             echo "body_path=$CHANGELOG_FILE" >> "$GITHUB_OUTPUT"
@@ -79,16 +79,18 @@ jobs:
           name: ${{ steps.changelog.outputs.name }}
           body_path: ${{ steps.changelog.outputs.body_path }}
           files: phoneblock_mobile/build/app/outputs/flutter-apk/app-release.apk
+          # -rcN tags are previews: a GitHub pre-release only, no Play Store upload.
+          prerelease: ${{ contains(github.ref_name, '-rc') }}
 
-      # Google Play accepts only app bundles. The upload goes to the internal
-      # testing track; promotion to production happens by hand in the Play Console.
+      # Google Play accepts only app bundles. Only final releases are uploaded, to the
+      # internal testing track; promotion to production happens by hand in the Play Console.
       - name: Build release app bundle
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-rc')
         working-directory: phoneblock_mobile
         run: flutter build appbundle
 
       - name: Prepare Play release notes
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-rc')
         run: |
           mkdir -p play-whatsnew
           if [ -n "${{ steps.changelog.outputs.body_path }}" ]; then
@@ -100,7 +102,7 @@ jobs:
           fi
 
       - name: Upload to Google Play (internal testing)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-rc')
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
