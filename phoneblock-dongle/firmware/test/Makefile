@@ -408,6 +408,9 @@ test: $(BINS)
 	@# The call recordings' A-law decode and WAV builder (#663, needs node).
 	@if command -v node >/dev/null; then echo "→ rec_js_check.js"; node rec_js_check.js; \
 	 else echo "→ rec_js_check.js skipped (no node)"; fi
+	@# The display controls and their status loader (#773, needs node).
+	@if command -v node >/dev/null; then echo "→ display_js_check.js"; node display_js_check.js; \
+	 else echo "→ display_js_check.js skipped (no node)"; fi
 	@# The sign-in screen only for the dongle's own 401, not ingress's (#703, needs node).
 	@if command -v node >/dev/null; then echo "→ login_gate_js_check.js"; node login_gate_js_check.js; \
 	 else echo "→ login_gate_js_check.js skipped (no node)"; fi

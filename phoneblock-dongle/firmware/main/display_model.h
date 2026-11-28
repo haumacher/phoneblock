@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "lcd_font.h"
 #include "stats.h"
@@ -95,6 +96,11 @@ typedef struct {
     int name_lines;
     int wrap_y1, wrap_y2, wrap_number_y;
     int number_large_y, number_small_y;
+    // Scaled small-font time line, or -1 if the panel has no room.
+    // A one-line name uses these alternate positions when time is shown;
+    // a two-line name takes the time's space and keeps its wrap positions.
+    int time_y, name_time_y, name_number_time_y;
+    int number_large_time_y, number_small_time_y;
     // The fonts are drawn with every pixel as a text_scale x text_scale
     // block: 2 on the 240x135 panel, where the 160x80 fonts are too small
     // to read, 1 otherwise. The text positions above and the dm_text_width()
@@ -104,6 +110,19 @@ typedef struct {
 } dm_layout_t;
 
 void dm_layout(int width, int height, dm_layout_t *out);
+
+// dm_call_epoch returns the recorded epoch, or derives it from the call's
+// monotonic age when the current epoch and call time are known.
+int64_t dm_call_epoch(int64_t epoch_s, int64_t at_us,
+                      int64_t now_epoch_s, int64_t now_us);
+
+// dm_format_call_time formats a known call's local time, adding its date
+// unless now_local is the same local calendar day. A zero epoch or missing
+// call_local produces an empty string; a missing now_local includes the date.
+#define DM_CALL_TIME_CAP 13
+void dm_format_call_time(int64_t epoch, const struct tm *call_local,
+                         const struct tm *now_local,
+                         char out[DM_CALL_TIME_CAP]);
 
 // --- UTF-8 and glyphs -----------------------------------------------
 
@@ -198,3 +217,65 @@ typedef struct {
 // with the ellipsis if still too long. With 1 the name is cut on one line.
 void dm_call_screen(const stats_call_t *call, const dm_layout_t *l,
                     dm_call_screen_t *out);
+
+// --- backlight timeout ----------------------------------------------
+
+// The "display_dim" setting (#773): seconds until the backlight dims after
+// boot or a call, stored as "30", "60", "120", "300" or "always". "" is the
+// default, DM_DIM_DEFAULT_S. "Always on" (full brightness all the time) is
+// offered only where the board allows it (T-Dongle-S3: no, its dimmed level
+// already shows the logo and full brightness means heat, #606).
+#define DM_DIM_DEFAULT_S 60
+#define DM_DIM_ALWAYS    0     // dm_dim_seconds(): never dims
+
+// Whether `value` is a stored timeout the board accepts. "" is valid (it
+// means the default). The web UI refuses anything else with a visible reason.
+bool dm_dim_valid(const char *value, bool always_ok);
+
+// The timeout in seconds for a stored value, DM_DIM_ALWAYS for "always". An
+// unknown, forged or (with !always_ok) "always" value gives the default, so
+// it cannot reach the backlight whatever the flash holds.
+int  dm_dim_seconds(const char *value, bool always_ok);
+
+// --- buttons and paging ---------------------------------------------
+
+// The two buttons of the T-Display, by what they do in the call list.
+typedef enum {
+    DM_BUTTON_NEWER,   // GPIO 0: towards the newest call, then the logo
+    DM_BUTTON_OLDER,   // GPIO 35: towards older calls
+} dm_button_t;
+
+// A position in the call list as the screen shows it: DM_PAGE_NONE for the
+// logo (or a call that is not listed), else the index of the call among the
+// newest ones, 0 the newest. Only the DM_BADGE_CALLS newest are paged.
+#define DM_PAGE_NONE (-1)
+
+// The position after a press of `button`, with `count` calls listed and
+// `index` shown so far.
+//   - dark or dimmed (!lit): any button wakes the display on the newest
+//     call (the logo if the list is empty), whatever the position was;
+//   - a call on (`calling`): the position stays, only the backlight wakes;
+//   - OLDER goes one call back and stops at the last one (no wrap), from the
+//     logo it goes to the newest; NEWER goes one call forward, from the
+//     newest to the logo, and stays on the logo.
+int dm_page_press(int index, dm_button_t button, bool lit, bool calling,
+                  int count);
+
+// The position of a call that just started: its place in the list (the
+// newest) or DM_PAGE_NONE if it is not listed (counters only).
+int dm_page_of_call(const stats_call_t *call);
+
+// One button's debounce: sampled at a fixed period, the level must be low
+// (pressed) in DM_BUTTON_STABLE successive samples to count, once per
+// press; DM_BUTTON_STABLE successive released samples re-arm it. Held and
+// glitching contacts therefore give no repeats and no phantom presses.
+#define DM_BUTTON_STABLE 2
+typedef struct {
+    int  low_samples;   // consecutive low samples so far
+    int  high_samples;  // consecutive released samples so far
+    bool reported;      // this press was already reported
+} dm_button_state_t;
+
+// Feeds one sample (`low`: the pin reads pressed); true exactly when the
+// press is confirmed.
+bool dm_button_sample(dm_button_state_t *state, bool low);

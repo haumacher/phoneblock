@@ -2640,5 +2640,41 @@
   "@status.rec.failed": {
     "description": "Dongle web UI: error when a call recording cannot be fetched or played",
     "x-translated": "5da5d642"
+  },
+  "status.system.display.dim": "Display ausschalten nach",
+  "@status.system.display.dim": {
+    "description": "Dongle web UI: label of the select that sets how long the display backlight stays on before it dims"
+  },
+  "status.system.display.dim.30": "30 Sekunden",
+  "@status.system.display.dim.30": {
+    "description": "Dongle web UI: option of the display dim timeout"
+  },
+  "status.system.display.dim.60": "60 Sekunden (Standard)",
+  "@status.system.display.dim.60": {
+    "description": "Dongle web UI: option of the display dim timeout, the default"
+  },
+  "status.system.display.dim.120": "2 Minuten",
+  "@status.system.display.dim.120": {
+    "description": "Dongle web UI: option of the display dim timeout"
+  },
+  "status.system.display.dim.300": "5 Minuten",
+  "@status.system.display.dim.300": {
+    "description": "Dongle web UI: option of the display dim timeout"
+  },
+  "status.system.display.dim.always": "Nie (immer an)",
+  "@status.system.display.dim.always": {
+    "description": "Dongle web UI: option of the display dim timeout, the backlight never dims. Not offered on the T-Dongle-S3."
+  },
+  "status.system.display.dim.hint": "So lange leuchtet das Display nach dem Booten, einem Anruf oder einem Tastendruck.",
+  "@status.system.display.dim.hint": {
+    "description": "Dongle web UI: help below the display dim timeout"
+  },
+  "status.system.display.dim.hint.buttons": "Mit den Tasten am Gerät holst du es zurück und blätterst durch die letzten Anrufe.",
+  "@status.system.display.dim.hint.buttons": {
+    "description": "Dongle web UI: help for boards with display buttons"
+  },
+  "status.system.display.wake": "Display einschalten",
+  "@status.system.display.wake": {
+    "description": "Dongle web UI: button that turns the display backlight on for a while and shows the last call"
   }
 }

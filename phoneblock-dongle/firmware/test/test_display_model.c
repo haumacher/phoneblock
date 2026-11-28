@@ -9,6 +9,8 @@
 //   * the layout: the T-Dongle-S3's positions from before #708, and the
 //     T-Display's derived from its size;
 //   * which board a chip may drive;
+//   * the backlight timeout setting and the buttons' paging through the
+//     recent calls, with their debounce (#773);
 //   * UTF-8 decoding never runs past the string, whatever the input.
 //
 // Built with AddressSanitizer (see the Makefile), so an overrun aborts.
@@ -417,6 +419,7 @@ static void test_layout(void)
           "160x80: name and number as before");
     CHECK(l.name_lines == 1 && l.wrap_y1 == 0 && l.wrap_y2 == 0
           && l.wrap_number_y == 0, "160x80: one name line");
+    CHECK(l.time_y == -1, "160x80: no time line");
 
     // The T-Display: the logo by 3/2, centred; the text centred above the
     // band at the bottom.
@@ -434,6 +437,15 @@ static void test_layout(void)
     CHECK(l.name_lines == 2 && l.wrap_y1 == 2 && l.wrap_y2 == 38
           && l.wrap_number_y == 76,
           "240x135: two name lines, 100 px block centred in 105 px");
+    CHECK(l.time_y == 0 && l.name_time_y == 26 && l.name_number_time_y == 76,
+          "240x135: time and one-line name positions");
+    CHECK(l.time_y + lcd_font_small.h * l.text_scale == l.name_time_y
+          && l.band_y - (l.name_number_time_y + lcd_font_small.h * l.text_scale) == 3,
+          "240x135: name below time, three-pixel gap above band");
+    CHECK(l.number_large_time_y == 47 && l.number_small_time_y == 52,
+          "240x135: numbers centred between time and band");
+    CHECK(l.time_y + lcd_font_small.h * l.text_scale > l.wrap_y1,
+          "240x135: wrapped name has no room for time");
 
     // Everything inside the panel, for both sizes.
     int sizes[][2] = { { DM_TDONGLE_W, DM_TDONGLE_H }, { DM_TDISPLAY_W, DM_TDISPLAY_H } };
@@ -448,6 +460,56 @@ static void test_layout(void)
         CHECK(inside, i == 0 ? "160x80: all inside the panel"
                              : "240x135: all inside the panel");
     }
+}
+
+static void test_call_time(void)
+{
+    printf("call time:\n");
+    CHECK(dm_call_epoch(123, 0, 0, 0) == 123, "recorded epoch takes precedence");
+    CHECK(dm_call_epoch(0, 1500000, 1000, 4100000) == 998,
+          "epoch derived from monotonic age");
+    CHECK(dm_call_epoch(0, 1500000, 0, 4100000) == 0, "clock unknown");
+    CHECK(dm_call_epoch(0, 0, 1000, 4100000) == 0, "call uptime unknown");
+    CHECK(dm_call_epoch(0, 4100001, 1000, 4100000) == 0, "call uptime in future");
+    CHECK(dm_call_epoch(0, 4100000, 1000, 4100000) == 1000,
+          "call uptime equals current uptime");
+    char text[DM_CALL_TIME_CAP];
+    struct tm call = { .tm_year = 126, .tm_mon = 10, .tm_mday = 27,
+                       .tm_hour = 14, .tm_min = 5 };
+    struct tm now = call;
+    now.tm_hour = 23;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "14:05") == 0, "today: time only");
+    now.tm_mday = 28;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "27.11. 14:05") == 0, "yesterday: date and time");
+    dm_format_call_time(0, &call, &now, text);
+    CHECK(text[0] == '\0', "unknown epoch: no time");
+    dm_format_call_time(1, NULL, &now, text);
+    CHECK(text[0] == '\0', "missing call time: no time");
+    call.tm_hour = 23;
+    call.tm_min = 59;
+    now.tm_hour = 0;
+    now.tm_min = 0;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "27.11. 23:59") == 0, "across midnight: date shown");
+    call.tm_year = 125;
+    call.tm_mon = 11;
+    call.tm_mday = 31;
+    now.tm_year = 126;
+    now.tm_mon = 0;
+    now.tm_mday = 1;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "31.12. 23:59") == 0, "year change: date shown");
+    now = call;
+    now.tm_year++;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(strcmp(text, "31.12. 23:59") == 0, "same day in another year: date shown");
+    dm_format_call_time(1, &call, NULL, text);
+    CHECK(strcmp(text, "31.12. 23:59") == 0, "unknown current time: date shown");
+    call.tm_min = 60;
+    dm_format_call_time(1, &call, &now, text);
+    CHECK(text[0] == '\0', "invalid local time: no partial output");
 }
 
 static void test_connection(void)
@@ -607,6 +669,100 @@ static void test_connection_icons(void)
           "empty icon has no pixels");
 }
 
+static void test_dim_setting(void)
+{
+    puts("dim timeout");
+    CHECK(dm_dim_seconds("", true) == 60 && dm_dim_seconds("", false) == 60,
+          "empty is the default 60 s");
+    CHECK(dm_dim_seconds("30", false) == 30 && dm_dim_seconds("120", false) == 120
+          && dm_dim_seconds("300", false) == 300, "listed values map to seconds");
+    CHECK(dm_dim_valid("", false) && dm_dim_valid("30", false)
+          && dm_dim_valid("60", false) && dm_dim_valid("120", false)
+          && dm_dim_valid("300", false), "listed values are valid everywhere");
+    CHECK(dm_dim_valid("always", true) && dm_dim_seconds("always", true) == DM_DIM_ALWAYS,
+          "always is accepted where the board allows it");
+    CHECK(!dm_dim_valid("always", false), "the T-Dongle-S3 refuses always");
+    CHECK(dm_dim_seconds("always", false) == DM_DIM_ALWAYS + 60,
+          "a forged always on the T-Dongle-S3 gives the default");
+    CHECK(!dm_dim_valid("45", true) && !dm_dim_valid("0", true)
+          && !dm_dim_valid("-1", true) && !dm_dim_valid("60s", true)
+          && !dm_dim_valid("ALWAYS", true), "other values are refused");
+    CHECK(dm_dim_seconds("45", true) == 60 && dm_dim_seconds("0", true) == 60,
+          "unknown stored values give the default");
+}
+
+static void test_paging(void)
+{
+    puts("paging");
+    const dm_button_t NEWER = DM_BUTTON_NEWER, OLDER = DM_BUTTON_OLDER;
+    CHECK(dm_page_press(DM_PAGE_NONE, OLDER, false, false, 5) == 0
+          && dm_page_press(3, NEWER, false, false, 5) == 0,
+          "a press on a dark display shows the newest call, whatever was shown");
+    CHECK(dm_page_press(2, OLDER, false, false, 0) == DM_PAGE_NONE,
+          "a press on a dark display with no calls shows the logo");
+    CHECK(dm_page_press(DM_PAGE_NONE, OLDER, true, false, 5) == 0,
+          "older from the logo goes to the newest");
+    CHECK(dm_page_press(0, OLDER, true, false, 5) == 1
+          && dm_page_press(3, OLDER, true, false, 5) == 4, "older goes one call back");
+    CHECK(dm_page_press(4, OLDER, true, false, 5) == 4, "older stops at the last call");
+    CHECK(dm_page_press(9, OLDER, true, false, 50) == 9
+          && dm_page_press(8, OLDER, true, false, 50) == 9,
+          "only the DM_BADGE_CALLS newest are paged");
+    CHECK(dm_page_press(3, NEWER, true, false, 5) == 2, "newer goes one call forward");
+    CHECK(dm_page_press(0, NEWER, true, false, 5) == DM_PAGE_NONE,
+          "newer from the newest goes to the logo");
+    CHECK(dm_page_press(DM_PAGE_NONE, NEWER, true, false, 5) == DM_PAGE_NONE,
+          "newer on the logo stays there");
+    CHECK(dm_page_press(DM_PAGE_NONE, OLDER, true, false, 0) == DM_PAGE_NONE
+          && dm_page_press(DM_PAGE_NONE, NEWER, true, false, 0) == DM_PAGE_NONE,
+          "no calls: always the logo");
+    CHECK(dm_page_press(7, OLDER, true, false, 3) == 2
+          && dm_page_press(7, NEWER, true, false, 3) == 1
+          && dm_page_press(7, OLDER, true, false, 0) == DM_PAGE_NONE,
+          "a position past a shrunk list is clamped first");
+    CHECK(dm_page_press(2, OLDER, true, true, 5) == 2
+          && dm_page_press(2, NEWER, true, true, 5) == 2
+          && dm_page_press(DM_PAGE_NONE, OLDER, true, true, 5) == DM_PAGE_NONE,
+          "during a call the buttons do not page");
+    CHECK(dm_page_press(2, OLDER, false, true, 5) == 0,
+          "a dark display wakes on the newest even if a call is flagged");
+
+    stats_call_t listed, unlisted;
+    memset(&listed, 0, sizeof(listed));
+    memset(&unlisted, 0, sizeof(unlisted));
+    listed.seq = 7;
+    CHECK(dm_page_of_call(&listed) == 0, "a listed call is the newest");
+    CHECK(dm_page_of_call(&unlisted) == DM_PAGE_NONE
+          && dm_page_of_call(NULL) == DM_PAGE_NONE,
+          "a counters-only call is not in the paging");
+}
+
+static void test_button_debounce(void)
+{
+    puts("button debounce");
+    dm_button_state_t b = {0};
+    CHECK(!dm_button_sample(&b, false), "released: nothing");
+    CHECK(!dm_button_sample(&b, true), "the first low sample is not yet a press");
+    CHECK(dm_button_sample(&b, true), "the second confirms the press");
+    CHECK(!dm_button_sample(&b, true) && !dm_button_sample(&b, true),
+          "holding gives no repeats");
+    CHECK(!dm_button_sample(&b, false), "release");
+    CHECK(!dm_button_sample(&b, false), "release confirmed");
+    CHECK(!dm_button_sample(&b, true) && dm_button_sample(&b, true),
+          "the next press counts again");
+    dm_button_state_t bounce = {0};
+    int bounced_presses = 0;
+    const bool samples[] = { true, true, false, true, true };
+    for (size_t i = 0; i < sizeof(samples) / sizeof(samples[0]); i++) {
+        bounced_presses += dm_button_sample(&bounce, samples[i]);
+    }
+    CHECK(bounced_presses == 1, "release bounce does not repeat the press");
+    dm_button_state_t g = {0};
+    int presses = 0;
+    for (int i = 0; i < 20; i++) presses += dm_button_sample(&g, i % 2 == 0);
+    CHECK(presses == 0, "a glitching contact gives no press");
+}
+
 int main(void)
 {
     stats_setup();
@@ -616,10 +772,14 @@ int main(void)
     test_call_screen_wide();
     test_name_wrap();
     test_layout();
+    test_call_time();
     test_connection();
     test_connection_icons();
     test_utf8();
     test_glyphs();
+    test_dim_setting();
+    test_paging();
+    test_button_debounce();
     printf("\n%d tests, %d failures\n", tests_run, tests_failed);
     calls_test_cleanup();
     return tests_failed ? 1 : 0;

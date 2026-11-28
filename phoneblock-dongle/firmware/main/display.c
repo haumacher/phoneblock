@@ -22,6 +22,7 @@
 #include "lcd_font.h"
 #include "lcd_logo.h"
 #include "sip_register.h"
+#include "time_sync.h"
 #include "wifi.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -38,6 +39,10 @@ typedef struct {
     int mosi, sclk, cs, dc, rst;
     int backlight;
     bool backlight_active_low;
+    // The buttons (#773), -1 where the board has none: active-low, pulled
+    // up on the board. They belong to the board, like the display pins, so a
+    // new board entry brings its own.
+    int button_newer, button_older;
     int width, height;
     // Offset of the visible window in the controller's RAM, in the swapped
     // (landscape) axes, per orientation. Turning the image by 180° mirrors
@@ -57,6 +62,7 @@ static const board_t k_board = {
     .name = "T-Dongle-S3", .host = SPI2_HOST,
     .mosi = PIN_MOSI, .sclk = PIN_SCLK, .cs = PIN_CS, .dc = PIN_DC, .rst = PIN_RST,
     .backlight = PIN_BACKLIGHT, .backlight_active_low = true,
+    .button_newer = PIN_BUTTON_NEWER, .button_older = PIN_BUTTON_OLDER,
     .width = DM_TDONGLE_W, .height = DM_TDONGLE_H,
     .gap_normal_x = 1, .gap_normal_y = 26, .gap_flipped_x = 1, .gap_flipped_y = 26,
     .mirror_x = false, .rgb_order = LCD_RGB_ELEMENT_ORDER_BGR,
@@ -70,6 +76,7 @@ static const board_t k_board = {
     .name = "T-Display", .host = SPI3_HOST,
     .mosi = PIN_MOSI, .sclk = PIN_SCLK, .cs = PIN_CS, .dc = PIN_DC, .rst = PIN_RST,
     .backlight = PIN_BACKLIGHT, .backlight_active_low = false,
+    .button_newer = PIN_BUTTON_NEWER, .button_older = PIN_BUTTON_OLDER,
     .width = DM_TDISPLAY_W, .height = DM_TDISPLAY_H,
     .gap_normal_x = 40, .gap_normal_y = 53, .gap_flipped_x = 40, .gap_flipped_y = 52,
     .mirror_x = true, .rgb_order = LCD_RGB_ELEMENT_ORDER_BGR,
@@ -92,17 +99,25 @@ static const board_t k_board = {
 #else
 #define BL_PWM        0
 #endif
-// The backlight dims this long after boot or after a call ended. The caller
-// screen of an ended call stays until then, and the idle screen is drawn
-// right before dimming, so a call that ended at once can still be read.
-#define BL_DIM_AFTER_US (60LL * 1000 * 1000)
+// The backlight dims after the "display_dim" setting's seconds (60 by
+// default) following boot, a call that ended or a button press; "always on"
+// never does (not offered on the T-Dongle-S3). The caller screen of an ended
+// call stays until then, and the idle screen is drawn right before dimming,
+// so a call that ended at once can still be read.
+#define NEVER_US INT64_MAX
+
+// The buttons are polled by an esp_timer instead of GPIO interrupts: that
+// needs neither gpio_install_isr_service() (nothing else here installs it)
+// nor an ISR in IRAM, and the debounce (dm_button_sample()) is just two equal
+// samples. 20 ms is far below what a press takes.
+#define BUTTON_POLL_US (20LL * 1000)
 
 // The call's fallback end: a legitimate call is declined by the dongle
 // after a few seconds (#380) while the other phones keep ringing, and the
 // Fritz!Box tells the dongle nothing more about it — so the call counts as
 // ended on this timeout unless a CANCEL, the spam call's teardown or the
 // next call ends it first. Long enough to cover the ringing phase. Ending
-// a call only starts the BL_DIM_AFTER_US hold: the caller screen stays.
+// a call only starts the dim timeout: the caller screen stays.
 #define CALL_TIMEOUT_US (60LL * 1000 * 1000)
 // Poll connection state once a second without callbacks from other modules.
 #define CONNECTION_POLL_US (1000LL * 1000)
@@ -145,8 +160,16 @@ typedef struct {
     // esp_timer task's stack.
     stats_call_t     draw_call;
     dm_call_screen_t screen;
+    char             call_time[DM_CALL_TIME_CAP];
+    bool             time_failure_logged;
     dm_connection_state_t connection_state;
     dm_connection_t connection;
+    // The newest listed calls (at most DM_BADGE_CALLS, newest first) that the
+    // buttons page through, refreshed with the badge by
+    // display_calls_changed(): reading the call file is no job for the
+    // esp_timer task the buttons run on. Under s_state.
+    stats_call_t     recent[DM_BADGE_CALLS];
+    int              recent_n;
     uint16_t         logo_row[LCD_LOGO_W];  // one decoded logo row
 } display_mem_t;
 static display_mem_t *s_mem;
@@ -157,6 +180,7 @@ static esp_lcd_panel_handle_t s_panel;
 static SemaphoreHandle_t s_done;    // given by on_trans_done
 static SemaphoreHandle_t s_lock;    // serialises drawing (timer vs. httpd)
 static SemaphoreHandle_t s_state;   // guards the call state below (short holds)
+static SemaphoreHandle_t s_cache_lock; // serialises snapshots and publication
 
 static esp_timer_handle_t s_redraw_timer;
 // Switched off in the settings (display_set_enabled): panel off, backlight
@@ -165,6 +189,7 @@ static volatile bool s_off;
 static esp_timer_handle_t s_dim_timer;
 static esp_timer_handle_t s_call_timer;
 static esp_timer_handle_t s_connection_timer;
+static esp_timer_handle_t s_button_timer;
 // The backlight was turned on for the current connection fault. Only the
 // esp_timer task touches it (poll_connection, under s_lock).
 static bool s_connection_lit;
@@ -180,6 +205,9 @@ static bool         s_call_shown;        // the caller screen is wanted: during
 static uint32_t     s_call_gen;          // bumped per call
 static int64_t      s_call_started_us;
 static int64_t      s_dim_due_us;        // when the latest dim timer fires
+static int          s_page = DM_PAGE_NONE;  // what the buttons paged to (dm_page_press)
+// The backlight is at full brightness (not dimmed or dark), under s_state.
+static bool s_bl_full;
 
 // What is on the panel (the scratch space is in s_mem). All under s_lock.
 static bool             s_drawn_valid;
@@ -253,6 +281,7 @@ static const lcd_cmd_t k_st7789_tdisplay_init[] = {
 // Full brightness (true) or dimmed (false; dark on the ESP32 build).
 static void set_backlight(bool full)
 {
+    s_bl_full = full && !s_off;
 #if BL_PWM
     uint32_t duty = s_off ? 0 : full ? BL_FULL : BL_DIMMED;
     ledc_set_duty(LEDC_LOW_SPEED_MODE, BL_CHANNEL, duty);
@@ -275,6 +304,9 @@ static void dim_backlight(void *arg)
     bool calling = s_call_active;
     bool held = s_call_shown && !calling && !stale;
     if (held) s_call_shown = false;
+    // Dimmed, the screen is the logo again: the next press starts at the
+    // newest call.
+    if (!calling && !stale) s_page = DM_PAGE_NONE;
     xSemaphoreGive(s_state);
     if (calling || stale) return;
     // The dimmed screen shows the idle screen, not the held caller.
@@ -287,17 +319,42 @@ static void dim_backlight(void *arg)
     xSemaphoreGive(s_state);
 }
 
-// Full brightness now, dimmed BL_DIM_AFTER_US later (unless a call is on
-// screen by then); a held caller screen goes back to the idle screen then.
+// The dim timeout in microseconds, NEVER_US for "always on". The setting is
+// resolved by dm_dim_seconds() for this board, so a stored value it does not
+// offer (a forged "always" on the T-Dongle-S3) is the default.
+static int64_t dim_after_us(void)
+{
+    int seconds = dm_dim_seconds(config_display_dim(), DISPLAY_DIM_ALWAYS_OK);
+    return seconds == DM_DIM_ALWAYS ? NEVER_US : (int64_t)seconds * 1000 * 1000;
+}
+
+// Publishes the hold until `after_us` from now (caller holds s_state), so a
+// dim callback already running cannot cut it short.
+static void set_dim_due(int64_t after_us)
+{
+    s_dim_due_us = after_us == NEVER_US ? NEVER_US
+                                        : esp_timer_get_time() + after_us;
+}
+
+// Caller holds s_state, serialising the timer with deadline publication.
+static void arm_dim_timer(int64_t after_us)
+{
+    esp_timer_stop(s_dim_timer);
+    if (after_us != NEVER_US) esp_timer_start_once(s_dim_timer, after_us);
+}
+
+// Full brightness now, dimmed the dim timeout later (unless a call is on
+// screen by then; never with "always on"); a held caller screen goes back to
+// the idle screen then.
 static void brighten_for_a_while(void)
 {
+    int64_t after = dim_after_us();
     xSemaphoreTake(s_state, portMAX_DELAY);
     // Publish the hold with the light so a dim callback cannot undo it.
     set_backlight(true);
-    s_dim_due_us = esp_timer_get_time() + BL_DIM_AFTER_US;
+    set_dim_due(after);
+    arm_dim_timer(after);
     xSemaphoreGive(s_state);
-    esp_timer_stop(s_dim_timer);
-    esp_timer_start_once(s_dim_timer, BL_DIM_AFTER_US);
 }
 
 // Sets the backlight up dark: it comes on once the logo is drawn.
@@ -506,6 +563,7 @@ static uint16_t band_colour(dm_class_t cls)
 static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
 {
     const dm_layout_t *l = &s_mem->layout;
+    bool show_time = l->time_y >= 0 && !scr->name2.font && s_mem->call_time[0];
     uint16_t band = band_colour(scr->cls);
     for (int r = 0; r < STRIP_ROWS; r++) {
         uint16_t c = y0 + r < l->band_y ? C_BACKGROUND : band;
@@ -517,11 +575,19 @@ static void compose_call(uint16_t *strip, int y0, const dm_call_screen_t *scr)
         draw_line(strip, y0, &scr->name2, l->wrap_y2, C_WHITE);
         draw_line(strip, y0, &scr->sub, l->wrap_number_y, C_NUMBER);
     } else if (scr->named) {
-        draw_line(strip, y0, &scr->main, l->name_y, C_WHITE);
-        draw_line(strip, y0, &scr->sub, l->name_number_y, C_NUMBER);
+        draw_line(strip, y0, &scr->main, show_time ? l->name_time_y : l->name_y, C_WHITE);
+        draw_line(strip, y0, &scr->sub,
+                  show_time ? l->name_number_time_y : l->name_number_y, C_NUMBER);
     } else {
-        int y = scr->main.font == &lcd_font_large ? l->number_large_y : l->number_small_y;
+        int y = scr->main.font == &lcd_font_large
+            ? (show_time ? l->number_large_time_y : l->number_large_y)
+            : (show_time ? l->number_small_time_y : l->number_small_y);
         draw_line(strip, y0, &scr->main, y, C_WHITE);
+    }
+    if (show_time) {
+        int width = dm_text_width(&lcd_font_small, l->text_scale, s_mem->call_time);
+        draw_text(strip, y0, &lcd_font_small, l->text_scale, s_mem->call_time,
+                  (W - width) / 2, l->time_y, C_NUMBER);
     }
     draw_line(strip, y0, &scr->band, l->band_text_y,
               scr->cls == DM_CLASS_SUSPECT ? C_BLACK : C_WHITE);
@@ -591,12 +657,41 @@ static bool draw_screen(bool force)
     xSemaphoreGive(s_state);
     dm_connection_t connection = dm_connection_visible(s_mem->connection, call);
 
+    char call_time[DM_CALL_TIME_CAP] = "";
+    if (call && s_mem->layout.time_y >= 0) {
+        int64_t now_epoch = time_sync_now_epoch();
+        int64_t call_epoch = dm_call_epoch(s_mem->draw_call.epoch_s,
+            s_mem->draw_call.this_boot ? s_mem->draw_call.at_us : 0,
+            now_epoch, esp_timer_get_time());
+        if (call_epoch) {
+            time_t epoch = (time_t)call_epoch;
+            time_t now = (time_t)now_epoch;
+            struct tm call_local, now_local;
+            time_sync_tz_lock();
+            bool converted = (int64_t)epoch == call_epoch
+                && localtime_r(&epoch, &call_local);
+            bool now_converted = now != 0 && localtime_r(&now, &now_local);
+            time_sync_tz_unlock();
+            if (converted) {
+                dm_format_call_time(call_epoch, &call_local,
+                                    now_converted ? &now_local : NULL, call_time);
+            }
+            bool failed = !converted || (now != 0 && !now_converted);
+            if (failed && !s_mem->time_failure_logged) {
+                ESP_LOGW(TAG, "cannot convert display time");
+                s_mem->time_failure_logged = true;
+            } else if (!failed) {
+                s_mem->time_failure_logged = false;
+            }
+        }
+    }
     if (!force && s_drawn_valid && s_drawn_call == call
-        && (call ? s_drawn_gen == gen
+        && (call ? s_drawn_gen == gen && strcmp(call_time, s_mem->call_time) == 0
                  : s_drawn_connection == connection
                    && (connection != DM_CONNECTION_OK || s_drawn_badge == badge))) {
         return true;
     }
+    memcpy(s_mem->call_time, call_time, sizeof(call_time));
     if (call) dm_call_screen(&s_mem->draw_call, &s_mem->layout, &s_mem->screen);
     if (!send_frame(call, badge, connection)) {
         s_drawn_valid = false;
@@ -662,6 +757,91 @@ static void schedule_redraw(void)
     esp_timer_start_once(s_redraw_timer, 1);   // ESP_ERR_INVALID_STATE: already pending
 }
 
+// --- buttons ------------------------------------------------------------
+
+// Shows the recent call at `index`, or the logo for DM_PAGE_NONE (or an
+// index past the cached calls). The caller holds s_state; the drawing
+// follows from the state, in the esp_timer task or by the caller.
+static void show_page(int index)
+{
+    if (index >= 0 && index < s_mem->recent_n) {
+        s_mem->call = s_mem->recent[index];
+        s_call_shown = true;
+        s_call_gen++;
+        s_page = index;
+    } else {
+        s_call_shown = false;
+        s_page = DM_PAGE_NONE;
+    }
+}
+
+// A button press, or the web UI's wake (`button` NULL). From a dark or
+// dimmed display both show the newest listed call (the logo if there is
+// none); on a lit one a button pages (dm_page_press()); during a call
+// neither changes the screen. Always lights the backlight and restarts the
+// dim timeout. Runs in the esp_timer task or the web server's task, never
+// from an interrupt; s_lock serialises the whole wake with display switching.
+static bool wake(const dm_button_t *button)
+{
+    if (!s_redraw_timer) return false;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    if (!s_panel || s_off) {
+        xSemaphoreGive(s_lock);
+        return false;
+    }
+    int64_t after = dim_after_us();
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    bool calling = s_call_active;
+    if (!calling) {
+        show_page(dm_page_press(s_page, button ? *button : DM_BUTTON_NEWER,
+                                button && s_bl_full, false, s_mem->recent_n));
+    }
+    // Keep an old dim callback from interfering with the redraw.
+    set_dim_due(NEVER_US);
+    arm_dim_timer(NEVER_US);
+    xSemaphoreGive(s_state);
+    bool drawn = calling || draw_screen(false);
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    set_backlight(true);
+    // Start the hold after drawing, including when a call ended meanwhile.
+    int64_t hold = s_call_active ? NEVER_US : after;
+    set_dim_due(hold);
+    arm_dim_timer(hold);
+    xSemaphoreGive(s_state);
+    xSemaphoreGive(s_lock);
+    return drawn;
+}
+
+// Samples the buttons every BUTTON_POLL_US; only started where the board
+// has buttons.
+static void poll_buttons(void *arg)
+{
+    (void)arg;
+    static dm_button_state_t newer, older;
+    bool press_newer = dm_button_sample(&newer, gpio_get_level(k_board.button_newer) == 0);
+    bool press_older = dm_button_sample(&older, gpio_get_level(k_board.button_older) == 0);
+    dm_button_t b;
+    if (press_newer) { b = DM_BUTTON_NEWER; wake(&b); }
+    if (press_older) { b = DM_BUTTON_OLDER; wake(&b); }
+}
+
+static bool buttons_start(void)
+{
+    if (k_board.button_newer < 0 || k_board.button_older < 0) return true;
+    gpio_config_t io = {
+        .pin_bit_mask = (1ULL << k_board.button_newer) | (1ULL << k_board.button_older),
+        .mode         = GPIO_MODE_INPUT,    // pulled up on the board; GPIO 35 has no internal pull
+    };
+    esp_err_t err = gpio_config(&io);
+    if (err == ESP_OK) {
+        esp_timer_create_args_t args = { .callback = poll_buttons, .name = "lcd_btn" };
+        err = esp_timer_create(&args, &s_button_timer);
+    }
+    if (err == ESP_OK) err = esp_timer_start_periodic(s_button_timer, BUTTON_POLL_US);
+    if (err != ESP_OK) ESP_LOGW(TAG, "buttons: %s", esp_err_to_name(err));
+    return err == ESP_OK;
+}
+
 // --- notifications ------------------------------------------------------
 
 // Every entry point checks s_redraw_timer: it is the last thing
@@ -676,12 +856,14 @@ void display_call_started(const stats_call_t *call)
     s_mem->call = *call;
     s_call_active = true;
     s_call_shown = true;
+    s_page = dm_page_of_call(call);
     // Keep the light on with the caller state against a dim callback.
     set_backlight(true);
     s_call_gen++;
     s_call_started_us = esp_timer_get_time();
+    set_dim_due(NEVER_US);
+    arm_dim_timer(NEVER_US);
     xSemaphoreGive(s_state);
-    esp_timer_stop(s_dim_timer);
     esp_timer_stop(s_call_timer);
     esp_timer_start_once(s_call_timer, CALL_TIMEOUT_US);
     schedule_redraw();
@@ -719,10 +901,30 @@ void display_calls_changed(void)
 {
     if (!s_redraw_timer) return;
     // Called by stats.c outside its lock, from the task that changed the list.
-    int badge = stats_count_calls(dm_is_listed_spam, DM_BADGE_CALLS);
+    // One pass over the file serves the badge and the buttons' call cache;
+    // the copy is staged on the heap (it is too big for this task's stack)
+    // and published under s_state.
+    xSemaphoreTake(s_cache_lock, portMAX_DELAY);
+    static bool allocation_failure_logged;
+    stats_call_t *stage = malloc(sizeof(s_mem->recent));
+    int n = stage ? stats_snapshot_calls(stage, DM_BADGE_CALLS) : 0;
+    int badge = stage ? dm_count_listed_spam(stage, n)
+                      : stats_count_calls(dm_is_listed_spam, DM_BADGE_CALLS);
+    if (!stage && !allocation_failure_logged) {
+        ESP_LOGW(TAG, "no memory for the recent calls cache");
+        allocation_failure_logged = true;
+    } else if (stage) {
+        allocation_failure_logged = false;
+    }
     xSemaphoreTake(s_state, portMAX_DELAY);
     s_badge = badge;
+    if (stage) {
+        memcpy(s_mem->recent, stage, sizeof(stats_call_t) * (size_t)n);
+    }
+    s_mem->recent_n = n;
     xSemaphoreGive(s_state);
+    free(stage);
+    xSemaphoreGive(s_cache_lock);
     schedule_redraw();
 }
 
@@ -733,13 +935,30 @@ void display_set_flipped(bool flipped)
     if (s_panel) {
         esp_err_t err = set_orientation(flipped);
         if (err == ESP_OK) {
-            if (!s_off) draw_screen(true);
+            if (!s_off) {
+                draw_screen(true);
+                // The screen may be dark: the user turns the stick over to see it.
+                if (s_redraw_timer) brighten_for_a_while();
+            }
             ESP_LOGI(TAG, "orientation %s", flipped ? "flipped" : "normal");
         } else {
             ESP_LOGW(TAG, "orientation: %s", esp_err_to_name(err));
         }
     }
     xSemaphoreGive(s_lock);
+}
+
+void display_dim_changed(void)
+{
+    if (!s_redraw_timer) return;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    if (!s_off) brighten_for_a_while();
+    xSemaphoreGive(s_lock);
+}
+
+bool display_wake(void)
+{
+    return wake(NULL);
 }
 
 static bool create_timer(esp_timer_cb_t cb, const char *name, esp_timer_handle_t *out)
@@ -780,7 +999,20 @@ void display_start(void)
     s_done = xSemaphoreCreateBinary();
     s_lock = xSemaphoreCreateMutex();
     s_state = xSemaphoreCreateMutex();
-    if (!s_done || !s_lock || !s_state) return;
+    s_cache_lock = xSemaphoreCreateMutex();
+    if (!s_done || !s_lock || !s_state || !s_cache_lock) {
+        ESP_LOGW(TAG, "cannot create the display's semaphores");
+        if (s_done) vSemaphoreDelete(s_done);
+        if (s_lock) vSemaphoreDelete(s_lock);
+        if (s_state) vSemaphoreDelete(s_state);
+        if (s_cache_lock) vSemaphoreDelete(s_cache_lock);
+        s_done = NULL;
+        s_lock = NULL;
+        s_state = NULL;
+        s_cache_lock = NULL;
+        spi_bus_free(k_board.host);
+        return;
+    }
     esp_lcd_panel_io_handle_t io = NULL;
     esp_lcd_panel_io_spi_config_t io_cfg = {
         .cs_gpio_num         = k_board.cs,
@@ -862,9 +1094,11 @@ void display_start(void)
 
     // Calls may be shown from now on.
     s_redraw_timer = redraw_timer;
+    display_calls_changed();
     brighten_for_a_while();
     err = esp_timer_start_periodic(s_connection_timer, CONNECTION_POLL_US);
     if (err != ESP_OK) ESP_LOGW(TAG, "connection timer: %s", esp_err_to_name(err));
+    buttons_start();
     ESP_LOGI(TAG, "%s: logo shown", k_board.name);
 }
 
@@ -882,14 +1116,18 @@ void display_set_enabled(bool on)
     }
     xSemaphoreTake(s_lock, portMAX_DELAY);
     if (s_panel && on == s_off) {
+        xSemaphoreTake(s_state, portMAX_DELAY);
         s_off = !on;
+        if (!on) {
+            set_dim_due(NEVER_US);
+            arm_dim_timer(NEVER_US);
+            set_backlight(false);
+        }
+        xSemaphoreGive(s_state);
         esp_lcd_panel_disp_on_off(s_panel, on);
         if (on) {
             draw_screen(true);
             brighten_for_a_while();
-        } else {
-            esp_timer_stop(s_dim_timer);
-            set_backlight(false);
         }
         ESP_LOGI(TAG, "display %s", on ? "on" : "off");
     }

@@ -50,6 +50,9 @@
 #include "status_led.h"
 #endif
 #include "display.h"
+#if DISPLAY_PRESENT
+#include "display_model.h"
+#endif
 #include "heap_guard.h"
 #include "hostname.h"
 #include "firmware_update.h"
@@ -169,6 +172,12 @@ extern const uint8_t index_html_gz_end[]   asm("_binary_index_html_gz_end");
 
 extern const uint8_t ab_logo_bot_svg_start[] asm("_binary_ab_logo_bot_svg_start");
 extern const uint8_t ab_logo_bot_svg_end[]   asm("_binary_ab_logo_bot_svg_end");
+#if DISPLAY_PRESENT
+// The display's part of the web UI (#773), gzipped like the SPA and embedded
+// only where a display exists (main/CMakeLists.txt).
+extern const uint8_t display_js_gz_start[] asm("_binary_display_js_gz_start");
+extern const uint8_t display_js_gz_end[]   asm("_binary_display_js_gz_end");
+#endif
 #if PB_CALL_RECORDING
 // The call recordings' part of the web UI (#663), gzipped like the SPA and
 // embedded only where recordings exist (main/CMakeLists.txt).
@@ -760,6 +769,13 @@ static web_http_error_t handle_status(web_http_request_t *req)
         if (disp) {
             cJSON *dsp = cJSON_AddObjectToObject(root, "display");
             cJSON_AddBoolToObject(dsp, "flipped", config_lcd_flipped());
+#if DISPLAY_PRESENT
+            // The backlight timeout (#773): the stored value and whether this
+            // board offers "always". display.js builds the controls from it.
+            cJSON_AddStringToObject(dsp, "dim", config_display_dim());
+            cJSON_AddBoolToObject  (dsp, "dim_always_ok", DISPLAY_DIM_ALWAYS_OK);
+            cJSON_AddBoolToObject  (dsp, "buttons", PIN_BUTTON_NEWER >= 0 && PIN_BUTTON_OLDER >= 0);
+#endif
         }
     }
 #endif
@@ -1084,6 +1100,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char lcd_flip_s[4]    = "";
     char led_hw_s[BOARD_LED_SPEC_CAP] = "";
     char display_s[4]     = "";
+#if DISPLAY_PRESENT
+    char display_dim_s[8] = "";
+#endif
     char auto_update_s[4] = "";
     char channel_s[8]     = "";
     char crash_rep_s[4]   = "";
@@ -1180,6 +1199,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     // Board hardware (#730): the stick's own LED and display.
     bool have_led_hw     = form_get(body, "led_hw",        led_hw_s,    sizeof(led_hw_s));
     bool have_display    = form_get(body, "display",       display_s,   sizeof(display_s));
+#if DISPLAY_PRESENT
+    bool have_display_dim = form_get(body, "display_dim",  display_dim_s, sizeof(display_dim_s));
+#endif
 #else
     bool have_hostname   = false;
     bool have_led_hw     = false;
@@ -1382,6 +1404,14 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         if (why) sb_appendf(&rej, "%shardware (%s)", rej.len ? ", " : "", why);
     }
 #endif
+#if DISPLAY_PRESENT
+    // A longer value than a setting has arrives clipped to the field and is
+    // refused with it; "always" only where the board offers it.
+    if (have_display_dim && !dm_dim_valid(display_dim_s, DISPLAY_DIM_ALWAYS_OK)) {
+        sb_appendf(&rej, "%sdisplay_dim (30, 60, 120, 300%s or empty)",
+                   rej.len ? ", " : "", DISPLAY_DIM_ALWAYS_OK ? ", always" : "");
+    }
+#endif
     if (rej.len) {
         // Clamped (sb.truncated) is fine: the first field names the problem.
         char msg[200];
@@ -1436,6 +1466,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .log_info        = have_log_info  ? log_info_s   : NULL,
         .led_quiet       = have_led_quiet ? led_quiet_s  : NULL,
         .lcd_flip        = have_lcd_flip  ? lcd_flip_s   : NULL,
+#if DISPLAY_PRESENT
+        .display_dim     = have_display_dim ? display_dim_s : NULL,
+#endif
         .led_hw          = have_led_hw    ? led_hw_s     : NULL,
         .display         = have_display   ? display_s    : NULL,
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
@@ -1545,6 +1578,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     // checkbox while still holding the stick.
     if (have_lcd_flip) {
         display_set_flipped(config_lcd_flipped());
+    }
+    if (have_display_dim) {
+        display_dim_changed();
     }
 #endif
 #ifdef ESP_PLATFORM
@@ -3108,6 +3144,37 @@ static web_http_error_t handle_calls_clear(web_http_request_t *req)
     return WEB_HTTP_OK;
 }
 
+#if DISPLAY_PRESENT
+// POST /api/display/wake — the display on for the dim timeout, showing the
+// newest call like a button press (#773).
+static web_http_error_t handle_display_wake(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (!display_wake()) {
+        send_fail(req, "Display is not running or could not be drawn.");
+        return WEB_HTTP_OK;
+    }
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", true);
+    send_json(req, root);
+    return WEB_HTTP_OK;
+}
+
+// GET /display.js — the display's part of the web UI (the backlight timeout
+// and the wake button, #773). Static like "/", so not behind the login;
+// loaded by index.html when /api/status carries "display".
+static web_http_error_t handle_display_js(web_http_request_t *req)
+{
+    REQUIRE_LOCAL_HTML(req);
+    web_http_set_type(req, "text/javascript; charset=utf-8");
+    // Revalidated, so a firmware update never runs an old copy.
+    web_http_set_header(req, "Cache-Control", "no-cache");
+    web_http_set_header(req, "Content-Encoding", "gzip");
+    return web_http_send(req, display_js_gz_start, display_js_gz_end - display_js_gz_start) == 0
+        ? WEB_HTTP_OK : WEB_HTTP_FAIL;
+}
+#endif
+
 // --- Fritz!Box phonebook (personal allowlist) ----------------------
 
 // Reply {ok:false, code, message}. `code` is a stable discriminator the
@@ -4214,6 +4281,10 @@ static const web_http_route_t URIS[] = {
     { .uri = "/api/errors/clear",    .method = WEB_HTTP_POST,    .handler = handle_errors_clear },
     { .uri = "/api/calls/clear",     .method = WEB_HTTP_POST,    .handler = handle_calls_clear },
     { .uri = "/api/counters/reset",  .method = WEB_HTTP_POST,    .handler = handle_counters_reset },
+#if DISPLAY_PRESENT
+    { .uri = "/api/display/wake",     .method = WEB_HTTP_POST,    .handler = handle_display_wake },
+    { .uri = "/display.js",           .method = WEB_HTTP_GET,     .handler = handle_display_js },
+#endif
 #if PB_CALL_RECORDING
     { .uri = "/api/recording",        .method = WEB_HTTP_GET,     .handler = handle_recording_get },
     { .uri = "/api/recording/delete", .method = WEB_HTTP_POST,    .handler = handle_recording_delete },
