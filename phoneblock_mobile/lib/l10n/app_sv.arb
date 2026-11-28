@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "De sparade samtalen och åtkomstdata raderas.",
   "fritzboxSyncNow": "Synkronisera nu",
   "fritzboxSyncDescription": "Hämtar samtalslistan från Fritz!",
+  "fritzboxLogKnownCallers": "Logga kända uppringare",
+  "fritzboxLogKnownCallersDescription": "Visa även samtal från nummer i Fritz!Box-telefonboken i samtalslistan",
   "fritzboxSyncComplete": "{count, plural, =0{Inga nya samtal} =1{1 nytt samtal synkroniserat} other{{count} nya samtal synkroniserade}}",
   "fritzboxSyncError": "Fel under synkronisering",
   "fritzboxVersion": "FRITZ!OS version",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Synkroniseringen av blocklistan lyckades",
   "blocklistSyncFailed": "Synkroniseringen av blocklistan misslyckades",
   "personalizedAddedDate": "Tillagd: {date}",
-  "fritzboxLogKnownCallers": "Logga kända uppringare",
-  "fritzboxLogKnownCallersDescription": "Visa även samtal från nummer i Fritz!Box-telefonboken i samtalslistan"
+  "countryFilterTitle": "Blockera samtal från utlandet",
+  "countryFilterDescription": "Endast samtal från de tillåtna länderna släpps igenom.",
+  "countryFilterOff": "Av",
+  "allowedCountries": "Tillåtna länder",
+  "addCountry": "Lägg till land",
+  "searchCountry": "Sök land eller riktnummer",
+  "countrySharedCallingCode": "Gäller även för {countries}",
+  "countryFilterKeepOne": "Minst ett land måste förbli tillåtet.",
+  "countryFilterBlocked": "Landsfilter"
 }

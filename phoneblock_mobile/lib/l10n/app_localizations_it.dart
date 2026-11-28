@@ -1230,4 +1230,35 @@ class AppLocalizationsIt extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Aggiunto: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Bloccare le chiamate dall\'estero';
+
+  @override
+  String get countryFilterDescription =>
+      'Vengono inoltrate solo le chiamate provenienti dai paesi consentiti.';
+
+  @override
+  String get countryFilterOff => 'Disattivato';
+
+  @override
+  String get allowedCountries => 'Paesi consentiti';
+
+  @override
+  String get addCountry => 'Aggiungi paese';
+
+  @override
+  String get searchCountry => 'Cerca paese o prefisso';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Vale anche per $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'Deve rimanere consentito almeno un paese.';
+
+  @override
+  String get countryFilterBlocked => 'Filtro per paese';
 }

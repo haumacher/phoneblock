@@ -1210,4 +1210,34 @@ class AppLocalizationsNb extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Lagt til: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Blokkere samtaler fra utlandet';
+
+  @override
+  String get countryFilterDescription =>
+      'Bare samtaler fra de tillatte landene slippes gjennom.';
+
+  @override
+  String get countryFilterOff => 'Av';
+
+  @override
+  String get allowedCountries => 'Tillatte land';
+
+  @override
+  String get addCountry => 'Legg til land';
+
+  @override
+  String get searchCountry => 'Søk etter land eller retningsnummer';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Gjelder også for $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne => 'Minst ett land må forbli tillatt.';
+
+  @override
+  String get countryFilterBlocked => 'Landfilter';
 }

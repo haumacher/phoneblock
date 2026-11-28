@@ -1209,4 +1209,34 @@ class AppLocalizationsSv extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Tillagd: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Blockera samtal från utlandet';
+
+  @override
+  String get countryFilterDescription =>
+      'Endast samtal från de tillåtna länderna släpps igenom.';
+
+  @override
+  String get countryFilterOff => 'Av';
+
+  @override
+  String get allowedCountries => 'Tillåtna länder';
+
+  @override
+  String get addCountry => 'Lägg till land';
+
+  @override
+  String get searchCountry => 'Sök land eller riktnummer';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Gäller även för $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne => 'Minst ett land måste förbli tillåtet.';
+
+  @override
+  String get countryFilterBlocked => 'Landsfilter';
 }

@@ -1223,4 +1223,35 @@ class AppLocalizationsPl extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Dodano: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Blokowanie połączeń z zagranicy';
+
+  @override
+  String get countryFilterDescription =>
+      'Przechodzą tylko połączenia z dozwolonych krajów.';
+
+  @override
+  String get countryFilterOff => 'Wyłączone';
+
+  @override
+  String get allowedCountries => 'Dopuszczone kraje';
+
+  @override
+  String get addCountry => 'Dodaj kraj';
+
+  @override
+  String get searchCountry => 'Wyszukaj kraj lub numer kierunkowy';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Dotyczy to również $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'Co najmniej jeden kraj musi pozostać dozwolony.';
+
+  @override
+  String get countryFilterBlocked => 'Filtr krajów';
 }

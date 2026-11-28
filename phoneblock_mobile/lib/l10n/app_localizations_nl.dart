@@ -1211,4 +1211,35 @@ class AppLocalizationsNl extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Toegevoegd: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Oproepen uit het buitenland blokkeren';
+
+  @override
+  String get countryFilterDescription =>
+      'Alleen oproepen uit de toegestane landen worden doorgelaten.';
+
+  @override
+  String get countryFilterOff => 'Uit';
+
+  @override
+  String get allowedCountries => 'Toegestane landen';
+
+  @override
+  String get addCountry => 'Land toevoegen';
+
+  @override
+  String get searchCountry => 'Land of netnummer zoeken';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Geldt ook voor $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'Er moet ten minste één land toegestaan blijven.';
+
+  @override
+  String get countryFilterBlocked => 'Landfilter';
 }

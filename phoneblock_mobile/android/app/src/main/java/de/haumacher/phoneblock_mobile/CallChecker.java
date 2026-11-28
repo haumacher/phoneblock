@@ -33,6 +33,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -106,6 +107,11 @@ public class CallChecker extends CallScreeningService {
             return;
         }
 
+        // Country filter (#709): only numbers that arrived with an explicit country code have a
+        // country of their own; national numbers and short codes are not filtered.
+        Set<Integer> allowedCallingCodes = CountryFilter.allowedCallingCodes(this);
+        boolean explicitCountryCode = PhoneNumberUtils.hasExplicitCountryCode(rawNumber, countryIso);
+
         AtomicBoolean responded = new AtomicBoolean();
         final ScheduledFuture<?>[] timeoutFuture = new ScheduledFuture<?>[1];
 
@@ -155,7 +161,8 @@ public class CallChecker extends CallScreeningService {
                 Handler.createAsync(Looper.getMainLooper()).post(() ->
                     decideAndRespond(callDetails, rawNumber, number,
                         fVotes, fVotesWildcard, fArchived, fRating, fLabel, fLocation, fBlackListed, fWhiteListed,
-                        minVotes, blockRanges, minRangeVotes, wildcardPrefixes));
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixes,
+                        allowedCallingCodes, explicitCountryCode));
             }
         }, 0, TimeUnit.MILLISECONDS);
 
@@ -169,33 +176,37 @@ public class CallChecker extends CallScreeningService {
                 Handler.createAsync(Looper.getMainLooper()).post(() ->
                     decideAndRespond(callDetails, rawNumber, number,
                         localVotes, 0, false, null, null, null, false, false,
-                        minVotes, blockRanges, minRangeVotes, wildcardPrefixes));
+                        minVotes, blockRanges, minRangeVotes, wildcardPrefixes,
+                        allowedCallingCodes, explicitCountryCode));
             }
         }, 4500, TimeUnit.MILLISECONDS);
     }
 
     /**
-     * Single decision point: checks votes, range votes, and wildcard filters,
-     * then either blocks or accepts the call and reports the result.
+     * Single decision point: checks the whitelist, blacklist, country filter, votes, range votes,
+     * and wildcard filters, then either blocks or accepts the call and reports the result.
      */
     private void decideAndRespond(@NonNull Call.Details callDetails, String rawNumber, String number,
             int votes, int votesWildcard, boolean archived, String rating, String label, String location, boolean blackListed,
-            boolean whiteListed, int minVotes, boolean blockRanges, int minRangeVotes, List<String> wildcardPrefixes) {
+            boolean whiteListed, int minVotes, boolean blockRanges, int minRangeVotes, List<String> wildcardPrefixes,
+            Set<Integer> allowedCallingCodes, boolean explicitCountryCode) {
 
         ScreeningDecision decision = ScreeningDecision.decide(number, votes, votesWildcard, archived, blackListed, whiteListed,
-            minVotes, blockRanges, minRangeVotes, wildcardPrefixes);
+            minVotes, blockRanges, minRangeVotes, wildcardPrefixes, allowedCallingCodes, explicitCountryCode);
         boolean block = decision.block;
         String matchedPrefix = decision.matchedPrefix;
+        boolean countryBlocked = decision.reason == ScreeningDecision.Reason.COUNTRY;
 
         LOG.info("decision={} reason={} number={}",
             block ? "block" : "allow",
-            rating != null ? rating : (matchedPrefix != null ? "WILDCARD" : ""),
+            countryBlocked ? "COUNTRY" : (rating != null ? rating : (matchedPrefix != null ? "WILDCARD" : "")),
             LogSanitizer.hashPhone(number));
 
         if (block) {
             Log.d(CallChecker.class.getName(), "onScreenCall: Blocking: " + LogSanitizer.hashPhone(number)
                 + " (votes=" + votes + ", rangeVotes=" + votesWildcard
-                + (matchedPrefix != null ? ", wildcard=*" : "") + ")");
+                + (matchedPrefix != null ? ", wildcard=*" : "")
+                + (countryBlocked ? ", country filter" : "") + ")");
             respondToCall(callDetails, new CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
@@ -210,6 +221,8 @@ public class CallChecker extends CallScreeningService {
 
         if (matchedPrefix != null) {
             MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, "WILDCARD", label, location, matchedPrefix, blackListed);
+        } else if (countryBlocked) {
+            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, "COUNTRY", label, location, null, blackListed);
         } else {
             MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, rating, label, location, null, blackListed);
         }

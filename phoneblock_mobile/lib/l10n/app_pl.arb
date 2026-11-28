@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "Zapisane połączenia i dane dostępu zostaną usunięte.",
   "fritzboxSyncNow": "Synchronizuj teraz",
   "fritzboxSyncDescription": "Pobieranie listy połączeń z Fritz!",
+  "fritzboxLogKnownCallers": "Rejestrowanie znanych dzwoniących",
+  "fritzboxLogKnownCallersDescription": "Wyświetlaj również połączenia z numerów z książki telefonicznej Fritz!Box na liście połączeń",
   "fritzboxSyncComplete": "{count, plural, =0{Brak nowych połączeń} =1{Zsynchronizowano 1 nowe połączenie} other{{count} zsynchronizowanych nowych połączeń}}",
   "fritzboxSyncError": "Błąd podczas synchronizacji",
   "fritzboxVersion": "Wersja FRITZ!OS",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Synchronizacja listy bloków powiodła się",
   "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się",
   "personalizedAddedDate": "Dodano: {date}",
-  "fritzboxLogKnownCallers": "Rejestrowanie znanych dzwoniących",
-  "fritzboxLogKnownCallersDescription": "Wyświetlaj również połączenia z numerów z książki telefonicznej Fritz!Box na liście połączeń"
+  "countryFilterTitle": "Blokowanie połączeń z zagranicy",
+  "countryFilterDescription": "Przechodzą tylko połączenia z dozwolonych krajów.",
+  "countryFilterOff": "Wyłączone",
+  "allowedCountries": "Dopuszczone kraje",
+  "addCountry": "Dodaj kraj",
+  "searchCountry": "Wyszukaj kraj lub numer kierunkowy",
+  "countrySharedCallingCode": "Dotyczy to również {countries}",
+  "countryFilterKeepOne": "Co najmniej jeden kraj musi pozostać dozwolony.",
+  "countryFilterBlocked": "Filtr krajów"
 }

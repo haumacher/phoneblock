@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "يتم حذف المكالمات المحفوظة وبيانات الوصول.",
   "fritzboxSyncNow": "المزامنة الآن",
   "fritzboxSyncDescription": "استرداد قائمة المكالمات من فريتز!",
+  "fritzboxLogKnownCallers": "تسجيل المتصلين المعروفين",
+  "fritzboxLogKnownCallersDescription": "عرض المكالمات الواردة من الأرقام الموجودة في دفتر هاتف Fritz!Box في قائمة المكالمات",
   "fritzboxSyncComplete": "{count, plural, =0{لا توجد مكالمات جديدة} =1{تمت مزامنة 1 مكالمة جديدة} other{<x1> عدد المكالمات الجديدة المتزامنة}}",
   "fritzboxSyncError": "خطأ أثناء المزامنة",
   "fritzboxVersion": "إصدار FRITZ!OS",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
   "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
   "personalizedAddedDate": "تمت الإضافة: {date}",
-  "fritzboxLogKnownCallers": "تسجيل المتصلين المعروفين",
-  "fritzboxLogKnownCallersDescription": "عرض المكالمات الواردة من الأرقام الموجودة في دفتر هاتف Fritz!Box في قائمة المكالمات"
+  "countryFilterTitle": "حظر المكالمات الواردة من الخارج",
+  "countryFilterDescription": "لا يتم تمرير سوى المكالمات الواردة من البلدان المسموح بها.",
+  "countryFilterOff": "إيقاف",
+  "allowedCountries": "الدول المسموح بها",
+  "addCountry": "إضافة بلد",
+  "searchCountry": "البحث عن البلد أو الرمز الهاتفي",
+  "countrySharedCallingCode": "ينطبق ذلك أيضًا على {countries}",
+  "countryFilterKeepOne": "يجب أن يبقى بلد واحد على الأقل مسموحًا به.",
+  "countryFilterBlocked": "مرشح البلدان"
 }

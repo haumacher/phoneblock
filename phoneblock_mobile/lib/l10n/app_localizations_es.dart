@@ -1219,4 +1219,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Añadido: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Bloquear llamadas desde el extranjero';
+
+  @override
+  String get countryFilterDescription =>
+      'Solo se permiten las llamadas procedentes de los países autorizados.';
+
+  @override
+  String get countryFilterOff => 'Desactivado';
+
+  @override
+  String get allowedCountries => 'Países permitidos';
+
+  @override
+  String get addCountry => 'Añadir país';
+
+  @override
+  String get searchCountry => 'Buscar país o prefijo telefónico';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'También se aplica a $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne => 'Debe quedar al menos un país permitido.';
+
+  @override
+  String get countryFilterBlocked => 'Filtro por país';
 }

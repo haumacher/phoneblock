@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "De gemte opkald og adgangsdata slettes.",
   "fritzboxSyncNow": "Synkroniser nu",
   "fritzboxSyncDescription": "Hentning af opkaldslisten fra Fritz!",
+  "fritzboxLogKnownCallers": "Registrer kendte opkald",
+  "fritzboxLogKnownCallersDescription": "Vis også opkald fra numre i Fritz!Box-telefonbogen i opkaldslisten",
   "fritzboxSyncComplete": "{count, plural, =0{Ingen nye opkald} =1{1 nyt opkald synkroniseret} other{{count} nye opkald synkroniseret}}.",
   "fritzboxSyncError": "Fejl under synkronisering",
   "fritzboxVersion": "FRITZ!OS-version",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
   "personalizedAddedDate": "Tilføjet: {date}.",
-  "fritzboxLogKnownCallers": "Registrer kendte opkald",
-  "fritzboxLogKnownCallersDescription": "Vis også opkald fra numre i Fritz!Box-telefonbogen i opkaldslisten"
+  "countryFilterTitle": "Blokering af opkald fra udlandet",
+  "countryFilterDescription": "Kun opkald fra de tilladte lande kommer igennem.",
+  "countryFilterOff": "Fra",
+  "allowedCountries": "Tilladte lande",
+  "addCountry": "Tilføj land",
+  "searchCountry": "Søg efter land eller landekode",
+  "countrySharedCallingCode": "Gælder også for {countries}",
+  "countryFilterKeepOne": "Der skal mindst være ét land tilbage på listen over tilladte lande.",
+  "countryFilterBlocked": "Landfilter"
 }

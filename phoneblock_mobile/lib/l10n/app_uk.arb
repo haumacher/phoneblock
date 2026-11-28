@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "Збережені дзвінки та дані доступу видаляються.",
   "fritzboxSyncNow": "Синхронізуйте зараз",
   "fritzboxSyncDescription": "Отримання списку викликів з Fritz!",
+  "fritzboxLogKnownCallers": "Реєструвати відомих абонентів",
+  "fritzboxLogKnownCallersDescription": "Також відображати у списку дзвінків дзвінки з номерів із телефонної книги Fritz!Box",
   "fritzboxSyncComplete": "{count, plural, =0{Нових дзвінків немає} =1{Синхронізовано 1 новий дзвінок} other{{count} нових викликів синхронізовано}}",
   "fritzboxSyncError": "Помилка під час синхронізації",
   "fritzboxVersion": "Версія FRITZ!OS",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
   "personalizedAddedDate": "Додано: {date}",
-  "fritzboxLogKnownCallers": "Реєструвати відомих абонентів",
-  "fritzboxLogKnownCallersDescription": "Також відображати у списку дзвінків дзвінки з номерів із телефонної книги Fritz!Box"
+  "countryFilterTitle": "Блокування дзвінків з-за кордону",
+  "countryFilterDescription": "Пропускаються лише дзвінки з дозволених країн.",
+  "countryFilterOff": "Вимкнено",
+  "allowedCountries": "Дозволені країни",
+  "addCountry": "Додати країну",
+  "searchCountry": "Пошук країни або телефонного коду",
+  "countrySharedCallingCode": "Це також стосується {countries}",
+  "countryFilterKeepOne": "Принаймні одна країна має залишатися дозволеною.",
+  "countryFilterBlocked": "Фільтр за країною"
 }

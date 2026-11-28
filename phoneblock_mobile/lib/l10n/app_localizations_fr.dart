@@ -1226,4 +1226,35 @@ class AppLocalizationsFr extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Ajouté à la liste : $date';
   }
+
+  @override
+  String get countryFilterTitle =>
+      'Bloquer les appels provenant de l\'étranger';
+
+  @override
+  String get countryFilterDescription =>
+      'Seuls les appels provenant des pays autorisés sont acheminés.';
+
+  @override
+  String get countryFilterOff => 'Désactivé';
+
+  @override
+  String get allowedCountries => 'Pays autorisés';
+
+  @override
+  String get addCountry => 'Ajouter un pays';
+
+  @override
+  String get searchCountry => 'Rechercher un pays ou un indicatif téléphonique';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'S\'applique également à $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne => 'Au moins un pays doit rester autorisé.';
+
+  @override
+  String get countryFilterBlocked => 'Filtre par pays';
 }

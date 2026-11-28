@@ -1198,4 +1198,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'تمت الإضافة: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'حظر المكالمات الواردة من الخارج';
+
+  @override
+  String get countryFilterDescription =>
+      'لا يتم تمرير سوى المكالمات الواردة من البلدان المسموح بها.';
+
+  @override
+  String get countryFilterOff => 'إيقاف';
+
+  @override
+  String get allowedCountries => 'الدول المسموح بها';
+
+  @override
+  String get addCountry => 'إضافة بلد';
+
+  @override
+  String get searchCountry => 'البحث عن البلد أو الرمز الهاتفي';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'ينطبق ذلك أيضًا على $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'يجب أن يبقى بلد واحد على الأقل مسموحًا به.';
+
+  @override
+  String get countryFilterBlocked => 'مرشح البلدان';
 }

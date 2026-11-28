@@ -1205,4 +1205,35 @@ class AppLocalizationsDa extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Tilføjet: $date.';
   }
+
+  @override
+  String get countryFilterTitle => 'Blokering af opkald fra udlandet';
+
+  @override
+  String get countryFilterDescription =>
+      'Kun opkald fra de tilladte lande kommer igennem.';
+
+  @override
+  String get countryFilterOff => 'Fra';
+
+  @override
+  String get allowedCountries => 'Tilladte lande';
+
+  @override
+  String get addCountry => 'Tilføj land';
+
+  @override
+  String get searchCountry => 'Søg efter land eller landekode';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Gælder også for $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'Der skal mindst være ét land tilbage på listen over tilladte lande.';
+
+  @override
+  String get countryFilterBlocked => 'Landfilter';
 }
