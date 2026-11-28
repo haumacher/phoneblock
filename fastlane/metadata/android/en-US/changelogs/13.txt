@@ -1,5 +1,6 @@
 Version 1.3.2:
-* Help for blocked callers reaching the mailbox: Settings > call screening opens the dialer pre-filled with the codes to check, switch off and switch on again busy forwarding (#549)
-* Adding a number ending in * to the blocklist creates a range rule instead of failing with "Error 400"; invalid input is shown in the dialog (#481)
-* The add button no longer covers the last entry of the lists (#487)
-* Reinstalling the app no longer restores an outdated call list from Android's backup (#484)
+* Mailbox help for blocked callers: the dialer opens with the codes to switch busy forwarding off and on (#549)
+* A number ending in * creates a range rule; invalid input is explained (#481)
+* The add button no longer hides the last list entry (#487)
+* Fritz!Box page and menu show the same protection status (#544)
+* A reinstall no longer restores an outdated call list (#484)

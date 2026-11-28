@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Перевірити стан",
   "mailboxDisableBusy": "Вимкнути переадресацію при зайнятості",
   "mailboxEnableBusy": "Увімкнути знову (скасувати)",
+  "mailboxFallbackTitle": "Якщо не вдається знову увімкнути переадресацію",
   "mailboxNumberHint": "Номер поштової скриньки з розділу «Перевірити стан»",
   "mailboxNumberInvalid": "Введіть лише цифри та, за бажанням, знак «+» на початку.",
   "mailboxEnableWithNumber": "Увімкнути за номером поштової скриньки",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Заблоковані дзвінки",
   "suspiciousCallsCount": "Підозрілі дзвінки",
   "fritzboxTitle": "Фріц! Коробка!",
-  "fritzboxConnected": "Підключено",
-  "fritzboxConnectedNotProtected": "Підключено, але не захищено",
+  "fritzboxConnectedPlain": "Підключено",
   "fritzboxOffline": "Немає в наявності",
   "fritzboxError": "Помилка підключення",
   "fritzboxNotConfiguredShort": "Не налаштований.",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
   "personalizedAddedDate": "Додано: {date}",
-  "mailboxFallbackTitle": "Якщо не вдається знову увімкнути переадресацію"
+  "fritzboxConnected": "Підключено та захищено"
 }

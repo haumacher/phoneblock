@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Check status",
   "mailboxDisableBusy": "Disable mailbox when busy",
   "mailboxEnableBusy": "Turn it back on (undo)",
+  "mailboxFallbackTitle": "If forwarding cannot be reactivated",
   "mailboxNumberHint": "Mailbox number from \"Check Status\"",
   "mailboxNumberInvalid": "Enter only digits and, optionally, a leading +.",
   "mailboxEnableWithNumber": "Activate with a mailbox number",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Blocked calls",
   "suspiciousCallsCount": "Suspicious calls",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Connected",
-  "fritzboxConnectedNotProtected": "Connected, not protected",
+  "fritzboxConnectedPlain": "Connected",
   "fritzboxOffline": "Not available",
   "fritzboxError": "Connection error",
   "fritzboxNotConfiguredShort": "Not set up",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
   "personalizedAddedDate": "Added: {date}",
-  "mailboxFallbackTitle": "If forwarding cannot be reactivated"
+  "fritzboxConnected": "Connected and protected"
 }

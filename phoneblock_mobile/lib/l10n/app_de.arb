@@ -1049,10 +1049,10 @@
     "description": "Fritz!Box connected and spam-protected status",
     "x-translated": "33ee3c29"
   },
-  "fritzboxConnectedNotProtected": "Verbunden, nicht geschützt",
-  "@fritzboxConnectedNotProtected": {
-    "description": "Fritz!Box connected but CardDAV spam protection not active",
-    "x-translated": "b6387cfb"
+  "fritzboxConnectedPlain": "Verbunden",
+  "@fritzboxConnectedPlain": {
+    "description": "Fritz!Box connected; the PhoneBlock blocklist phonebook is not (yet) synced, so no protection is claimed",
+    "x-translated": "5614b210"
   },
   "fritzboxOffline": "Nicht erreichbar",
   "@fritzboxOffline": {

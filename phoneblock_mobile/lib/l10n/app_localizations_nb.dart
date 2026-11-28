@@ -687,10 +687,10 @@ class AppLocalizationsNb extends AppLocalizations {
   String get fritzboxTitle => 'Fritz!Box';
 
   @override
-  String get fritzboxConnected => 'Tilkoblet';
+  String get fritzboxConnected => 'Tilkoblet og beskyttet';
 
   @override
-  String get fritzboxConnectedNotProtected => 'Tilkoblet, ikke beskyttet';
+  String get fritzboxConnectedPlain => 'Tilkoblet';
 
   @override
   String get fritzboxOffline => 'Ikke tilgjengelig';

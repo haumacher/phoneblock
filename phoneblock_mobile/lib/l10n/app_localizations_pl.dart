@@ -695,10 +695,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get fritzboxTitle => 'Fritz!Box';
 
   @override
-  String get fritzboxConnected => 'Połączony';
+  String get fritzboxConnected => 'Połączony i chroniony';
 
   @override
-  String get fritzboxConnectedNotProtected => 'Połączony, ale nie chroniony';
+  String get fritzboxConnectedPlain => 'Połączono';
 
   @override
   String get fritzboxOffline => 'Niedostępne';

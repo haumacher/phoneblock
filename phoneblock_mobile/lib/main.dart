@@ -30,6 +30,7 @@ import 'package:phoneblock_mobile/number_input.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_settings.dart';
 import 'l10n/app_localizations.dart';
@@ -2541,14 +2542,12 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// Gets the icon color for Fritz!Box based on connection state.
-  /// Builds the Fritz!Box drawer icon with shield badge for protection status.
+  /// Builds the Fritz!Box drawer icon, with a shield badge when protected.
   Widget _buildFritzBoxIcon() {
-    final routerColor = _getFritzBoxIconColor();
-    final isProtected = _cardDavStatus == CardDavStatus.synced;
-    final isConnected = _fritzboxState == FritzBoxConnectionState.connected;
+    final status = fritzBoxStatus(_fritzboxState, _cardDavStatus);
+    final routerColor = fritzBoxStatusColor(status);
 
-    if (isConnected) {
+    if (status == FritzBoxStatus.protected) {
       return Stack(
         clipBehavior: Clip.none,
         children: [
@@ -2562,10 +2561,10 @@ class _MainScreenState extends State<MainScreen> {
                 shape: BoxShape.circle,
               ),
               padding: const EdgeInsets.all(1),
-              child: Icon(
-                isProtected ? Icons.shield : Icons.shield_outlined,
+              child: const Icon(
+                Icons.shield,
                 size: 16,
-                color: isProtected ? Colors.green : Colors.grey,
+                color: Colors.green,
               ),
             ),
           ),
@@ -2576,35 +2575,10 @@ class _MainScreenState extends State<MainScreen> {
     return Icon(Icons.router, color: routerColor);
   }
 
-  Color _getFritzBoxIconColor() {
-    switch (_fritzboxState) {
-      case FritzBoxConnectionState.connected:
-        return _cardDavStatus == CardDavStatus.synced ? Colors.green : Colors.orange;
-      case FritzBoxConnectionState.offline:
-        return Colors.orange;
-      case FritzBoxConnectionState.error:
-        return Colors.red;
-      case FritzBoxConnectionState.notConfigured:
-        return Colors.grey;
-    }
-  }
-
   /// Gets the status text for Fritz!Box.
   String _getFritzBoxStatusText(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (_fritzboxState) {
-      case FritzBoxConnectionState.connected:
-        if (_cardDavStatus == CardDavStatus.synced) {
-          return l10n.fritzboxConnected;
-        }
-        return l10n.fritzboxConnectedNotProtected;
-      case FritzBoxConnectionState.offline:
-        return l10n.fritzboxOffline;
-      case FritzBoxConnectionState.error:
-        return l10n.fritzboxError;
-      case FritzBoxConnectionState.notConfigured:
-        return l10n.fritzboxNotConfiguredShort;
-    }
+    return fritzBoxStatusText(AppLocalizations.of(context)!,
+        fritzBoxStatus(_fritzboxState, _cardDavStatus));
   }
 
   /// Builds the reports text showing votes and range votes.

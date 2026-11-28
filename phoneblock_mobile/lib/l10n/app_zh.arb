@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "检查状态",
   "mailboxDisableBusy": "在忙线时停用邮箱",
   "mailboxEnableBusy": "重新启用（撤销）",
+  "mailboxFallbackTitle": "如果无法重新启用邮件转发功能",
   "mailboxNumberHint": "从“检查状态”中获取邮箱号",
   "mailboxNumberInvalid": "请仅输入数字，可选地在前面添加一个“+”号。",
   "mailboxEnableWithNumber": "使用语音信箱号码启用该功能",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "被阻止的电话",
   "suspiciousCallsCount": "可疑电话",
   "fritzboxTitle": "弗里茨盒子",
-  "fritzboxConnected": "已连接",
-  "fritzboxConnectedNotProtected": "已连接，未受保护",
+  "fritzboxConnectedPlain": "已连接",
   "fritzboxOffline": "不详",
   "fritzboxError": "连接错误",
   "fritzboxNotConfiguredShort": "未设置",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
   "personalizedAddedDate": "已添加：<x1>日期</x1",
-  "mailboxFallbackTitle": "如果无法重新启用邮件转发功能"
+  "fritzboxConnected": "已连接且受保护"
 }

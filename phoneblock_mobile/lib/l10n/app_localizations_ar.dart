@@ -685,10 +685,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxTitle => 'فريتز!بوكس';
 
   @override
-  String get fritzboxConnected => 'متصل';
+  String get fritzboxConnected => 'متصل ومحمي';
 
   @override
-  String get fritzboxConnectedNotProtected => 'متصلة، غير محمية';
+  String get fritzboxConnectedPlain => 'متصل';
 
   @override
   String get fritzboxOffline => 'غير متوفر';

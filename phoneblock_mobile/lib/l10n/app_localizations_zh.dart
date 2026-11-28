@@ -631,10 +631,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxTitle => '弗里茨盒子';
 
   @override
-  String get fritzboxConnected => '已连接';
+  String get fritzboxConnected => '已连接且受保护';
 
   @override
-  String get fritzboxConnectedNotProtected => '已连接，未受保护';
+  String get fritzboxConnectedPlain => '已连接';
 
   @override
   String get fritzboxOffline => '不详';
