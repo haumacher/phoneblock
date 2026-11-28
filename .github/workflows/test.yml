@@ -1,0 +1,54 @@
+name: Test
+
+# Runs the tests of all Maven modules for every push to master and every pull request, and
+# shows the Surefire results as a check with inline annotations. Needs no secrets: the
+# tests use in-memory H2 databases, the configuration is read via JNDI (not needed for tests),
+# and the IP2Location LITE databases are a public download. The DeepL translation plugins
+# only run in the opt-in with-deepl profile; instead, TestTranslationsInSync (enabled by
+# CI=true, which GitHub Actions sets) fails when German sources were committed without the
+# regenerated translations.
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+  # dorny/test-reporter creates a check run with the results.
+  checks: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Test
+        id: mvn-test
+        # --fail-at-end: test all modules even if one fails, so the report sees every result.
+        run: mvn -B --no-transfer-progress --fail-at-end test
+        continue-on-error: true
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v3
+        if: always()
+        # For pull requests from forks the token is read-only and the check run cannot be
+        # created; the last step still fails the job on test failures.
+        continue-on-error: true
+        with:
+          name: Maven Tests
+          path: '**/target/surefire-reports/TEST-*.xml'
+          reporter: java-junit
+
+      - name: Fail if tests failed
+        if: steps.mvn-test.outcome == 'failure'
+        run: exit 1
