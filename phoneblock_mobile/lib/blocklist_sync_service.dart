@@ -4,6 +4,7 @@ import 'package:phoneblock_mobile/api.dart' as api;
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/main.dart' show callPhoneBlockApi, getAuthToken, pbBaseUrl;
 import 'package:phoneblock_mobile/storage.dart';
+import 'package:phoneblock_mobile/wildcard_sync_service.dart';
 
 /// Service for syncing the community blocklist to the local SQLite cache.
 ///
@@ -29,14 +30,23 @@ class BlocklistSyncService {
     }
   }
 
-  /// Performs an incremental blocklist sync.
+  /// Performs an incremental blocklist sync, followed by the sync of the user's personal
+  /// wildcard rules.
   ///
   /// Reads the current version from `blocklist_sync`, fetches changes from
   /// the server, applies them to the local `blocklist` table, and updates
-  /// the sync metadata.
+  /// the sync metadata. The wildcard rules (#377) ride along on the same schedule, since
+  /// screening needs them too (#487); they are synced even if the community sync failed,
+  /// and their outcome does not affect the result.
   ///
-  /// Returns `true` if sync succeeded, `false` otherwise.
+  /// Returns `true` if the community blocklist sync succeeded, `false` otherwise.
   Future<bool> sync() async {
+    final result = await _syncCommunity();
+    await WildcardSyncService.instance.sync();
+    return result;
+  }
+
+  Future<bool> _syncCommunity() async {
     AppLogger.instance.info('sync', 'blocklist sync started');
     try {
       final authToken = await getAuthToken();

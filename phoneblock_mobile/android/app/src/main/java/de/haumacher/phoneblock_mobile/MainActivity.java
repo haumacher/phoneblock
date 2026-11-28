@@ -48,6 +48,10 @@ public class MainActivity extends FlutterActivity {
         _channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CALL_CHECKER_CHANNEL);
         _channel.setMethodCallHandler(this::processMessage);
 
+        // Wildcard prefixes used to be mirrored here for CallChecker; it now reads them from the
+        // SQLite wildcard_blocks table (#487). Drop the stale copy of older versions.
+        getPreferences(this).edit().remove("wildcard_prefixes").apply();
+
         // Create notification channel for pending calls
         createNotificationChannel();
     }
@@ -396,17 +400,6 @@ public class MainActivity extends FlutterActivity {
                 String normalized = PhoneNumberUtils.normalizeToInternationalFormat(rawNumber, countryCode);
                 result.success(normalized);
                 break;
-
-            case "setWildcardPrefixes": {
-                java.util.List<String> prefixes = methodCall.argument("prefixes");
-                setWildcardPrefixes(prefixes);
-                result.success(null);
-                break;
-            }
-            case "getWildcardPrefixes": {
-                result.success(getWildcardPrefixes());
-                break;
-            }
         }
     }
 
@@ -646,33 +639,6 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(context);
         int current = prefs.getInt("suspicious_calls_count", 0);
         prefs.edit().putInt("suspicious_calls_count", current + 1).apply();
-    }
-
-    /**
-     * Stores wildcard prefixes in SharedPreferences for CallChecker access.
-     */
-    private void setWildcardPrefixes(java.util.List<String> prefixes) {
-        SharedPreferences prefs = getPreferences(this);
-        JSONArray jsonArray = new JSONArray(prefixes);
-        prefs.edit().putString("wildcard_prefixes", jsonArray.toString()).apply();
-    }
-
-    /**
-     * Retrieves wildcard prefixes from SharedPreferences.
-     */
-    private java.util.List<String> getWildcardPrefixes() {
-        SharedPreferences prefs = getPreferences(this);
-        String json = prefs.getString("wildcard_prefixes", "[]");
-        try {
-            JSONArray jsonArray = new JSONArray(json);
-            java.util.List<String> result = new java.util.ArrayList<>();
-            for (int i = 0; i < jsonArray.length(); i++) {
-                result.add(jsonArray.getString(i));
-            }
-            return result;
-        } catch (JSONException e) {
-            return new java.util.ArrayList<>();
-        }
     }
 
     public static SharedPreferences getPreferences(Context context) {
