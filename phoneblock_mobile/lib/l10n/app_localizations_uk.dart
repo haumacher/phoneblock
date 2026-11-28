@@ -1292,4 +1292,17 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Фільтр за країною';
+
+  @override
+  String get blockHiddenNumbers => 'Блокувати дзвінки з прихованим номером';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Дзвінки без передачі номера відхиляються.';
+
+  @override
+  String get hiddenNumber => 'Прихований номер';
+
+  @override
+  String get hiddenNumberBlocked => 'Анонімний';
 }

@@ -769,6 +769,15 @@ class _PhoneBlockAppState extends State<PhoneBlockApp> {
   }
 }
 
+/// Whether calls with a withheld or missing number are blocked (#806), off by default. Stored
+/// natively, where `CallChecker` reads it.
+Future<bool> loadBlockHiddenNumbers() async =>
+    await platform.invokeMethod<bool>('getBlockHiddenNumbers') ?? false;
+
+/// Stores whether calls with a withheld or missing number are blocked (#806).
+Future<void> saveBlockHiddenNumbers(bool value) =>
+    platform.invokeMethod('setBlockHiddenNumbers', value);
+
 /// Syncs screening results stored in SharedPreferences to the SQLite database.
 /// This is necessary because CallChecker can screen calls even when the Flutter
 /// app is not running, storing results in SharedPreferences for later sync.
@@ -1550,6 +1559,9 @@ class _MainScreenState extends State<MainScreen> {
     // whitelists the number, which lets it through the country filter next time (#709).
     final serverBlocked = wasBlocked && !call.isWildcardBlocked;
     final source = call.source;
+    // A call without a number (#806) can only be deleted: there is nothing to report, copy or
+    // look up.
+    final hasNumber = call.hasNumber;
 
     // Check if call is new (not yet seen by user)
     final bool isNew = call.id != null && newCallIds.contains(call.id);
@@ -1579,7 +1591,7 @@ class _MainScreenState extends State<MainScreen> {
       displayRating = Rating.aLEGITIMATE;
     }
 
-    final isLocalRule = call.isWildcardBlocked || call.isCountryBlocked;
+    final isLocalRule = call.isWildcardBlocked || call.isCountryBlocked || call.isHiddenNumber;
     final color = isLocalRule ? Colors.orange : bgColor(displayRating);
     final String ratingText = labelText(context, displayRating);
 
@@ -1601,7 +1613,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return Dismissible(
       key: Key('call_${call.id}'),
-      direction: DismissDirection.horizontal,
+      direction: hasNumber ? DismissDirection.horizontal : DismissDirection.startToEnd,
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
@@ -1683,7 +1695,12 @@ class _MainScreenState extends State<MainScreen> {
                 isLocalRule
                     ? CircleAvatar(
                         backgroundColor: Colors.orange.withValues(alpha: 0.1),
-                        child: Icon(call.isCountryBlocked ? Icons.public_off : Icons.filter_alt,
+                        child: Icon(
+                            call.isHiddenNumber
+                                ? Icons.visibility_off
+                                : call.isCountryBlocked
+                                    ? Icons.public_off
+                                    : Icons.filter_alt,
                             color: Colors.orange),
                       )
                     : buildRatingAvatar(displayRating),
@@ -1743,7 +1760,9 @@ class _MainScreenState extends State<MainScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    call.label ?? call.phoneNumber,
+                    call.isHiddenNumber
+                        ? context.l10n.hiddenNumber
+                        : (call.label ?? call.phoneNumber),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -1856,7 +1875,9 @@ class _MainScreenState extends State<MainScreen> {
             ),
             onTap: () {
               _markCallAsSeen(call);
-              _viewOnPhoneBlock(call);
+              if (hasNumber) {
+                _viewOnPhoneBlock(call);
+              }
             },
             onLongPress: () => _showCallOptions(context, call),
           ),
@@ -1871,7 +1892,41 @@ class _MainScreenState extends State<MainScreen> {
 
     final items = <PopupMenuEntry<dynamic>>[];
 
-    // Always show both reporting options for all calls
+    // Calls without a number (#806) offer only "delete".
+    if (call.hasNumber) {
+      _addNumberOptions(context, call, items);
+    }
+
+    // Always show delete option
+    items.add(
+      PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(Icons.delete, color: Colors.red),
+            SizedBox(width: 12),
+            Text(context.l10n.deleteCall),
+          ],
+        ),
+        onTap: () {
+          // Need to delay deletion slightly to allow menu to close
+          Future.delayed(Duration.zero, () => _deleteCall(call));
+        },
+      ),
+    );
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        _lastTapPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
+      ),
+      items: items,
+    );
+  }
+
+  /// The call options that need the call's number: report, view on PhoneBlock, copy.
+  void _addNumberOptions(BuildContext context, ScreenedCall call, List<PopupMenuEntry<dynamic>> items) {
+    // Both reporting options for all calls with a number
     items.add(
       PopupMenuItem(
         child: Row(
@@ -1944,36 +1999,11 @@ class _MainScreenState extends State<MainScreen> {
         },
       ),
     );
-
-    // Always show delete option
-    items.add(
-      PopupMenuItem(
-        child: Row(
-          children: [
-            Icon(Icons.delete, color: Colors.red),
-            SizedBox(width: 12),
-            Text(context.l10n.deleteCall),
-          ],
-        ),
-        onTap: () {
-          // Need to delay deletion slightly to allow menu to close
-          Future.delayed(Duration.zero, () => _deleteCall(call));
-        },
-      ),
-    );
-
-    showMenu(
-      context: context,
-      position: RelativeRect.fromRect(
-        _lastTapPosition & const Size(40, 40),
-        Offset.zero & overlay.size,
-      ),
-      items: items,
-    );
   }
 
   /// Reports a call as legitimate.
   Future<void> _reportAsLegitimate(BuildContext context, ScreenedCall call) async {
+    if (!call.hasNumber) return;
     // Show comment dialog
     final comment = await _showCommentDialog(
       context,
@@ -2069,6 +2099,7 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Shows rating selection dialog and reports the call as spam.
   Future<void> _reportAsSpam(BuildContext context, ScreenedCall call) async {
+    if (!call.hasNumber) return;
     final rating = await _showRatingDialog(context);
 
     if (rating == null) {
@@ -2586,6 +2617,7 @@ class _MainScreenState extends State<MainScreen> {
   /// Opens the phone number on PhoneBlock website in a WebView.
   /// Copies the call's phone number to the system clipboard.
   Future<void> _copyNumber(BuildContext context, ScreenedCall call) async {
+    if (!call.hasNumber) return;
     await Clipboard.setData(ClipboardData(text: call.phoneNumber));
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -2597,6 +2629,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _viewOnPhoneBlock(ScreenedCall call) async {
+    if (!call.hasNumber) return;
     String? token = await getAuthToken();
     if (token == null) {
       if (mounted) {
@@ -2627,7 +2660,8 @@ class _MainScreenState extends State<MainScreen> {
   /// Marks all calls with the same phone number as seen.
   void _markCallAsSeen(ScreenedCall call) {
     final idsToRemove = _screenedCalls
-        .where((c) => c.id != null && c.phoneNumber == call.phoneNumber && newCallIds.contains(c.id))
+        .where((c) => c.id != null && newCallIds.contains(c.id)
+            && (call.hasNumber ? c.phoneNumber == call.phoneNumber : c.id == call.id))
         .map((c) => c.id!)
         .toList();
 
@@ -2679,6 +2713,11 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Builds the reports text showing votes and range votes.
   String _buildReportsText(ScreenedCall call) {
+    if (call.isHiddenNumber) {
+      // Nothing is looked up or reported for a call without a number (#806).
+      return '';
+    }
+
     if (call.isPersonallyBlocked) {
       final parts = <String>[context.l10n.onPersonalBlocklist];
       if (call.votes > 0) {
@@ -3048,9 +3087,12 @@ Rating _convertApiRating(api.Rating rating) {
 }
 
 /// Creates a CircleAvatar with rating-specific icon and colors.
-/// The call list label of a call blocked by a local rule (wildcard prefix or country filter), or
-/// `null` if the call was decided by the PhoneBlock data.
+/// The call list label of a call blocked by a local rule (wildcard prefix, country filter or
+/// withheld number), or `null` if the call was decided by the PhoneBlock data.
 String? localRuleBadgeText(AppLocalizations l10n, ScreenedCall call) {
+  if (call.isHiddenNumber) {
+    return l10n.hiddenNumberBlocked;
+  }
   if (call.isCountryBlocked) {
     return l10n.countryFilterBlocked;
   }
@@ -3266,6 +3308,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// Summary of the country filter (#709): the allowed countries, or `null` if it is off.
   String? _countryFilterSummary;
 
+  /// Whether calls with a withheld number are blocked (#806).
+  bool _blockHiddenNumbers = false;
+
   /// Refreshes the sync date/version when a sync completes in the background (#503).
   StreamSubscription<void>? _syncedSubscription;
 
@@ -3274,6 +3319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _loadSettings();
     _loadCountryFilterSummary();
+    _loadBlockHiddenNumbers();
     _syncedSubscription = BlocklistSyncService.instance.onSynced.listen((_) => _reloadSyncInfo());
   }
 
@@ -3348,6 +3394,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _countryFilterSummary = summary);
     } catch (e, s) {
       AppLogger.instance.error('settings', 'Error loading country filter', e, s);
+    }
+  }
+
+  Future<void> _loadBlockHiddenNumbers() async {
+    try {
+      final value = await loadBlockHiddenNumbers();
+      if (!mounted) return;
+      setState(() => _blockHiddenNumbers = value);
+    } catch (e, s) {
+      AppLogger.instance.error('settings', 'Error loading hidden number setting', e, s);
+    }
+  }
+
+  Future<void> _saveBlockHiddenNumbers(BuildContext context, bool value) async {
+    AppLogger.instance.info('settings', "Saving blockHiddenNumbers: $value");
+    try {
+      await saveBlockHiddenNumbers(value);
+      if (!mounted) return;
+      setState(() => _blockHiddenNumbers = value);
+    } catch (e, s) {
+      AppLogger.instance.error('settings', 'Error saving hidden number setting', e, s);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorSaving),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -3703,6 +3778,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                     _loadCountryFilterSummary();
                   },
+                ),
+                SwitchListTile(
+                  title: Text(context.l10n.blockHiddenNumbers),
+                  subtitle: Text(context.l10n.blockHiddenNumbersDescription),
+                  value: _blockHiddenNumbers,
+                  onChanged: (value) => _saveBlockHiddenNumbers(context, value),
                 ),
                 const Divider(),
                 ListTile(

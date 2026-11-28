@@ -1310,4 +1310,17 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Landfilter';
+
+  @override
+  String get blockHiddenNumbers => 'Bloker opkald med skjult nummer';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Opkald uden angivet nummer afvises.';
+
+  @override
+  String get hiddenNumber => 'Skjult nummer';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonym';
 }

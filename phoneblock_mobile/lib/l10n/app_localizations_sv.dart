@@ -1313,4 +1313,17 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Landsfilter';
+
+  @override
+  String get blockHiddenNumbers => 'Blockera samtal med dold nummer';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Samtal utan angivet nummer avvisas.';
+
+  @override
+  String get hiddenNumber => 'Dolt nummer';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonym';
 }

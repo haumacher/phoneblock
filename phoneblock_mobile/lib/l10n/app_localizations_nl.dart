@@ -1317,4 +1317,17 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Landfilter';
+
+  @override
+  String get blockHiddenNumbers => 'Oproepen met verborgen nummer blokkeren';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Oproepen waarbij het nummer niet wordt weergegeven, worden geweigerd.';
+
+  @override
+  String get hiddenNumber => 'Verborgen nummer';
+
+  @override
+  String get hiddenNumberBlocked => 'Anoniem';
 }

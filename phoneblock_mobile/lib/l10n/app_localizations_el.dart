@@ -1328,4 +1328,17 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Φίλτρο χωρών';
+
+  @override
+  String get blockHiddenNumbers => 'Αποκλεισμός κλήσεων με απόκρυψη αριθμού';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Οι κλήσεις χωρίς εμφανιζόμενο αριθμό απορρίπτονται.';
+
+  @override
+  String get hiddenNumber => 'Απόκρυφος αριθμός';
+
+  @override
+  String get hiddenNumberBlocked => 'Ανώνυμος';
 }
