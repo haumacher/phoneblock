@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "Συνδεθείτε πρώτα στο PhoneBlock.",
   "fritzboxCannotGetUsername": "Το όνομα χρήστη PhoneBlock δεν μπόρεσε να ανακτηθεί.",
   "fritzboxBlocklistConfigFailed": "Η λίστα αποκλεισμού δεν μπόρεσε να δημιουργηθεί.",
+  "fritzboxNeedsSettingsRight": "Για αυτό, ο χρήστης του Fritz!Box χρειάζεται το δικαίωμα «Ρυθμίσεις Fritz!Box».",
   "fritzboxCardDavStatus": "Κατάσταση CardDAV",
   "fritzboxCardDavStatusSynced": "Συγχρονισμένο",
   "fritzboxCardDavStatusPending": "Εκκρεμεί ο συγχρονισμός",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "Ισχύει επίσης για {countries}",
   "countryFilterKeepOne": "Πρέπει να παραμείνει τουλάχιστον μία επιτρεπόμενη χώρα.",
   "countryFilterBlocked": "Φίλτρο χωρών",
-  "fritzboxNeedsSettingsRight": "Για αυτό, ο χρήστης του Fritz!Box χρειάζεται το δικαίωμα «Ρυθμίσεις Fritz!Box»."
+  "fritzboxCallFilter": "Φιλτράρισμα λίστας κλήσεων",
+  "fritzboxCallFilterAll": "Όλες οι κλήσεις",
+  "fritzboxCallFilterTo": "Κλήσεις προς",
+  "fritzboxCallFilterBy": "Αποδεχθεί από",
+  "fritzboxCallFilterMobile": "Κινητό τηλέφωνο",
+  "fritzboxCallFilterMissed": "Χαμένες κλήσεις",
+  "fritzboxCallFilterHint": "Εάν δεν έχει γίνει καμία επιλογή σε μια ομάδα, εμφανίζονται όλες οι κλήσεις.",
+  "fritzboxCallFilterGone": "Δεν υπάρχει πλέον στο Fritz!Box",
+  "fritzboxCallFilterRefused": "Το Fritz!Box αρνήθηκε να παρέχει πληροφορίες σχετικά με τους αριθμούς κλήσεων και τις συσκευές.",
+  "fritzboxCallFilterFailed": "Δεν ήταν δυνατή η ανάκτηση των αριθμών κλήσεων και των συσκευών του Fritz!Box.",
+  "fritzboxCallFilterFallback": "Προτείνονται οι εγγραφές από προηγούμενες κλήσεις.",
+  "callListFiltered": "Φιλτραρισμένα",
+  "callListChangeFilter": "Αλλαγή φίλτρου",
+  "callListNoMatchingCalls": "Δεν υπάρχουν κλήσεις για αυτό το φίλτρο."
 }

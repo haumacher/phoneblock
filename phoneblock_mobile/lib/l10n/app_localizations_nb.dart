@@ -735,6 +735,52 @@ class AppLocalizationsNb extends AppLocalizations {
       'Vis også samtaler fra numre i Fritz!Box-telefonboken i samtalelisten';
 
   @override
+  String get fritzboxCallFilter => 'Filtrer samtalelisten';
+
+  @override
+  String get fritzboxCallFilterAll => 'Alle samtaler';
+
+  @override
+  String get fritzboxCallFilterTo => 'Samtaler til';
+
+  @override
+  String get fritzboxCallFilterBy => 'Mottatt av';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Mobiltelefon';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Ubesvart';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'Hvis det ikke er valgt noe i en gruppe, vises alle samtaler.';
+
+  @override
+  String get fritzboxCallFilterGone => 'Finnes ikke lenger i Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'Fritz!Box har avvist forespørselen om telefonnumre og enheter.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'Det var ikke mulig å hente inn telefonnumre og enheter fra Fritz!Box.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'Oppføringene fra tidligere samtaler vises.';
+
+  @override
+  String get callListFiltered => 'Filtrert';
+
+  @override
+  String get callListChangeFilter => 'Endre filter';
+
+  @override
+  String get callListNoMatchingCalls => 'Ingen samtaler for dette filteret.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

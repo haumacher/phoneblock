@@ -31,10 +31,12 @@ import 'package:phoneblock_mobile/mailbox_forwarding_screen.dart';
 import 'package:phoneblock_mobile/country_filter.dart';
 import 'package:phoneblock_mobile/number_input.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
+import 'package:phoneblock_mobile/fritzbox/call_list_filter.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/call_list_filter_screen.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_settings.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_extensions.dart';
@@ -1174,6 +1176,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   List<ScreenedCall> _screenedCalls = [];
+  CallListFilter _callFilter = CallListFilter.all;
   bool _isLoading = true;
   bool _answerbotEnabled = false;
   int _minVotes = 4;
@@ -1312,8 +1315,11 @@ class _MainScreenState extends State<MainScreen> {
 
     try {
       final calls = await ScreenedCallsDatabase.instance.getAllScreenedCalls();
+      final config = await FritzBoxStorage.instance.getConfig();
+      if (!mounted) return;
       setState(() {
         _screenedCalls = calls;
+        _callFilter = config?.callListFilter ?? CallListFilter.all;
         _isLoading = false;
       });
     } catch (e, s) {
@@ -1376,6 +1382,7 @@ class _MainScreenState extends State<MainScreen> {
                   // Fritz!Box offline banner
                   if (_fritzboxState == FritzBoxConnectionState.offline)
                     _buildFritzBoxOfflineBanner(context),
+                  if (_callFilter.isActive) _buildFilterIndicator(context),
                   // Calls list
                   Expanded(
                     child: _screenedCalls.isEmpty
@@ -1416,17 +1423,70 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  /// Shows that the call list filter hides calls, with a link to change it
+  /// (issue #294).
+  Widget _buildFilterIndicator(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+    return InkWell(
+      onTap: _openCallFilter,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: [
+            Icon(Icons.filter_list, size: 18, color: color),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${context.l10n.callListFiltered} · ${context.l10n.callListChangeFilter}',
+                style: TextStyle(fontSize: 12, color: color),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens the call list filter and applies the changes.
+  Future<void> _openCallFilter() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CallListFilterScreen()),
+    );
+    if (mounted) await _loadScreenedCalls();
+  }
+
   /// Builds the calls list with source indicators.
   Widget _buildCallsList() {
+    final calls = _callFilter.apply(_screenedCalls);
+    if (calls.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _refreshCalls,
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text(
+                context.l10n.callListNoMatchingCalls,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return RefreshIndicator(
       onRefresh: _refreshCalls,
       child: ListView.builder(
         padding: EdgeInsets.only(
           bottom: 56 + 2 * kFloatingActionButtonMargin + MediaQuery.paddingOf(context).bottom,
         ),
-        itemCount: _screenedCalls.length,
+        itemCount: calls.length,
         itemBuilder: (context, index) {
-          final call = _screenedCalls[index];
+          final call = calls[index];
           return _buildCallListItem(call);
         },
       ),

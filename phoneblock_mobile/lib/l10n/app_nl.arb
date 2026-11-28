@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "Log eerst in bij PhoneBlock.",
   "fritzboxCannotGetUsername": "PhoneBlock-gebruikersnaam kon niet worden opgehaald.",
   "fritzboxBlocklistConfigFailed": "Blokkadelijst kon niet worden ingesteld.",
+  "fritzboxNeedsSettingsRight": "Hiervoor heeft de Fritz!Box-gebruiker het recht „FRITZ!Box-instellingen“ nodig.",
   "fritzboxCardDavStatus": "CardDAV status",
   "fritzboxCardDavStatusSynced": "Gesynchroniseerd",
   "fritzboxCardDavStatusPending": "Synchronisatie in afwachting",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "Geldt ook voor {countries}",
   "countryFilterKeepOne": "Er moet ten minste één land toegestaan blijven.",
   "countryFilterBlocked": "Landfilter",
-  "fritzboxNeedsSettingsRight": "Hiervoor heeft de Fritz!Box-gebruiker het recht „FRITZ!Box-instellingen“ nodig."
+  "fritzboxCallFilter": "Oproepenlijst filteren",
+  "fritzboxCallFilterAll": "Alle gesprekken",
+  "fritzboxCallFilterTo": "Oproepen naar",
+  "fritzboxCallFilterBy": "Aangenomen door",
+  "fritzboxCallFilterMobile": "Mobiele telefoon",
+  "fritzboxCallFilterMissed": "Gemist",
+  "fritzboxCallFilterHint": "Als er in een groep niets is geselecteerd, worden alle gesprekken weergegeven.",
+  "fritzboxCallFilterGone": "Niet meer aanwezig in de Fritz!Box",
+  "fritzboxCallFilterRefused": "De Fritz!Box heeft het opvragen van de telefoonnummers en apparaten geweigerd.",
+  "fritzboxCallFilterFailed": "De telefoonnummers en apparaten van de Fritz!Box konden niet worden opgevraagd.",
+  "fritzboxCallFilterFallback": "De vermeldingen zijn afkomstig uit eerdere gesprekken.",
+  "callListFiltered": "Gefilterd",
+  "callListChangeFilter": "Filter wijzigen",
+  "callListNoMatchingCalls": "Geen gesprekken voor dit filter."
 }

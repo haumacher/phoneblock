@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "Log venligst ind på PhoneBlock først.",
   "fritzboxCannotGetUsername": "PhoneBlock-brugernavnet kunne ikke hentes.",
   "fritzboxBlocklistConfigFailed": "Blokeringslisten kunne ikke oprettes.",
+  "fritzboxNeedsSettingsRight": "Til dette har Fritz!Box-brugeren brug for rettigheden „FRITZ!Box-indstillinger“.",
   "fritzboxCardDavStatus": "CardDAV-status",
   "fritzboxCardDavStatusSynced": "Synkroniseret",
   "fritzboxCardDavStatusPending": "Synkronisering afventer",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "Gælder også for {countries}",
   "countryFilterKeepOne": "Der skal mindst være ét land tilbage på listen over tilladte lande.",
   "countryFilterBlocked": "Landfilter",
-  "fritzboxNeedsSettingsRight": "Til dette har Fritz!Box-brugeren brug for rettigheden „FRITZ!Box-indstillinger“."
+  "fritzboxCallFilter": "Filtrer opkaldsliste",
+  "fritzboxCallFilterAll": "Alle opkald",
+  "fritzboxCallFilterTo": "Opkald til",
+  "fritzboxCallFilterBy": "Modtaget af",
+  "fritzboxCallFilterMobile": "Mobiltelefon",
+  "fritzboxCallFilterMissed": "Ubesvaret",
+  "fritzboxCallFilterHint": "Hvis der ikke er valgt noget i en gruppe, vises alle opkald.",
+  "fritzboxCallFilterGone": "Findes ikke længere i Fritz!Box",
+  "fritzboxCallFilterRefused": "Fritz!Box har afvist anmodningen om at vise telefonnumre og enheder.",
+  "fritzboxCallFilterFailed": "Det var ikke muligt at hente opkaldsnumre og enheder fra Fritz!Box.",
+  "fritzboxCallFilterFallback": "Der vises poster fra tidligere opkald.",
+  "callListFiltered": "Filtreret",
+  "callListChangeFilter": "Skift filter",
+  "callListNoMatchingCalls": "Ingen opkald for dette filter."
 }

@@ -1,3 +1,5 @@
+import 'package:phoneblock_mobile/fritzbox/call_list_filter.dart';
+
 /// The source of a call in the unified timeline.
 enum CallSource {
   /// Call from mobile phone screening.
@@ -90,6 +92,10 @@ class FritzBoxConfig {
   /// (shown with that name, not looked up at PhoneBlock). False: they are
   /// skipped. Defaults to true when not set.
   final bool logKnownCallers;
+
+  /// Which calls the call list shows (issue #294); [CallListFilter.all] when
+  /// not set.
+  final CallListFilter callListFilter;
   final String? blocklistVersion;
   final String? phonebookId;
   final String? sipDeviceId;
@@ -112,6 +118,7 @@ class FritzBoxConfig {
     this.lastFetchTimestamp,
     this.lastCallId,
     this.logKnownCallers = true,
+    this.callListFilter = CallListFilter.all,
     this.blocklistVersion,
     this.phonebookId,
     this.sipDeviceId,
@@ -138,6 +145,8 @@ class FritzBoxConfig {
       lastCallId: map['last_call_id'] as int?,
       // Missing value (NULL) means the default: on.
       logKnownCallers: (map['log_known_callers'] as int?) != 0,
+      callListFilter:
+          CallListFilter.decode(map['call_list_filter'] as String?),
       blocklistVersion: map['blocklist_version'] as String?,
       phonebookId: map['phonebook_id'] as String?,
       sipDeviceId: map['sip_device_id'] as String?,
@@ -164,6 +173,7 @@ class FritzBoxConfig {
       'last_fetch_timestamp': lastFetchTimestamp,
       'last_call_id': lastCallId,
       'log_known_callers': logKnownCallers ? 1 : 0,
+      'call_list_filter': callListFilter.encode(),
       'blocklist_version': blocklistVersion,
       'phonebook_id': phonebookId,
       'sip_device_id': sipDeviceId,
@@ -189,6 +199,7 @@ class FritzBoxConfig {
     int? lastFetchTimestamp,
     int? lastCallId,
     bool? logKnownCallers,
+    CallListFilter? callListFilter,
     String? blocklistVersion,
     String? phonebookId,
     String? sipDeviceId,
@@ -211,6 +222,7 @@ class FritzBoxConfig {
       lastFetchTimestamp: lastFetchTimestamp ?? this.lastFetchTimestamp,
       lastCallId: lastCallId ?? this.lastCallId,
       logKnownCallers: logKnownCallers ?? this.logKnownCallers,
+      callListFilter: callListFilter ?? this.callListFilter,
       blocklistVersion: blocklistVersion ?? this.blocklistVersion,
       phonebookId: phonebookId ?? this.phonebookId,
       sipDeviceId: sipDeviceId ?? this.sipDeviceId,

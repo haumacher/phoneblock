@@ -19,6 +19,7 @@ void main() {
     String date = '28.11.26 10:00',
     String duration = '0:00',
     String device = 'Telefon 1',
+    String called = 'SIP: 987654',
   }) {
     final outgoing = type == 3 || type == 11;
     final number = outgoing ? '' : caller;
@@ -27,8 +28,8 @@ void main() {
 <Id>$id</Id>
 <Type>$type</Type>
 <Caller>$number</Caller>
-<Called>${outgoing ? caller : 'SIP: 987654'}</Called>
-${outgoing ? '<CalledNumber>$caller</CalledNumber>' : '<CallerNumber>$number</CallerNumber>'}
+<Called>${outgoing ? caller : called}</Called>
+${outgoing ? '<CalledNumber>$caller</CalledNumber>' : '<CallerNumber>$number</CallerNumber>\n<CalledNumber>${called.replaceFirst('SIP: ', '')}</CalledNumber>'}
 <Name>$name</Name>
 <Numbertype>sip</Numbertype>
 <Device>$device</Device>
@@ -227,6 +228,19 @@ ${outgoing ? '<CalledNumber>$caller</CalledNumber>' : '<CallerNumber>$number</Ca
     final p = plan(await parse([call(101, type: 10)]), watermark: 100);
     expect(p.toImport.single.call.wasBlocked, isTrue);
     expect(p.toImport.single.call.callType, FritzBoxCallType.rejected);
+  });
+
+  test('the called own number is stored without its type tag (#294)',
+      () async {
+    final p = plan(
+        await parse([
+          call(101, called: 'SIP: 987654'),
+          call(102, called: '02123987655', caller: '030222222'),
+          call(103, called: '', caller: '030333333'),
+        ]),
+        watermark: 100);
+    expect(p.toImport.map((c) => c.call.calledNumber),
+        ['987654', '02123987655', null]);
   });
 
   test('phone numbers are masked for the log', () {

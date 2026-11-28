@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/call_list_filter.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/storage.dart';
 import 'package:sqflite/sqflite.dart';
@@ -119,6 +120,7 @@ class FritzBoxStorage {
     int? lastFetchTimestamp,
     int? lastCallId,
     bool? logKnownCallers,
+    CallListFilter? callListFilter,
     String? blocklistVersion,
     String? phonebookId,
     String? sipDeviceId,
@@ -139,6 +141,7 @@ class FritzBoxStorage {
       lastFetchTimestamp: lastFetchTimestamp,
       lastCallId: lastCallId,
       logKnownCallers: logKnownCallers,
+      callListFilter: callListFilter,
       blocklistVersion: blocklistVersion,
       phonebookId: phonebookId,
       sipDeviceId: sipDeviceId,
@@ -156,6 +159,7 @@ class FritzBoxStorage {
       lastFetchTimestamp: lastFetchTimestamp,
       lastCallId: lastCallId,
       logKnownCallers: logKnownCallers ?? true,
+      callListFilter: callListFilter ?? CallListFilter.all,
       blocklistVersion: blocklistVersion,
       phonebookId: phonebookId,
       sipDeviceId: sipDeviceId,

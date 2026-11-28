@@ -677,6 +677,48 @@ class AppLocalizationsZh extends AppLocalizations {
       '在通话记录中也显示来自Fritz!Box通讯录的号码的来电';
 
   @override
+  String get fritzboxCallFilter => '筛选通话记录';
+
+  @override
+  String get fritzboxCallFilterAll => '所有通话';
+
+  @override
+  String get fritzboxCallFilterTo => '拨打至';
+
+  @override
+  String get fritzboxCallFilterBy => '由……接听';
+
+  @override
+  String get fritzboxCallFilterMobile => '手机';
+
+  @override
+  String get fritzboxCallFilterMissed => '未接来电';
+
+  @override
+  String get fritzboxCallFilterHint => '如果某个组中未勾选任何选项，则会显示所有通话记录。';
+
+  @override
+  String get fritzboxCallFilterGone => 'Fritz!Box 中已不存在';
+
+  @override
+  String get fritzboxCallFilterRefused => 'Fritz!Box 拒绝了查询电话号码和设备的请求。';
+
+  @override
+  String get fritzboxCallFilterFailed => '无法查询 Fritz!Box 的电话号码和设备信息。';
+
+  @override
+  String get fritzboxCallFilterFallback => '系统将提供来自以往通话的条目。';
+
+  @override
+  String get callListFiltered => '已筛选';
+
+  @override
+  String get callListChangeFilter => '更改筛选条件';
+
+  @override
+  String get callListNoMatchingCalls => '此筛选条件无通话记录。';
+
+  @override
   String fritzboxSyncComplete(int count) {
     return '<x1>计数</x1';
   }

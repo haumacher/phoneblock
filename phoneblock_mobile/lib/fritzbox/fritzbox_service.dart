@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fritz_tr064/fritz_tr064.dart';
 import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
+import 'package:phoneblock_mobile/fritzbox/call_list_filter.dart';
 import 'package:phoneblock_mobile/fritzbox/call_list_import.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_login.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
@@ -334,6 +335,16 @@ class FritzBoxService {
     await db.deleteOldScreenedCalls(retentionDays);
 
     return insertedIds;
+  }
+
+  /// Reads the selection entries of the call list filter from the Fritz!Box
+  /// (see [queryCallFilterChoices]). Only called when the filter screen
+  /// opens, never during the sync.
+  Future<CallFilterChoices> loadCallFilterChoices() async {
+    if (!isConnected) await checkConnection();
+    final client = _client;
+    if (!isConnected || client == null) return CallFilterChoices.unreachable();
+    return queryCallFilterChoices(client);
   }
 
   /// Returns those of the given Fritz!Box call IDs that are already stored.
@@ -1104,6 +1115,7 @@ class FritzBoxService {
         lastFetchTimestamp: existing.lastFetchTimestamp,
         lastCallId: existing.lastCallId,
         logKnownCallers: existing.logKnownCallers,
+        callListFilter: existing.callListFilter,
         blocklistVersion: existing.blocklistVersion,
         phonebookId: existing.phonebookId,
         sipDeviceId: null,

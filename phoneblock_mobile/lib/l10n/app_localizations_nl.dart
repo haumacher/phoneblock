@@ -736,6 +736,52 @@ class AppLocalizationsNl extends AppLocalizations {
       'Ook oproepen van nummers uit het Fritz!Box-telefoonboek in de oproepenlijst weergeven';
 
   @override
+  String get fritzboxCallFilter => 'Oproepenlijst filteren';
+
+  @override
+  String get fritzboxCallFilterAll => 'Alle gesprekken';
+
+  @override
+  String get fritzboxCallFilterTo => 'Oproepen naar';
+
+  @override
+  String get fritzboxCallFilterBy => 'Aangenomen door';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Mobiele telefoon';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Gemist';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'Als er in een groep niets is geselecteerd, worden alle gesprekken weergegeven.';
+
+  @override
+  String get fritzboxCallFilterGone => 'Niet meer aanwezig in de Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'De Fritz!Box heeft het opvragen van de telefoonnummers en apparaten geweigerd.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'De telefoonnummers en apparaten van de Fritz!Box konden niet worden opgevraagd.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'De vermeldingen zijn afkomstig uit eerdere gesprekken.';
+
+  @override
+  String get callListFiltered => 'Gefilterd';
+
+  @override
+  String get callListChangeFilter => 'Filter wijzigen';
+
+  @override
+  String get callListNoMatchingCalls => 'Geen gesprekken voor dit filter.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

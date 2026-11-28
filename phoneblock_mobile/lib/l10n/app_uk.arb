@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "Будь ласка, спочатку увійдіть до PhoneBlock.",
   "fritzboxCannotGetUsername": "Не вдалося отримати ім'я користувача PhoneBlock.",
   "fritzboxBlocklistConfigFailed": "Не вдалося налаштувати список блокування.",
+  "fritzboxNeedsSettingsRight": "Для цього користувачеві Fritz!Box необхідний дозвіл «Налаштування Fritz!Box».",
   "fritzboxCardDavStatus": "Статус CardDAV",
   "fritzboxCardDavStatusSynced": "Синхронізовано",
   "fritzboxCardDavStatusPending": "Очікується синхронізація",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "Це також стосується {countries}",
   "countryFilterKeepOne": "Принаймні одна країна має залишатися дозволеною.",
   "countryFilterBlocked": "Фільтр за країною",
-  "fritzboxNeedsSettingsRight": "Для цього користувачеві Fritz!Box необхідний дозвіл «Налаштування Fritz!Box»."
+  "fritzboxCallFilter": "Фільтрувати список дзвінків",
+  "fritzboxCallFilterAll": "Усі дзвінки",
+  "fritzboxCallFilterTo": "Дзвінки на",
+  "fritzboxCallFilterBy": "Прийнято",
+  "fritzboxCallFilterMobile": "Мобільний телефон",
+  "fritzboxCallFilterMissed": "Пропущений",
+  "fritzboxCallFilterHint": "Якщо в групі нічого не відмічено, відображаються всі дзвінки.",
+  "fritzboxCallFilterGone": "Більше немає у Fritz!Box",
+  "fritzboxCallFilterRefused": "Fritz!Box відмовився надати доступ до номерів та пристроїв.",
+  "fritzboxCallFilterFailed": "Не вдалося отримати номери телефонів та пристрої Fritz!Box.",
+  "fritzboxCallFilterFallback": "Пропонуються записи з попередніх дзвінків.",
+  "callListFiltered": "Відфільтровані",
+  "callListChangeFilter": "Змінити фільтр",
+  "callListNoMatchingCalls": "Для цього фільтра немає дзвінків."
 }

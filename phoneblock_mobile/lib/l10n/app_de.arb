@@ -1119,6 +1119,76 @@
     "description": "Subtitle of the switch that also imports calls from known callers (Fritz!Box phonebook) into the call list",
     "x-translated": "d37b54bc"
   },
+  "fritzboxCallFilter": "Anrufliste filtern",
+  "@fritzboxCallFilter": {
+    "description": "Fritz!Box settings entry and title of the screen that selects which calls the call list shows",
+    "x-translated": "c948c62d"
+  },
+  "fritzboxCallFilterAll": "Alle Anrufe",
+  "@fritzboxCallFilterAll": {
+    "description": "Subtitle of the call list filter entry when no filter is set",
+    "x-translated": "250efd71"
+  },
+  "fritzboxCallFilterTo": "Anrufe an",
+  "@fritzboxCallFilterTo": {
+    "description": "Group heading in the call list filter: the called number (the phone itself or an own number of the Fritz!Box)",
+    "x-translated": "3eb23996"
+  },
+  "fritzboxCallFilterBy": "Angenommen von",
+  "@fritzboxCallFilterBy": {
+    "description": "Group heading in the call list filter: the device that answered the call",
+    "x-translated": "af303384"
+  },
+  "fritzboxCallFilterMobile": "Handy",
+  "@fritzboxCallFilterMobile": {
+    "description": "Filter entry for calls screened on the phone itself (not via the Fritz!Box)",
+    "x-translated": "473af5e2"
+  },
+  "fritzboxCallFilterMissed": "Verpasst",
+  "@fritzboxCallFilterMissed": {
+    "description": "Filter entry for Fritz!Box calls no device answered (missed or rejected)",
+    "x-translated": "168ad310"
+  },
+  "fritzboxCallFilterHint": "Ohne Auswahl in einer Gruppe werden alle Anrufe angezeigt.",
+  "@fritzboxCallFilterHint": {
+    "description": "Hint on the call list filter screen: a group with nothing checked does not restrict the list",
+    "x-translated": "5d9e0976"
+  },
+  "fritzboxCallFilterGone": "Nicht mehr in der Fritz!Box",
+  "@fritzboxCallFilterGone": {
+    "description": "Subtitle of a selected filter entry the Fritz!Box no longer has (it can still be unchecked)",
+    "x-translated": "7298f148"
+  },
+  "fritzboxCallFilterRefused": "Die Fritz!Box hat die Abfrage der Rufnummern und Geräte abgelehnt.",
+  "@fritzboxCallFilterRefused": {
+    "description": "Shown on the call list filter screen when the Fritz!Box refuses to list its numbers and devices (missing rights)",
+    "x-translated": "cebc5cdc"
+  },
+  "fritzboxCallFilterFailed": "Rufnummern und Geräte der Fritz!Box konnten nicht abgefragt werden.",
+  "@fritzboxCallFilterFailed": {
+    "description": "Shown on the call list filter screen when the Fritz!Box is not reachable or a query failed",
+    "x-translated": "4bf81194"
+  },
+  "fritzboxCallFilterFallback": "Angeboten werden die Einträge aus bisherigen Anrufen.",
+  "@fritzboxCallFilterFallback": {
+    "description": "Second line after the refused/failed message: the entries come from already imported calls",
+    "x-translated": "a0025835"
+  },
+  "callListFiltered": "Gefiltert",
+  "@callListFiltered": {
+    "description": "Indicator above the call list when a call list filter is active",
+    "x-translated": "bf8ef9ef"
+  },
+  "callListChangeFilter": "Filter ändern",
+  "@callListChangeFilter": {
+    "description": "Link next to the 'filtered' indicator above the call list, opens the filter screen",
+    "x-translated": "86c97289"
+  },
+  "callListNoMatchingCalls": "Keine Anrufe für diesen Filter.",
+  "@callListNoMatchingCalls": {
+    "description": "Shown instead of the call list when calls exist but the filter hides all of them",
+    "x-translated": "d1dc4c23"
+  },
   "fritzboxSyncComplete": "{count, plural, =0{Keine neuen Anrufe} =1{1 neuer Anruf synchronisiert} other{{count} neue Anrufe synchronisiert}}",
   "@fritzboxSyncComplete": {
     "description": "Sync complete message",

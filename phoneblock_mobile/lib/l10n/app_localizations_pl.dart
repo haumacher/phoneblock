@@ -743,6 +743,52 @@ class AppLocalizationsPl extends AppLocalizations {
       'Wyświetlaj również połączenia z numerów z książki telefonicznej Fritz!Box na liście połączeń';
 
   @override
+  String get fritzboxCallFilter => 'Filtrowanie listy połączeń';
+
+  @override
+  String get fritzboxCallFilterAll => 'Wszystkie połączenia';
+
+  @override
+  String get fritzboxCallFilterTo => 'Połączenia do';
+
+  @override
+  String get fritzboxCallFilterBy => 'Odbiorca:';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Telefon komórkowy';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Nieodebrane';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'Jeśli w grupie nie zaznaczono żadnej opcji, wyświetlane są wszystkie połączenia.';
+
+  @override
+  String get fritzboxCallFilterGone => 'Nie ma już w Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'Urządzenie Fritz!Box odrzuciło zapytanie o numery telefoniczne i urządzenia.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'Nie udało się uzyskać informacji o numerach telefonów i urządzeniach podłączonych do Fritz!Box.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'Oferowane są wpisy z dotychczasowych połączeń.';
+
+  @override
+  String get callListFiltered => 'Przefiltrowane';
+
+  @override
+  String get callListChangeFilter => 'Zmień filtr';
+
+  @override
+  String get callListNoMatchingCalls => 'Brak połączeń dla tego filtra.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

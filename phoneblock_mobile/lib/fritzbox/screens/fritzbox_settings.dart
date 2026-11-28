@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
+import 'package:phoneblock_mobile/fritzbox/call_list_filter.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/call_list_filter_screen.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
@@ -334,6 +336,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         if (_connectionState == FritzBoxConnectionState.connected)
           _buildSyncSection(context, l10n),
         _buildLogKnownCallersSwitch(l10n),
+        _buildCallFilterTile(l10n),
 
         // Disconnect option
         const Divider(),
@@ -878,6 +881,33 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       value: _config?.logKnownCallers ?? true,
       onChanged: (value) async {
         await FritzBoxStorage.instance.updateConfig(logKnownCallers: value);
+        final config = await FritzBoxStorage.instance.getConfig();
+        if (mounted) {
+          setState(() {
+            _config = config;
+          });
+        }
+      },
+    );
+  }
+
+  /// Opens the call list filter (issue #294).
+  Widget _buildCallFilterTile(AppLocalizations l10n) {
+    final filter = _config?.callListFilter ?? CallListFilter.all;
+    return ListTile(
+      leading: const Icon(Icons.filter_list),
+      title: Text(l10n.fritzboxCallFilter),
+      subtitle: Text(
+        callListFilterSummary(l10n, filter),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CallListFilterScreen()),
+        );
         final config = await FritzBoxStorage.instance.getConfig();
         if (mounted) {
           setState(() {

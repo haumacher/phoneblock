@@ -743,6 +743,53 @@ class AppLocalizationsEl extends AppLocalizations {
       'Εμφάνιση κλήσεων από αριθμούς του τηλεφωνικού καταλόγου του Fritz!Box στη λίστα κλήσεων';
 
   @override
+  String get fritzboxCallFilter => 'Φιλτράρισμα λίστας κλήσεων';
+
+  @override
+  String get fritzboxCallFilterAll => 'Όλες οι κλήσεις';
+
+  @override
+  String get fritzboxCallFilterTo => 'Κλήσεις προς';
+
+  @override
+  String get fritzboxCallFilterBy => 'Αποδεχθεί από';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Κινητό τηλέφωνο';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Χαμένες κλήσεις';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'Εάν δεν έχει γίνει καμία επιλογή σε μια ομάδα, εμφανίζονται όλες οι κλήσεις.';
+
+  @override
+  String get fritzboxCallFilterGone => 'Δεν υπάρχει πλέον στο Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'Το Fritz!Box αρνήθηκε να παρέχει πληροφορίες σχετικά με τους αριθμούς κλήσεων και τις συσκευές.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'Δεν ήταν δυνατή η ανάκτηση των αριθμών κλήσεων και των συσκευών του Fritz!Box.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'Προτείνονται οι εγγραφές από προηγούμενες κλήσεις.';
+
+  @override
+  String get callListFiltered => 'Φιλτραρισμένα';
+
+  @override
+  String get callListChangeFilter => 'Αλλαγή φίλτρου';
+
+  @override
+  String get callListNoMatchingCalls =>
+      'Δεν υπάρχουν κλήσεις για αυτό το φίλτρο.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

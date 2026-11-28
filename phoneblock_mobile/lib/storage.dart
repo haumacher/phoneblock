@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:phoneblock_mobile/api.dart' as api;
@@ -31,6 +32,11 @@ class ScreenedCall {
   final String? fritzboxId; // Unique ID from Fritz!Box call list
   final FritzBoxCallType? callType; // Type of call (incoming, missed, outgoing, etc.)
 
+  /// The own number of the Fritz!Box the call went to, without type tag
+  /// (issue #294). Null for mobile calls and Fritz!Box calls imported before
+  /// schema version 16.
+  final String? calledNumber;
+
   ScreenedCall({
     this.id,
     required this.phoneNumber,
@@ -50,6 +56,7 @@ class ScreenedCall {
     this.device,
     this.fritzboxId,
     this.callType,
+    this.calledNumber,
   });
 
   /// The rating `CallChecker` reports for a call blocked by a personal wildcard rule.
@@ -104,6 +111,7 @@ class ScreenedCall {
       device: map['device'] as String?,
       fritzboxId: map['fritzboxId'] as String?,
       callType: callType,
+      calledNumber: map['calledNumber'] as String?,
     );
   }
 
@@ -130,6 +138,7 @@ class ScreenedCall {
       'device': device,
       'fritzboxId': fritzboxId,
       'callType': callType?.code,
+      'calledNumber': calledNumber,
     };
   }
 
@@ -203,6 +212,7 @@ class ScreenedCall {
       device: device,
       fritzboxId: fritzboxId,
       callType: callType,
+      calledNumber: calledNumber,
     );
   }
 }
@@ -272,7 +282,7 @@ class ScreenedCallsDatabase {
     AppLogger.instance.info('db', 'opening database at $path');
     return await openDatabase(
       path,
-      version: 15,
+      version: 16,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -297,7 +307,8 @@ class ScreenedCallsDatabase {
         fritzboxId TEXT UNIQUE,
         callType INTEGER,
         matchedWildcard TEXT,
-        isPersonallyBlocked INTEGER NOT NULL DEFAULT 0
+        isPersonallyBlocked INTEGER NOT NULL DEFAULT 0,
+        calledNumber TEXT
       )
     ''');
 
@@ -334,6 +345,7 @@ class ScreenedCallsDatabase {
         trunk_prefix TEXT DEFAULT '0',
         last_call_id INTEGER,
         log_known_callers INTEGER DEFAULT 1,
+        call_list_filter TEXT,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       )
@@ -520,6 +532,12 @@ class ScreenedCallsDatabase {
       await db.execute('ALTER TABLE fritzbox_config ADD COLUMN last_call_id INTEGER');
       await db.execute('ALTER TABLE fritzbox_config ADD COLUMN log_known_callers INTEGER DEFAULT 1');
     }
+    if (oldVersion < 16) {
+      // Issue #294: call list filter. Calls imported before have no called
+      // number; no filter (NULL) shows all calls.
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN calledNumber TEXT');
+      await db.execute('ALTER TABLE fritzbox_config ADD COLUMN call_list_filter TEXT');
+    }
   }
 
   /// Inserts a new screened call record.
@@ -545,6 +563,7 @@ class ScreenedCallsDatabase {
       device: call.device,
       fritzboxId: call.fritzboxId,
       callType: call.callType,
+      calledNumber: call.calledNumber,
     );
   }
 
@@ -652,6 +671,23 @@ class ScreenedCallsDatabase {
       "SELECT COUNT(*) as count FROM screened_calls WHERE source = 'fritzbox'"
     );
     return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// The distinct called numbers of the stored Fritz!Box calls.
+  Future<List<String>> getFritzBoxCalledNumbers() =>
+      _distinctFritzBoxValues('calledNumber');
+
+  /// The distinct device names of the stored Fritz!Box calls.
+  Future<List<String>> getFritzBoxDevices() => _distinctFritzBoxValues('device');
+
+  Future<List<String>> _distinctFritzBoxValues(String column) async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      "SELECT DISTINCT $column AS v FROM screened_calls "
+      "WHERE source = 'fritzbox' AND $column IS NOT NULL AND $column != '' "
+      "ORDER BY $column",
+    );
+    return rows.map((r) => r['v'] as String).toList();
   }
 
   /// Deletes all Fritz!Box calls.
@@ -857,5 +893,13 @@ class ScreenedCallsDatabase {
   Future<void> close() async {
     final db = await database;
     await db.close();
+  }
+
+  /// Closes and forgets the open database, so that the next access opens it
+  /// again (with its migrations).
+  @visibleForTesting
+  static Future<void> resetForTest() async {
+    await _database?.close();
+    _database = null;
   }
 }

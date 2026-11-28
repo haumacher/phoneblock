@@ -1,4 +1,5 @@
 import 'package:fritz_tr064/fritz_tr064.dart';
+import 'package:phoneblock_mobile/fritzbox/call_list_filter.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/phone_number_utils.dart' as phone_utils;
 import 'package:phoneblock_mobile/storage.dart';
@@ -229,6 +230,7 @@ CallListImportPlan planCallListImport(
         fritzboxId: entry.id.toString(),
         callType: callType,
         label: label,
+        calledNumber: normalizeOwnNumber(entry.called),
       ),
       lookup: !isKnownContact,
     ));

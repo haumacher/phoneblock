@@ -736,6 +736,52 @@ class AppLocalizationsDe extends AppLocalizations {
       'Auch Anrufe von Nummern aus dem Fritz!Box-Telefonbuch in der Anrufliste anzeigen';
 
   @override
+  String get fritzboxCallFilter => 'Anrufliste filtern';
+
+  @override
+  String get fritzboxCallFilterAll => 'Alle Anrufe';
+
+  @override
+  String get fritzboxCallFilterTo => 'Anrufe an';
+
+  @override
+  String get fritzboxCallFilterBy => 'Angenommen von';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Handy';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Verpasst';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'Ohne Auswahl in einer Gruppe werden alle Anrufe angezeigt.';
+
+  @override
+  String get fritzboxCallFilterGone => 'Nicht mehr in der Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'Die Fritz!Box hat die Abfrage der Rufnummern und Geräte abgelehnt.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'Rufnummern und Geräte der Fritz!Box konnten nicht abgefragt werden.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'Angeboten werden die Einträge aus bisherigen Anrufen.';
+
+  @override
+  String get callListFiltered => 'Gefiltert';
+
+  @override
+  String get callListChangeFilter => 'Filter ändern';
+
+  @override
+  String get callListNoMatchingCalls => 'Keine Anrufe für diesen Filter.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

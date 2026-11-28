@@ -737,6 +737,52 @@ class AppLocalizationsUk extends AppLocalizations {
       'Також відображати у списку дзвінків дзвінки з номерів із телефонної книги Fritz!Box';
 
   @override
+  String get fritzboxCallFilter => 'Фільтрувати список дзвінків';
+
+  @override
+  String get fritzboxCallFilterAll => 'Усі дзвінки';
+
+  @override
+  String get fritzboxCallFilterTo => 'Дзвінки на';
+
+  @override
+  String get fritzboxCallFilterBy => 'Прийнято';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Мобільний телефон';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Пропущений';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'Якщо в групі нічого не відмічено, відображаються всі дзвінки.';
+
+  @override
+  String get fritzboxCallFilterGone => 'Більше немає у Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'Fritz!Box відмовився надати доступ до номерів та пристроїв.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'Не вдалося отримати номери телефонів та пристрої Fritz!Box.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'Пропонуються записи з попередніх дзвінків.';
+
+  @override
+  String get callListFiltered => 'Відфільтровані';
+
+  @override
+  String get callListChangeFilter => 'Змінити фільтр';
+
+  @override
+  String get callListNoMatchingCalls => 'Для цього фільтра немає дзвінків.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

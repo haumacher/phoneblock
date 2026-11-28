@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "Please log in to PhoneBlock first.",
   "fritzboxCannotGetUsername": "PhoneBlock user name could not be retrieved.",
   "fritzboxBlocklistConfigFailed": "Block list could not be set up.",
+  "fritzboxNeedsSettingsRight": "To do this, the Fritz!Box user needs the “FRITZ!Box Settings” permission.",
   "fritzboxCardDavStatus": "CardDAV status",
   "fritzboxCardDavStatusSynced": "Synchronized",
   "fritzboxCardDavStatusPending": "Synchronization pending",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "Also applies to {countries}",
   "countryFilterKeepOne": "At least one country must remain allowed.",
   "countryFilterBlocked": "Country filter",
-  "fritzboxNeedsSettingsRight": "To do this, the Fritz!Box user needs the “FRITZ!Box Settings” permission."
+  "fritzboxCallFilter": "Filter call list",
+  "fritzboxCallFilterAll": "All calls",
+  "fritzboxCallFilterTo": "Calls to",
+  "fritzboxCallFilterBy": "Answered by",
+  "fritzboxCallFilterMobile": "Cell phone",
+  "fritzboxCallFilterMissed": "Missed",
+  "fritzboxCallFilterHint": "If no options are selected in a group, all calls are displayed.",
+  "fritzboxCallFilterGone": "No longer available on the Fritz!Box",
+  "fritzboxCallFilterRefused": "The Fritz!Box has rejected the request to display the phone numbers and devices.",
+  "fritzboxCallFilterFailed": "Phone numbers and devices associated with the Fritz!Box could not be retrieved.",
+  "fritzboxCallFilterFallback": "The entries from previous calls are displayed.",
+  "callListFiltered": "Filtered",
+  "callListChangeFilter": "Change filter",
+  "callListNoMatchingCalls": "No calls for this filter."
 }
