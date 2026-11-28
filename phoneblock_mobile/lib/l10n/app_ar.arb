@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "يرجى تسجيل الدخول إلى PhoneBlock أولاً.",
   "fritzboxCannotGetUsername": "تعذر استرداد اسم مستخدم PhoneBlock.",
   "fritzboxBlocklistConfigFailed": "تعذر إعداد قائمة الحظر.",
+  "fritzboxNeedsSettingsRight": "ولذلك، يحتاج مستخدم جهاز Fritz!Box إلى حق «إعدادات Fritz!Box».",
   "fritzboxCardDavStatus": "حالة CardDAV",
   "fritzboxCardDavStatusSynced": "متزامن",
   "fritzboxCardDavStatusPending": "المزامنة معلقة",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "ينطبق ذلك أيضًا على {countries}",
   "countryFilterKeepOne": "يجب أن يبقى بلد واحد على الأقل مسموحًا به.",
   "countryFilterBlocked": "مرشح البلدان",
-  "fritzboxNeedsSettingsRight": "ولذلك، يحتاج مستخدم جهاز Fritz!Box إلى حق «إعدادات Fritz!Box»."
+  "fritzboxCallFilter": "تصفية قائمة المكالمات",
+  "fritzboxCallFilterAll": "جميع المكالمات",
+  "fritzboxCallFilterTo": "المكالمات الواردة إلى",
+  "fritzboxCallFilterBy": "تم الرد عليه من قبل",
+  "fritzboxCallFilterMobile": "الهاتف المحمول",
+  "fritzboxCallFilterMissed": "مكالمات فائتة",
+  "fritzboxCallFilterHint": "في حالة عدم تحديد أي خيار ضمن مجموعة ما، يتم عرض جميع المكالمات.",
+  "fritzboxCallFilterGone": "لم يعد موجودًا في جهاز Fritz!Box",
+  "fritzboxCallFilterRefused": "رفض جهاز Fritz!Box الاستجابة لطلب الحصول على أرقام الهواتف والأجهزة.",
+  "fritzboxCallFilterFailed": "تعذر الاستعلام عن أرقام الهواتف وأجهزة جهاز Fritz!Box.",
+  "fritzboxCallFilterFallback": "يتم عرض الإدخالات من المكالمات السابقة.",
+  "callListFiltered": "تم التصفية",
+  "callListChangeFilter": "تغيير التصفية",
+  "callListNoMatchingCalls": "لا توجد مكالمات لهذا الفلتر."
 }

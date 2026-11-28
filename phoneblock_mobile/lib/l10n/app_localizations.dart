@@ -1358,6 +1358,90 @@ abstract class AppLocalizations {
   /// **'Auch Anrufe von Nummern aus dem Fritz!Box-Telefonbuch in der Anrufliste anzeigen'**
   String get fritzboxLogKnownCallersDescription;
 
+  /// Fritz!Box settings entry and title of the screen that selects which calls the call list shows
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufliste filtern'**
+  String get fritzboxCallFilter;
+
+  /// Subtitle of the call list filter entry when no filter is set
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Anrufe'**
+  String get fritzboxCallFilterAll;
+
+  /// Group heading in the call list filter: the called number (the phone itself or an own number of the Fritz!Box)
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufe an'**
+  String get fritzboxCallFilterTo;
+
+  /// Group heading in the call list filter: the device that answered the call
+  ///
+  /// In de, this message translates to:
+  /// **'Angenommen von'**
+  String get fritzboxCallFilterBy;
+
+  /// Filter entry for calls screened on the phone itself (not via the Fritz!Box)
+  ///
+  /// In de, this message translates to:
+  /// **'Handy'**
+  String get fritzboxCallFilterMobile;
+
+  /// Filter entry for Fritz!Box calls no device answered (missed or rejected)
+  ///
+  /// In de, this message translates to:
+  /// **'Verpasst'**
+  String get fritzboxCallFilterMissed;
+
+  /// Hint on the call list filter screen: a group with nothing checked does not restrict the list
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Auswahl in einer Gruppe werden alle Anrufe angezeigt.'**
+  String get fritzboxCallFilterHint;
+
+  /// Subtitle of a selected filter entry the Fritz!Box no longer has (it can still be unchecked)
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht mehr in der Fritz!Box'**
+  String get fritzboxCallFilterGone;
+
+  /// Shown on the call list filter screen when the Fritz!Box refuses to list its numbers and devices (missing rights)
+  ///
+  /// In de, this message translates to:
+  /// **'Die Fritz!Box hat die Abfrage der Rufnummern und Geräte abgelehnt.'**
+  String get fritzboxCallFilterRefused;
+
+  /// Shown on the call list filter screen when the Fritz!Box is not reachable or a query failed
+  ///
+  /// In de, this message translates to:
+  /// **'Rufnummern und Geräte der Fritz!Box konnten nicht abgefragt werden.'**
+  String get fritzboxCallFilterFailed;
+
+  /// Second line after the refused/failed message: the entries come from already imported calls
+  ///
+  /// In de, this message translates to:
+  /// **'Angeboten werden die Einträge aus bisherigen Anrufen.'**
+  String get fritzboxCallFilterFallback;
+
+  /// Indicator above the call list when a call list filter is active
+  ///
+  /// In de, this message translates to:
+  /// **'Gefiltert'**
+  String get callListFiltered;
+
+  /// Link next to the 'filtered' indicator above the call list, opens the filter screen
+  ///
+  /// In de, this message translates to:
+  /// **'Filter ändern'**
+  String get callListChangeFilter;
+
+  /// Shown instead of the call list when calls exist but the filter hides all of them
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Anrufe für diesen Filter.'**
+  String get callListNoMatchingCalls;
+
   /// Sync complete message
   ///
   /// In de, this message translates to:

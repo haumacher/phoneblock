@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "Vänligen logga in på PhoneBlock först.",
   "fritzboxCannotGetUsername": "PhoneBlock-användarnamnet kunde inte hämtas.",
   "fritzboxBlocklistConfigFailed": "Blocklistan kunde inte sättas upp.",
+  "fritzboxNeedsSettingsRight": "För detta behöver Fritz!Box-användaren behörigheten ”FRITZ!Box-inställningar”.",
   "fritzboxCardDavStatus": "CardDAV-status",
   "fritzboxCardDavStatusSynced": "Synkroniserad",
   "fritzboxCardDavStatusPending": "Synkronisering pågår",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "Gäller även för {countries}",
   "countryFilterKeepOne": "Minst ett land måste förbli tillåtet.",
   "countryFilterBlocked": "Landsfilter",
-  "fritzboxNeedsSettingsRight": "För detta behöver Fritz!Box-användaren behörigheten ”FRITZ!Box-inställningar”."
+  "fritzboxCallFilter": "Filtrera samtalslistan",
+  "fritzboxCallFilterAll": "Alla samtal",
+  "fritzboxCallFilterTo": "Samtal till",
+  "fritzboxCallFilterBy": "Mottagen av",
+  "fritzboxCallFilterMobile": "Mobiltelefon",
+  "fritzboxCallFilterMissed": "Missade",
+  "fritzboxCallFilterHint": "Om inget är markerat i en grupp visas alla samtal.",
+  "fritzboxCallFilterGone": "Finns inte längre i Fritz!Box",
+  "fritzboxCallFilterRefused": "Fritz!Box har avvisat förfrågan om telefonnummer och enheter.",
+  "fritzboxCallFilterFailed": "Det gick inte att hämta telefonnummer och enheter från Fritz!Box.",
+  "fritzboxCallFilterFallback": "De poster som visas här kommer från tidigare samtal.",
+  "callListFiltered": "Filtrerad",
+  "callListChangeFilter": "Ändra filter",
+  "callListNoMatchingCalls": "Inga samtal för detta filter."
 }

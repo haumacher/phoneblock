@@ -733,6 +733,52 @@ class AppLocalizationsEn extends AppLocalizations {
       'Also display calls from numbers in the Fritz!Box phonebook in the call list';
 
   @override
+  String get fritzboxCallFilter => 'Filter call list';
+
+  @override
+  String get fritzboxCallFilterAll => 'All calls';
+
+  @override
+  String get fritzboxCallFilterTo => 'Calls to';
+
+  @override
+  String get fritzboxCallFilterBy => 'Answered by';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Cell phone';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Missed';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'If no options are selected in a group, all calls are displayed.';
+
+  @override
+  String get fritzboxCallFilterGone => 'No longer available on the Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'The Fritz!Box has rejected the request to display the phone numbers and devices.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'Phone numbers and devices associated with the Fritz!Box could not be retrieved.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'The entries from previous calls are displayed.';
+
+  @override
+  String get callListFiltered => 'Filtered';
+
+  @override
+  String get callListChangeFilter => 'Change filter';
+
+  @override
+  String get callListNoMatchingCalls => 'No calls for this filter.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -747,6 +747,53 @@ class AppLocalizationsFr extends AppLocalizations {
       'Afficher également dans la liste des appels les appels provenant de numéros figurant dans le répertoire de la Fritz!Box';
 
   @override
+  String get fritzboxCallFilter => 'Filtrer la liste des appels';
+
+  @override
+  String get fritzboxCallFilterAll => 'Tous les appels';
+
+  @override
+  String get fritzboxCallFilterTo => 'Appels vers';
+
+  @override
+  String get fritzboxCallFilterBy => 'Répondu par';
+
+  @override
+  String get fritzboxCallFilterMobile => 'Téléphone portable';
+
+  @override
+  String get fritzboxCallFilterMissed => 'Appel manqué';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'Si aucune case n\'est cochée dans un groupe, tous les appels s\'affichent.';
+
+  @override
+  String get fritzboxCallFilterGone =>
+      'N\'est plus disponible dans la Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'La Fritz!Box a refusé la requête concernant les numéros de téléphone et les appareils.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'Les numéros d\'appel et les appareils de la Fritz!Box n\'ont pas pu être interrogés.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'Les entrées proposées proviennent des appels précédents.';
+
+  @override
+  String get callListFiltered => 'Filtré';
+
+  @override
+  String get callListChangeFilter => 'Modifier le filtre';
+
+  @override
+  String get callListNoMatchingCalls => 'Aucun appel pour ce filtre.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

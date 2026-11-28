@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "请先登录 PhoneBlock。",
   "fritzboxCannotGetUsername": "无法检索 PhoneBlock 用户名。",
   "fritzboxBlocklistConfigFailed": "无法设置拦截列表。",
+  "fritzboxNeedsSettingsRight": "为此，Fritz!Box 用户需要“FRITZ!Box 设置”权限。",
   "fritzboxCardDavStatus": "CardDAV 状态",
   "fritzboxCardDavStatusSynced": "同步",
   "fritzboxCardDavStatusPending": "待同步",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "也适用于 {countries}",
   "countryFilterKeepOne": "必须至少保留一个允许的国家。",
   "countryFilterBlocked": "国家过滤器",
-  "fritzboxNeedsSettingsRight": "为此，Fritz!Box 用户需要“FRITZ!Box 设置”权限。"
+  "fritzboxCallFilter": "筛选通话记录",
+  "fritzboxCallFilterAll": "所有通话",
+  "fritzboxCallFilterTo": "拨打至",
+  "fritzboxCallFilterBy": "由……接听",
+  "fritzboxCallFilterMobile": "手机",
+  "fritzboxCallFilterMissed": "未接来电",
+  "fritzboxCallFilterHint": "如果某个组中未勾选任何选项，则会显示所有通话记录。",
+  "fritzboxCallFilterGone": "Fritz!Box 中已不存在",
+  "fritzboxCallFilterRefused": "Fritz!Box 拒绝了查询电话号码和设备的请求。",
+  "fritzboxCallFilterFailed": "无法查询 Fritz!Box 的电话号码和设备信息。",
+  "fritzboxCallFilterFallback": "系统将提供来自以往通话的条目。",
+  "callListFiltered": "已筛选",
+  "callListChangeFilter": "更改筛选条件",
+  "callListNoMatchingCalls": "此筛选条件无通话记录。"
 }

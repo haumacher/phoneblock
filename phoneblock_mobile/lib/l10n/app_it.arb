@@ -250,6 +250,7 @@
   "fritzboxPhoneBlockNotLoggedIn": "Accedere prima a PhoneBlock.",
   "fritzboxCannotGetUsername": "Non è stato possibile recuperare il nome utente di PhoneBlock.",
   "fritzboxBlocklistConfigFailed": "Non è stato possibile impostare un elenco di blocco.",
+  "fritzboxNeedsSettingsRight": "A tal fine, l’utente del Fritz!Box deve disporre del diritto «Impostazioni Fritz!Box».",
   "fritzboxCardDavStatus": "Stato di CardDAV",
   "fritzboxCardDavStatusSynced": "Sincronizzato",
   "fritzboxCardDavStatusPending": "Sincronizzazione in corso",
@@ -340,5 +341,18 @@
   "countrySharedCallingCode": "Vale anche per {countries}",
   "countryFilterKeepOne": "Deve rimanere consentito almeno un paese.",
   "countryFilterBlocked": "Filtro per paese",
-  "fritzboxNeedsSettingsRight": "A tal fine, l’utente del Fritz!Box deve disporre del diritto «Impostazioni Fritz!Box»."
+  "fritzboxCallFilter": "Filtra elenco chiamate",
+  "fritzboxCallFilterAll": "Tutte le chiamate",
+  "fritzboxCallFilterTo": "Chiamate verso",
+  "fritzboxCallFilterBy": "Risposta da",
+  "fritzboxCallFilterMobile": "Cellulare",
+  "fritzboxCallFilterMissed": "Chiamate perse",
+  "fritzboxCallFilterHint": "Se in un gruppo non viene selezionata alcuna opzione, vengono visualizzate tutte le chiamate.",
+  "fritzboxCallFilterGone": "Non più presente nel Fritz!Box",
+  "fritzboxCallFilterRefused": "Il Fritz!Box ha rifiutato la richiesta relativa ai numeri di telefono e ai dispositivi.",
+  "fritzboxCallFilterFailed": "Non è stato possibile recuperare i numeri di telefono e i dispositivi del Fritz!Box.",
+  "fritzboxCallFilterFallback": "Vengono proposte le voci relative alle chiamate precedenti.",
+  "callListFiltered": "Filtrato",
+  "callListChangeFilter": "Modifica filtro",
+  "callListNoMatchingCalls": "Nessuna chiamata per questo filtro."
 }

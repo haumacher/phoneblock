@@ -733,6 +733,52 @@ class AppLocalizationsAr extends AppLocalizations {
       'عرض المكالمات الواردة من الأرقام الموجودة في دفتر هاتف Fritz!Box في قائمة المكالمات';
 
   @override
+  String get fritzboxCallFilter => 'تصفية قائمة المكالمات';
+
+  @override
+  String get fritzboxCallFilterAll => 'جميع المكالمات';
+
+  @override
+  String get fritzboxCallFilterTo => 'المكالمات الواردة إلى';
+
+  @override
+  String get fritzboxCallFilterBy => 'تم الرد عليه من قبل';
+
+  @override
+  String get fritzboxCallFilterMobile => 'الهاتف المحمول';
+
+  @override
+  String get fritzboxCallFilterMissed => 'مكالمات فائتة';
+
+  @override
+  String get fritzboxCallFilterHint =>
+      'في حالة عدم تحديد أي خيار ضمن مجموعة ما، يتم عرض جميع المكالمات.';
+
+  @override
+  String get fritzboxCallFilterGone => 'لم يعد موجودًا في جهاز Fritz!Box';
+
+  @override
+  String get fritzboxCallFilterRefused =>
+      'رفض جهاز Fritz!Box الاستجابة لطلب الحصول على أرقام الهواتف والأجهزة.';
+
+  @override
+  String get fritzboxCallFilterFailed =>
+      'تعذر الاستعلام عن أرقام الهواتف وأجهزة جهاز Fritz!Box.';
+
+  @override
+  String get fritzboxCallFilterFallback =>
+      'يتم عرض الإدخالات من المكالمات السابقة.';
+
+  @override
+  String get callListFiltered => 'تم التصفية';
+
+  @override
+  String get callListChangeFilter => 'تغيير التصفية';
+
+  @override
+  String get callListNoMatchingCalls => 'لا توجد مكالمات لهذا الفلتر.';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
