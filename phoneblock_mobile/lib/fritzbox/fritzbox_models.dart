@@ -78,7 +78,18 @@ class FritzBoxConfig {
   final BlocklistMode blocklistMode;
   final bool answerbotEnabled;
   final int? answerbotId;
+  /// Phone time of the last call list sync, for display only.
   final int? lastFetchTimestamp;
+
+  /// Highest Fritz!Box call list ID completely handled by the call list sync
+  /// (imported or deliberately skipped). Null before the first sync with ID
+  /// tracking (fresh setup or upgrade from the time-based sync).
+  final int? lastCallId;
+
+  /// True: calls from callers with a Fritz!Box phonebook name are imported
+  /// (shown with that name, not looked up at PhoneBlock). False: they are
+  /// skipped. Defaults to true when not set.
+  final bool logKnownCallers;
   final String? blocklistVersion;
   final String? phonebookId;
   final String? sipDeviceId;
@@ -99,6 +110,8 @@ class FritzBoxConfig {
     this.answerbotEnabled = false,
     this.answerbotId,
     this.lastFetchTimestamp,
+    this.lastCallId,
+    this.logKnownCallers = true,
     this.blocklistVersion,
     this.phonebookId,
     this.sipDeviceId,
@@ -122,6 +135,9 @@ class FritzBoxConfig {
       answerbotEnabled: (map['answerbot_enabled'] as int?) == 1,
       answerbotId: map['answerbot_id'] as int?,
       lastFetchTimestamp: map['last_fetch_timestamp'] as int?,
+      lastCallId: map['last_call_id'] as int?,
+      // Missing value (NULL) means the default: on.
+      logKnownCallers: (map['log_known_callers'] as int?) != 0,
       blocklistVersion: map['blocklist_version'] as String?,
       phonebookId: map['phonebook_id'] as String?,
       sipDeviceId: map['sip_device_id'] as String?,
@@ -146,6 +162,8 @@ class FritzBoxConfig {
       'answerbot_enabled': answerbotEnabled ? 1 : 0,
       'answerbot_id': answerbotId,
       'last_fetch_timestamp': lastFetchTimestamp,
+      'last_call_id': lastCallId,
+      'log_known_callers': logKnownCallers ? 1 : 0,
       'blocklist_version': blocklistVersion,
       'phonebook_id': phonebookId,
       'sip_device_id': sipDeviceId,
@@ -169,6 +187,8 @@ class FritzBoxConfig {
     bool? answerbotEnabled,
     int? answerbotId,
     int? lastFetchTimestamp,
+    int? lastCallId,
+    bool? logKnownCallers,
     String? blocklistVersion,
     String? phonebookId,
     String? sipDeviceId,
@@ -189,6 +209,8 @@ class FritzBoxConfig {
       answerbotEnabled: answerbotEnabled ?? this.answerbotEnabled,
       answerbotId: answerbotId ?? this.answerbotId,
       lastFetchTimestamp: lastFetchTimestamp ?? this.lastFetchTimestamp,
+      lastCallId: lastCallId ?? this.lastCallId,
+      logKnownCallers: logKnownCallers ?? this.logKnownCallers,
       blocklistVersion: blocklistVersion ?? this.blocklistVersion,
       phonebookId: phonebookId ?? this.phonebookId,
       sipDeviceId: sipDeviceId ?? this.sipDeviceId,

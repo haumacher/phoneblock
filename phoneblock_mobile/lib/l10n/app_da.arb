@@ -191,6 +191,7 @@
   "blockedCallsCount": "Blokerede opkald",
   "suspiciousCallsCount": "Mistænkelige opkald",
   "fritzboxTitle": "Fritz!Box",
+  "fritzboxConnected": "Tilsluttet og beskyttet",
   "fritzboxConnectedPlain": "Tilsluttet",
   "fritzboxOffline": "Ikke tilgængelig",
   "fritzboxError": "Forbindelsesfejl",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
   "personalizedAddedDate": "Tilføjet: {date}.",
-  "fritzboxConnected": "Tilsluttet og beskyttet"
+  "fritzboxLogKnownCallers": "Registrer kendte opkald",
+  "fritzboxLogKnownCallersDescription": "Vis også opkald fra numre i Fritz!Box-telefonbogen i opkaldslisten"
 }

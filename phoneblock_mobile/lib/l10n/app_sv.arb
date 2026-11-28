@@ -191,6 +191,7 @@
   "blockedCallsCount": "Blockerade samtal",
   "suspiciousCallsCount": "Misstänkta samtal",
   "fritzboxTitle": "Fritz!Box",
+  "fritzboxConnected": "Ansluten och skyddad",
   "fritzboxConnectedPlain": "Ansluten",
   "fritzboxOffline": "Ej tillgänglig",
   "fritzboxError": "Fel i anslutningen",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Synkroniseringen av blocklistan lyckades",
   "blocklistSyncFailed": "Synkroniseringen av blocklistan misslyckades",
   "personalizedAddedDate": "Tillagd: {date}",
-  "fritzboxConnected": "Ansluten och skyddad"
+  "fritzboxLogKnownCallers": "Logga kända uppringare",
+  "fritzboxLogKnownCallersDescription": "Visa även samtal från nummer i Fritz!Box-telefonboken i samtalslistan"
 }

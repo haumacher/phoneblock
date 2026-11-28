@@ -740,6 +740,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Consulter la liste d\'appels de la Fritz!Box';
 
   @override
+  String get fritzboxLogKnownCallers => 'Enregistrer les appelants connus';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'Afficher également dans la liste des appels les appels provenant de numéros figurant dans le répertoire de la Fritz!Box';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -191,6 +191,7 @@
   "blockedCallsCount": "Заблоковані дзвінки",
   "suspiciousCallsCount": "Підозрілі дзвінки",
   "fritzboxTitle": "Фріц! Коробка!",
+  "fritzboxConnected": "Підключено та захищено",
   "fritzboxConnectedPlain": "Підключено",
   "fritzboxOffline": "Немає в наявності",
   "fritzboxError": "Помилка підключення",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
   "personalizedAddedDate": "Додано: {date}",
-  "fritzboxConnected": "Підключено та захищено"
+  "fritzboxLogKnownCallers": "Реєструвати відомих абонентів",
+  "fritzboxLogKnownCallersDescription": "Також відображати у списку дзвінків дзвінки з номерів із телефонної книги Fritz!Box"
 }

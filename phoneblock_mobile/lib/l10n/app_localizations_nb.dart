@@ -728,6 +728,13 @@ class AppLocalizationsNb extends AppLocalizations {
   String get fritzboxSyncDescription => 'Hente samtalelisten fra Fritz!';
 
   @override
+  String get fritzboxLogKnownCallers => 'Registrer kjente innringere';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'Vis også samtaler fra numre i Fritz!Box-telefonboken i samtalelisten';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

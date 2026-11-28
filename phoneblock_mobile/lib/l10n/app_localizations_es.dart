@@ -731,6 +731,14 @@ class AppLocalizationsEs extends AppLocalizations {
       '¡Recuperar la lista de llamadas del Fritz!';
 
   @override
+  String get fritzboxLogKnownCallers =>
+      'Registrar las llamadas de contactos conocidos';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'Mostrar también en la lista de llamadas las llamadas procedentes de números de la agenda de la Fritz!Box';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

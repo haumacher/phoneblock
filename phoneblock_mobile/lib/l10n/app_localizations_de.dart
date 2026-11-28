@@ -729,6 +729,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get fritzboxSyncDescription => 'Anrufliste von der Fritz!Box abrufen';
 
   @override
+  String get fritzboxLogKnownCallers => 'Bekannte Anrufer protokollieren';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'Auch Anrufe von Nummern aus dem Fritz!Box-Telefonbuch in der Anrufliste anzeigen';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -191,6 +191,7 @@
   "blockedCallsCount": "被阻止的电话",
   "suspiciousCallsCount": "可疑电话",
   "fritzboxTitle": "弗里茨盒子",
+  "fritzboxConnected": "已连接且受保护",
   "fritzboxConnectedPlain": "已连接",
   "fritzboxOffline": "不详",
   "fritzboxError": "连接错误",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
   "personalizedAddedDate": "已添加：<x1>日期</x1",
-  "fritzboxConnected": "已连接且受保护"
+  "fritzboxLogKnownCallers": "记录已知来电者",
+  "fritzboxLogKnownCallersDescription": "在通话记录中也显示来自Fritz!Box通讯录的号码的来电"
 }

@@ -670,6 +670,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxSyncDescription => '从 Fritz 读取通话清单！';
 
   @override
+  String get fritzboxLogKnownCallers => '记录已知来电者';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      '在通话记录中也显示来自Fritz!Box通讯录的号码的来电';
+
+  @override
   String fritzboxSyncComplete(int count) {
     return '<x1>计数</x1';
   }

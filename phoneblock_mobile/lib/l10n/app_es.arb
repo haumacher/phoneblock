@@ -191,6 +191,7 @@
   "blockedCallsCount": "Llamadas bloqueadas",
   "suspiciousCallsCount": "Llamadas sospechosas",
   "fritzboxTitle": "Caja Fritz",
+  "fritzboxConnected": "Conectado y protegido",
   "fritzboxConnectedPlain": "Conectado",
   "fritzboxOffline": "No disponible",
   "fritzboxError": "Error de conexión",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Sincronización correcta de la lista de bloqueo",
   "blocklistSyncFailed": "Error de sincronización de la lista de bloqueo",
   "personalizedAddedDate": "Añadido: {date}",
-  "fritzboxConnected": "Conectado y protegido"
+  "fritzboxLogKnownCallers": "Registrar las llamadas de contactos conocidos",
+  "fritzboxLogKnownCallersDescription": "Mostrar también en la lista de llamadas las llamadas procedentes de números de la agenda de la Fritz!Box"
 }

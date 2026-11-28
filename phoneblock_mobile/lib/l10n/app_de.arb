@@ -1109,6 +1109,16 @@
     "description": "Sync description",
     "x-translated": "1f4f20bd"
   },
+  "fritzboxLogKnownCallers": "Bekannte Anrufer protokollieren",
+  "@fritzboxLogKnownCallers": {
+    "description": "Switch on the Fritz!Box settings screen: also import calls from callers with a name in the Fritz!Box phonebook into the call list (same wording as the dongle UI)",
+    "x-translated": "680ba0d2"
+  },
+  "fritzboxLogKnownCallersDescription": "Auch Anrufe von Nummern aus dem Fritz!Box-Telefonbuch in der Anrufliste anzeigen",
+  "@fritzboxLogKnownCallersDescription": {
+    "description": "Subtitle of the switch that also imports calls from known callers (Fritz!Box phonebook) into the call list",
+    "x-translated": "d37b54bc"
+  },
   "fritzboxSyncComplete": "{count, plural, =0{Keine neuen Anrufe} =1{1 neuer Anruf synchronisiert} other{{count} neue Anrufe synchronisiert}}",
   "@fritzboxSyncComplete": {
     "description": "Sync complete message",

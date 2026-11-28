@@ -29,3 +29,26 @@ String? toInternationalForm(String phone, String lkz, String lkzPrefix, String o
 
   return plus;
 }
+
+/// Masks all but the last three digits of [phone] for the user-visible log.
+///
+/// Example: `030123456` becomes `******456`. Non-digit characters (such as a
+/// leading "+") are kept.
+String maskPhoneNumber(String phone) {
+  if (phone.isEmpty) return '(none)';
+  var keep = 3;
+  final out = StringBuffer();
+  for (var i = phone.length - 1; i >= 0; i--) {
+    final c = phone[i];
+    final isDigit = c.codeUnitAt(0) >= 0x30 && c.codeUnitAt(0) <= 0x39;
+    if (isDigit && keep > 0) {
+      out.write(c);
+      keep--;
+    } else if (isDigit) {
+      out.write('*');
+    } else {
+      out.write(c);
+    }
+  }
+  return out.toString().split('').reversed.join();
+}
