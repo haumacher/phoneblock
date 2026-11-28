@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Status controleren",
   "mailboxDisableBusy": "Mailbox uitschakelen bij bezet",
   "mailboxEnableBusy": "Opnieuw inschakelen (ongedaan maken)",
+  "mailboxFallbackTitle": "Als het doorsturen niet opnieuw kan worden ingeschakeld",
   "mailboxNumberHint": "Mailboxnummer uit 'Status controleren'",
   "mailboxNumberInvalid": "Voer alleen cijfers in en eventueel een voorvoegsel +.",
   "mailboxEnableWithNumber": "Inschakelen met een mailboxnummer",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Geblokkeerde oproepen",
   "suspiciousCallsCount": "Verdachte telefoontjes",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Aangesloten",
-  "fritzboxConnectedNotProtected": "Aangesloten, niet beschermd",
+  "fritzboxConnectedPlain": "Verbonden",
   "fritzboxOffline": "Niet beschikbaar",
   "fritzboxError": "Fout bij verbinding",
   "fritzboxNotConfiguredShort": "Niet ingesteld",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
   "personalizedAddedDate": "Toegevoegd: {date}",
-  "mailboxFallbackTitle": "Als het doorsturen niet opnieuw kan worden ingeschakeld"
+  "fritzboxConnected": "Verbonden en beschermd"
 }

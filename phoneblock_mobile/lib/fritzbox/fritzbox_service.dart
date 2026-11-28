@@ -7,30 +7,13 @@ import 'package:fritz_tr064/fritz_tr064.dart';
 import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/fritzbox/phone_number_utils.dart' as phone_utils;
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/storage.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart' hide getAuthToken;
-
-/// Status of CardDAV synchronization.
-enum CardDavStatus {
-  /// CardDAV is not configured.
-  notConfigured,
-
-  /// CardDAV is configured but disabled.
-  disabled,
-
-  /// CardDAV is synced successfully.
-  synced,
-
-  /// CardDAV sync is pending.
-  syncPending,
-
-  /// CardDAV sync failed.
-  error,
-}
 
 /// Normalizes a phone number to international E.164 format.
 /// Uses the native Android libphonenumber library via MethodChannel.
@@ -614,14 +597,15 @@ class FritzBoxService {
 
   /// Gets all configured online phonebooks from Fritz!Box.
   ///
-  /// Returns a list of (onlineIndex, info) tuples for all online phonebooks.
+  /// Returns the (onlineIndex, info) tuples of all online phonebooks that
+  /// could be read; `complete` is false if reading any entry failed.
   /// The online index is 1-based and used with index-based methods like
   /// [OnTelService.getInfoByIndex], [OnTelService.setConfigByIndex], and
   /// [OnTelService.deleteByIndex].
   ///
   /// Note: Online phonebook indices are separate from phonebook IDs.
   /// See [OnTelService] documentation for details.
-  Future<List<(int, OnlinePhonebookInfo)>> _getOnlinePhonebooks() async {
+  Future<OnlinePhonebooks> _getOnlinePhonebooks() async {
     final onTelService = _client?.onTel();
     if (onTelService == null) {
       throw Exception('OnTel service not available');
@@ -632,6 +616,7 @@ class FritzBoxService {
 
     // Online phonebook indices are 1-based
     final List<(int, OnlinePhonebookInfo)> phonebooks = [];
+    var complete = true;
     for (int index = 1; index <= numberOfEntries; index++) {
       try {
         final info = await onTelService.getInfoByIndex(index);
@@ -639,9 +624,10 @@ class FritzBoxService {
         phonebooks.add((index, info));
       } catch (e, s) {
         AppLogger.instance.error('fritzbox', '_getOnlinePhonebooks: [$index] error', e, s);
+        complete = false;
       }
     }
-    return phonebooks;
+    return (entries: phonebooks, complete: complete);
   }
 
   /// Finds an existing PhoneBlock CardDAV configuration on the Fritz!Box.
@@ -690,7 +676,12 @@ class FritzBoxService {
 
       // Check for existing PhoneBlock configuration
       final phonebooks = await _getOnlinePhonebooks();
-      final existingIndex = _findExistingCardDavConfig(phonebooks);
+      final existingIndex = _findExistingCardDavConfig(phonebooks.entries);
+      if (existingIndex == null && !phonebooks.complete) {
+        // An unreadable entry may be the PhoneBlock phonebook; creating a
+        // new one could duplicate it.
+        throw Exception('Not all online phonebooks could be read');
+      }
 
       // Determine which online phonebook index to use
       int onlineIndex;
@@ -752,11 +743,13 @@ class FritzBoxService {
 
           // Find the PhoneBlock online phonebook by URL
           final phonebooks = await _getOnlinePhonebooks();
-          final onlineIndex = _findExistingCardDavConfig(phonebooks);
+          final onlineIndex = _findExistingCardDavConfig(phonebooks.entries);
 
           if (onlineIndex != null) {
             await onTelService.deleteByIndex(onlineIndex);
             AppLogger.instance.info('fritzbox', 'Removed CardDAV phonebook at online index $onlineIndex');
+          } else if (!phonebooks.complete) {
+            throw Exception('Not all online phonebooks could be read, PhoneBlock phonebook not removed');
           } else {
             AppLogger.instance.info('fritzbox', 'PhoneBlock phonebook not found, nothing to delete');
           }
@@ -780,6 +773,8 @@ class FritzBoxService {
   ///   updates local config to [BlocklistMode.cardDav].
   /// - If CardDAV is not configured on Fritz!Box but local config says
   ///   [BlocklistMode.cardDav], updates local config to [BlocklistMode.none].
+  /// - If the online phonebooks could not be queried, the local config is
+  ///   left unchanged.
   ///
   /// Returns the [CardDavStatus] from the Fritz!Box.
   Future<CardDavStatus> syncBlocklistMode() async {
@@ -787,18 +782,9 @@ class FritzBoxService {
     final config = await FritzBoxStorage.instance.getConfig();
     final localMode = config?.blocklistMode ?? BlocklistMode.none;
 
-    if (cardDavStatus == CardDavStatus.notConfigured &&
-        localMode == BlocklistMode.cardDav) {
-      // Fritz!Box says not configured, but local thinks it is → reset local
-      await FritzBoxStorage.instance.updateConfig(
-        blocklistMode: BlocklistMode.none,
-      );
-    } else if (cardDavStatus != CardDavStatus.notConfigured &&
-        localMode == BlocklistMode.none) {
-      // Fritz!Box has CardDAV configured, but local doesn't know → update local
-      await FritzBoxStorage.instance.updateConfig(
-        blocklistMode: BlocklistMode.cardDav,
-      );
+    final newMode = reconcileBlocklistMode(cardDavStatus, localMode);
+    if (newMode != null) {
+      await FritzBoxStorage.instance.updateConfig(blocklistMode: newMode);
     }
 
     return cardDavStatus;
@@ -808,49 +794,14 @@ class FritzBoxService {
   ///
   /// Checks Fritz!Box directly for PhoneBlock phonebook (may have been
   /// configured manually via Fritz!Box UI).
-  /// Returns the current sync status.
+  /// Returns the current sync status, [CardDavStatus.unknown] if the online
+  /// phonebooks could not be queried.
   Future<CardDavStatus> verifyCardDav() async {
     if (!isConnected) {
       return CardDavStatus.notConfigured;
     }
 
-    try {
-      // Find PhoneBlock phonebook by URL (may be configured manually)
-      final phonebooks = await _getOnlinePhonebooks();
-      final onlineIndex = _findExistingCardDavConfig(phonebooks);
-
-      if (onlineIndex == null) {
-        return CardDavStatus.notConfigured;
-      }
-
-      final info = phonebooks.firstWhere((p) => p.$1 == onlineIndex).$2;
-
-      AppLogger.instance.info('fritzbox', 'verifyCardDav: [$onlineIndex] enable=${info.enable} status=${info.status} lastConnect="${info.lastConnect}"');
-
-      if (!info.enable) {
-        return CardDavStatus.disabled;
-      }
-
-      // Use OnlinePhonebookStatus constants for status interpretation
-      if (info.status == OnlinePhonebookStatus.ok) {
-        return CardDavStatus.synced;
-      } else if (info.status == OnlinePhonebookStatus.synchronizing) {
-        return CardDavStatus.syncPending;
-      } else if (info.status > 0) {
-        // Positive non-zero status is an error code
-        // (e.g. authenticationFailure=11, resourceNotFound=20)
-        return CardDavStatus.error;
-      } else if (info.lastConnect.isEmpty) {
-        // No status yet and no lastConnect means sync hasn't happened
-        return CardDavStatus.syncPending;
-      } else {
-        // Has lastConnect but no definitive status - consider it synced
-        return CardDavStatus.synced;
-      }
-    } catch (e, s) {
-      AppLogger.instance.error('fritzbox', 'verifyCardDav: ERROR', e, s);
-      return CardDavStatus.error;
-    }
+    return resolveCardDavStatus(_getOnlinePhonebooks, _findExistingCardDavConfig);
   }
 
   /// Gets detailed information about the current CardDAV configuration.
@@ -864,7 +815,7 @@ class FritzBoxService {
     }
 
     try {
-      final phonebooks = await _getOnlinePhonebooks();
+      final phonebooks = (await _getOnlinePhonebooks()).entries;
       final onlineIndex = _findExistingCardDavConfig(phonebooks);
 
       if (onlineIndex == null) {

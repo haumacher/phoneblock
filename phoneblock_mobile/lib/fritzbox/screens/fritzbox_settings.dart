@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
@@ -382,9 +383,15 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
   }
 
   Widget _buildConnectionCard(BuildContext context, AppLocalizations l10n) {
-    final isConnected = _connectionState == FritzBoxConnectionState.connected;
-    final statusColor = isConnected ? Colors.green : Colors.orange;
-    final statusIcon = isConnected ? Icons.check_circle : Icons.cloud_off;
+    final status = fritzBoxStatus(_connectionState, _cardDavStatus);
+    final statusColor = fritzBoxStatusColor(status) ??
+        Theme.of(context).colorScheme.onSurfaceVariant;
+    final statusIcon = switch (status) {
+      FritzBoxStatus.protected => Icons.shield,
+      FritzBoxStatus.connected => Icons.link,
+      FritzBoxStatus.error => Icons.error_outline,
+      FritzBoxStatus.offline || FritzBoxStatus.notConfigured => Icons.cloud_off,
+    };
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -413,9 +420,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
                           Icon(statusIcon, size: 16, color: statusColor),
                           const SizedBox(width: 4),
                           Text(
-                            isConnected
-                                ? l10n.fritzboxConnected
-                                : l10n.fritzboxOffline,
+                            fritzBoxStatusText(l10n, status),
                             style: TextStyle(color: statusColor),
                           ),
                         ],
@@ -523,7 +528,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         ListTile(
           leading: Icon(statusIcon, color: statusColor),
           title: Text(l10n.fritzboxCardDavStatus),
-          subtitle: Text(statusText),
+          subtitle: statusText == null ? null : Text(statusText),
           trailing: IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
@@ -559,6 +564,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       case CardDavStatus.disabled:
         return Icons.pause_circle;
       case CardDavStatus.notConfigured:
+      case CardDavStatus.unknown:
         return Icons.help_outline;
     }
   }
@@ -574,11 +580,12 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       case CardDavStatus.disabled:
         return Colors.grey;
       case CardDavStatus.notConfigured:
+      case CardDavStatus.unknown:
         return Colors.grey;
     }
   }
 
-  String _getCardDavStatusText(AppLocalizations l10n) {
+  String? _getCardDavStatusText(AppLocalizations l10n) {
     switch (_cardDavStatus) {
       case CardDavStatus.synced:
         return l10n.fritzboxCardDavStatusSynced;
@@ -590,6 +597,9 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
         return l10n.fritzboxCardDavStatusDisabled;
       case CardDavStatus.notConfigured:
         return l10n.fritzboxBlocklistModeNone;
+      case CardDavStatus.unknown:
+        // The phonebook query failed (logged); there is no sync state to show.
+        return null;
     }
   }
 

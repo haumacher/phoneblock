@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "التحقق من الحالة",
   "mailboxDisableBusy": "إيقاف تشغيل صندوق البريد عند الانشغال",
   "mailboxEnableBusy": "إعادة التفعيل (إلغاء)",
+  "mailboxFallbackTitle": "في حالة تعذر إعادة تفعيل إعادة التوجيه",
   "mailboxNumberHint": "رقم صندوق البريد من «التحقق من الحالة»",
   "mailboxNumberInvalid": "أدخل أرقامًا فقط، مع إمكانية إضافة علامة + في البداية.",
   "mailboxEnableWithNumber": "تفعيل الخدمة باستخدام رقم صندوق البريد الصوتي",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "المكالمات المحظورة",
   "suspiciousCallsCount": "المكالمات المشبوهة",
   "fritzboxTitle": "فريتز!بوكس",
-  "fritzboxConnected": "متصل",
-  "fritzboxConnectedNotProtected": "متصلة، غير محمية",
+  "fritzboxConnectedPlain": "متصل",
   "fritzboxOffline": "غير متوفر",
   "fritzboxError": "خطأ في الاتصال",
   "fritzboxNotConfiguredShort": "لم يتم إعداده",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
   "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
   "personalizedAddedDate": "تمت الإضافة: {date}",
-  "mailboxFallbackTitle": "في حالة تعذر إعادة تفعيل إعادة التوجيه"
+  "fritzboxConnected": "متصل ومحمي"
 }

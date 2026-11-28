@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Sjekk status",
   "mailboxDisableBusy": "Deaktiver videresending ved opptatt",
   "mailboxEnableBusy": "Slå på igjen (angre)",
+  "mailboxFallbackTitle": "Hvis videresendelsen ikke kan slås på igjen",
   "mailboxNumberHint": "Postkassenummer fra «Sjekk status»",
   "mailboxNumberInvalid": "Angi kun sifre og eventuelt et innledende +.",
   "mailboxEnableWithNumber": "Aktiver med postkassenummer",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Blokkerte anrop",
   "suspiciousCallsCount": "Mistenkelige samtaler",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Tilkoblet",
-  "fritzboxConnectedNotProtected": "Tilkoblet, ikke beskyttet",
+  "fritzboxConnectedPlain": "Tilkoblet",
   "fritzboxOffline": "Ikke tilgjengelig",
   "fritzboxError": "Feil i tilkoblingen",
   "fritzboxNotConfiguredShort": "Ikke satt opp",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Synkronisering av blokkliste vellykket",
   "blocklistSyncFailed": "Synkronisering av blokkeringslisten mislyktes",
   "personalizedAddedDate": "Lagt til: {date}",
-  "mailboxFallbackTitle": "Hvis videresendelsen ikke kan slås på igjen"
+  "fritzboxConnected": "Tilkoblet og beskyttet"
 }

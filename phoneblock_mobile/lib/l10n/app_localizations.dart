@@ -1274,11 +1274,11 @@ abstract class AppLocalizations {
   /// **'Verbunden und geschützt'**
   String get fritzboxConnected;
 
-  /// Fritz!Box connected but CardDAV spam protection not active
+  /// Fritz!Box connected; the PhoneBlock blocklist phonebook is not (yet) synced, so no protection is claimed
   ///
   /// In de, this message translates to:
-  /// **'Verbunden, nicht geschützt'**
-  String get fritzboxConnectedNotProtected;
+  /// **'Verbunden'**
+  String get fritzboxConnectedPlain;
 
   /// Fritz!Box offline status
   ///

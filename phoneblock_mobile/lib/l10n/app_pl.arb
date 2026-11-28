@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Sprawdź status",
   "mailboxDisableBusy": "Wyłącz skrzynkę pocztową, gdy linia jest zajęta",
   "mailboxEnableBusy": "Włącz ponownie (cofnij)",
+  "mailboxFallbackTitle": "Jeśli nie da się ponownie włączyć przekierowania",
   "mailboxNumberHint": "Numer skrzynki pocztowej z opcji „Sprawdź status”",
   "mailboxNumberInvalid": "Należy wprowadzić wyłącznie cyfry oraz opcjonalnie znak + na początku.",
   "mailboxEnableWithNumber": "Włącz za pomocą numeru skrzynki pocztowej",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Zablokowane połączenia",
   "suspiciousCallsCount": "Podejrzane połączenia",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Połączony",
-  "fritzboxConnectedNotProtected": "Połączony, ale nie chroniony",
+  "fritzboxConnectedPlain": "Połączono",
   "fritzboxOffline": "Niedostępne",
   "fritzboxError": "Błąd połączenia",
   "fritzboxNotConfiguredShort": "Nie skonfigurowano",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Synchronizacja listy bloków powiodła się",
   "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się",
   "personalizedAddedDate": "Dodano: {date}",
-  "mailboxFallbackTitle": "Jeśli nie da się ponownie włączyć przekierowania"
+  "fritzboxConnected": "Połączony i chroniony"
 }

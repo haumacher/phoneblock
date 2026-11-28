@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Comprobar el estado",
   "mailboxDisableBusy": "Desactivar el buzón cuando la línea está ocupada",
   "mailboxEnableBusy": "Reactivar (deshacer)",
+  "mailboxFallbackTitle": "Si no es posible reactivar el reenvío",
   "mailboxNumberHint": "Número de buzón de «Comprobar estado»",
   "mailboxNumberInvalid": "Introduzca solo números y, opcionalmente, un signo «+» al principio.",
   "mailboxEnableWithNumber": "Activar con el número de buzón de voz",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Llamadas bloqueadas",
   "suspiciousCallsCount": "Llamadas sospechosas",
   "fritzboxTitle": "Caja Fritz",
-  "fritzboxConnected": "Conectado",
-  "fritzboxConnectedNotProtected": "Conectado, no protegido",
+  "fritzboxConnectedPlain": "Conectado",
   "fritzboxOffline": "No disponible",
   "fritzboxError": "Error de conexión",
   "fritzboxNotConfiguredShort": "No configurado",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Sincronización correcta de la lista de bloqueo",
   "blocklistSyncFailed": "Error de sincronización de la lista de bloqueo",
   "personalizedAddedDate": "Añadido: {date}",
-  "mailboxFallbackTitle": "Si no es posible reactivar el reenvío"
+  "fritzboxConnected": "Conectado y protegido"
 }

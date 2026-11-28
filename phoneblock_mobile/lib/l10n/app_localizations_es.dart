@@ -689,10 +689,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fritzboxTitle => 'Caja Fritz';
 
   @override
-  String get fritzboxConnected => 'Conectado';
+  String get fritzboxConnected => 'Conectado y protegido';
 
   @override
-  String get fritzboxConnectedNotProtected => 'Conectado, no protegido';
+  String get fritzboxConnectedPlain => 'Conectado';
 
   @override
   String get fritzboxOffline => 'No disponible';

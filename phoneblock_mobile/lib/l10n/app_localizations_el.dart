@@ -694,10 +694,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get fritzboxTitle => 'Fritz!Box';
 
   @override
-  String get fritzboxConnected => 'Συνδεδεμένο';
+  String get fritzboxConnected => 'Συνδεδεμένο και προστατευμένο';
 
   @override
-  String get fritzboxConnectedNotProtected => 'Συνδεδεμένο, όχι προστατευμένο';
+  String get fritzboxConnectedPlain => 'Συνδεδεμένο';
 
   @override
   String get fritzboxOffline => 'Δεν είναι διαθέσιμο';

@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Verifica stato",
   "mailboxDisableBusy": "Disattivare la casella vocale quando la linea è occupata",
   "mailboxEnableBusy": "Riattivare (annullare)",
+  "mailboxFallbackTitle": "Se non è possibile riattivare l'inoltro",
   "mailboxNumberHint": "Numero della casella di posta da \"Verifica stato\"",
   "mailboxNumberInvalid": "Inserire solo cifre e, facoltativamente, un segno + iniziale.",
   "mailboxEnableWithNumber": "Attivare con il numero di casella vocale",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Chiamate bloccate",
   "suspiciousCallsCount": "Chiamate sospette",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Collegato",
-  "fritzboxConnectedNotProtected": "Collegato, non protetto",
+  "fritzboxConnectedPlain": "Connesso",
   "fritzboxOffline": "Non disponibile",
   "fritzboxError": "Errore di connessione",
   "fritzboxNotConfiguredShort": "Non impostato",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Sincronizzazione della lista di blocco riuscita",
   "blocklistSyncFailed": "Sincronizzazione della lista di blocco fallita",
   "personalizedAddedDate": "Aggiunto: {date}",
-  "mailboxFallbackTitle": "Se non è possibile riattivare l'inoltro"
+  "fritzboxConnected": "Connesso e protetto"
 }
