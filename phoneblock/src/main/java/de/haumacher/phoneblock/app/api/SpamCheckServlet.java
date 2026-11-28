@@ -52,8 +52,11 @@ public class SpamCheckServlet extends HttpServlet {
 	 */
 	static PhoneInfo personalInfo(DB db, SpamReports reports, String phoneId, boolean blocked) {
 		if (blocked) {
+			// A personal block overrides the community whitelist: the flags never contradict
+			// each other, so a client allows on whiteListed and blocks on blackListed.
 			PhoneInfo info = db.getPhoneApiInfo(reports, phoneId);
 			info.setBlackListed(true);
+			info.setWhiteListed(false);
 			return info;
 		} else {
 			return NumberAnalyzer.phoneInfoFromId(phoneId)
