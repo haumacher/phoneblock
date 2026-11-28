@@ -869,6 +869,30 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxManualConnect => 'Підключіться';
 
   @override
+  String get fritzboxEnterAddressManually => 'Ввести адресу вручну';
+
+  @override
+  String get fritzboxInvalidAddress =>
+      'Неправильна адреса. Введіть IP-адресу або ім’я хосту.';
+
+  @override
+  String get fritzboxChooseDevice =>
+      'Виявлено кілька пристроїв. Будь ласка, виберіть свій Fritz!Box.';
+
+  @override
+  String get localNetworkRationale =>
+      'Щоб знайти Fritz!Box і встановити з ним зв’язок, PhoneBlock потребує доступу до вашої домашньої мережі.';
+
+  @override
+  String get localNetworkAllow => 'Дозволити доступ';
+
+  @override
+  String get localNetworkDenied => 'Доступ до домашньої мережі заборонено';
+
+  @override
+  String get localNetworkOpenSettings => 'Відкрити налаштування';
+
+  @override
   String get fritzboxLoginDescription =>
       'Введіть дані доступу до Fritz!Box. Ви можете знайти їх в інтерфейсі користувача Fritz!Box в розділі Система > Користувач Fritz!Box.';
 

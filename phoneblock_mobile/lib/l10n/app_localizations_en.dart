@@ -865,6 +865,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fritzboxManualConnect => 'Connect';
 
   @override
+  String get fritzboxEnterAddressManually => 'Enter address manually';
+
+  @override
+  String get fritzboxInvalidAddress =>
+      'Invalid address. Please enter an IP address or a hostname.';
+
+  @override
+  String get fritzboxChooseDevice =>
+      'Multiple devices found. Please select your Fritz!Box.';
+
+  @override
+  String get localNetworkRationale =>
+      'To find the Fritz!Box and communicate with it, PhoneBlock needs access to your home network.';
+
+  @override
+  String get localNetworkAllow => 'Allow access';
+
+  @override
+  String get localNetworkDenied =>
+      'Access to the home network is not permitted';
+
+  @override
+  String get localNetworkOpenSettings => 'Open Settings';
+
+  @override
   String get fritzboxLoginDescription =>
       'Enter your Fritz!Box access data. You can find them in the Fritz!Box user interface under System > Fritz!Box user.';
 

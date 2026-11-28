@@ -1562,6 +1562,48 @@ abstract class AppLocalizations {
   /// **'Verbinden'**
   String get fritzboxManualConnect;
 
+  /// Fritz!Box setup: button to enter the Fritz!Box address (IP or host name) by hand instead of using the search result
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse manuell eingeben'**
+  String get fritzboxEnterAddressManually;
+
+  /// Fritz!Box setup: error for a manually entered address that is neither an IP address nor a host name
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültige Adresse. Bitte eine IP-Adresse oder einen Hostnamen eingeben.'**
+  String get fritzboxInvalidAddress;
+
+  /// Fritz!Box setup: shown above the list when several devices (e.g. Fritz!Box and mesh repeater) were found
+  ///
+  /// In de, this message translates to:
+  /// **'Mehrere Geräte gefunden. Bitte wählen Sie Ihre Fritz!Box.'**
+  String get fritzboxChooseDevice;
+
+  /// Explanation shown before Android asks for the local network permission (Android 17), needed to reach the Fritz!Box
+  ///
+  /// In de, this message translates to:
+  /// **'Um die Fritz!Box zu finden und mit ihr zu sprechen, braucht PhoneBlock Zugriff auf Ihr Heimnetz.'**
+  String get localNetworkRationale;
+
+  /// Button that opens the Android dialog asking for local network access
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriff erlauben'**
+  String get localNetworkAllow;
+
+  /// Fritz!Box status/error: the app has no permission to access the local network, so the Fritz!Box cannot be reached
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriff aufs Heimnetz nicht erlaubt'**
+  String get localNetworkDenied;
+
+  /// Button that opens the Android app settings to grant the local network permission
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen öffnen'**
+  String get localNetworkOpenSettings;
+
   /// Login description
   ///
   /// In de, this message translates to:

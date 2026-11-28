@@ -4,6 +4,8 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_discovery.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
+import 'package:phoneblock_mobile/fritzbox/local_network_access.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/local_network_prompt.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 import 'package:phoneblock_mobile/main.dart'
     show newCallIds, getAuthToken, fetchAccountSettings;
@@ -22,7 +24,14 @@ enum _WizardStep {
 
 /// Connection wizard for Fritz!Box integration.
 class FritzBoxWizard extends StatefulWidget {
-  const FritzBoxWizard({super.key});
+  /// The search for the Fritz!Box; tests replace it.
+  final FritzBoxDiscovery? discovery;
+
+  const FritzBoxWizard({super.key, this.discovery});
+
+  /// Key of the field for entering the address by hand.
+  @visibleForTesting
+  static const hostInputKey = Key('fritzbox-host-input');
 
   @override
   State<FritzBoxWizard> createState() => _FritzBoxWizardState();
@@ -33,8 +42,26 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
   bool _isSearching = true;
   bool _isConnecting = false;
   bool _isConfiguring = false;
+
+  /// Whether the app may access the local network, `null` while checking.
+  bool? _hasLocalNetworkAccess;
+
+  /// The devices found by the last search (or the manual entry).
+  List<FritzBoxDeviceInfo> _devices = const [];
+
+  /// The device chosen for the setup.
   FritzBoxDeviceInfo? _deviceInfo;
+
+  /// Whether the user asked to enter the address by hand.
+  bool _manualEntry = false;
+
+  /// Validation error of the manually entered address.
+  String? _hostError;
+
   String? _errorMessage;
+
+  late final FritzBoxDiscovery _discovery =
+      widget.discovery ?? FritzBoxDiscovery();
 
   final _hostController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -49,6 +76,27 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
   @override
   void initState() {
     super.initState();
+    _checkAccessAndDiscover();
+  }
+
+  /// Searches the Fritz!Box if the app may access the local network;
+  /// otherwise the detection step asks for the access first.
+  Future<void> _checkAccessAndDiscover() async {
+    final granted = await LocalNetworkAccess.instance.isGranted();
+    if (!mounted) return;
+    if (granted) {
+      setState(() => _hasLocalNetworkAccess = true);
+      await _startDiscovery();
+    } else {
+      setState(() {
+        _hasLocalNetworkAccess = false;
+        _isSearching = false;
+      });
+    }
+  }
+
+  void _onLocalNetworkGranted() {
+    setState(() => _hasLocalNetworkAccess = true);
     _startDiscovery();
   }
 
@@ -64,40 +112,56 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
     setState(() {
       _isSearching = true;
       _errorMessage = null;
+      _hostError = null;
       _deviceInfo = null;
+      _devices = const [];
+      _manualEntry = false;
     });
 
-    final discovery = FritzBoxDiscovery();
-    final deviceInfo = await discovery.discover();
+    final devices = await _discovery.discoverAll();
 
     if (mounted) {
       setState(() {
         _isSearching = false;
-        _deviceInfo = deviceInfo;
-        if (deviceInfo != null) {
-          _hostController.text = deviceInfo.host;
-        }
+        _devices = devices;
+        if (devices.length == 1) _selectDevice(devices.single);
       });
     }
   }
 
-  Future<void> _tryHost(String host) async {
+  void _selectDevice(FritzBoxDeviceInfo device) {
+    _deviceInfo = device;
+    _hostController.text = device.host;
+  }
+
+  Future<void> _tryHost(String input) async {
+    final l10n = AppLocalizations.of(context)!;
+    final host = normalizeHostInput(input);
+    if (host == null) {
+      setState(() {
+        _hostError = l10n.fritzboxInvalidAddress;
+        _errorMessage = null;
+      });
+      return;
+    }
+
     setState(() {
       _isSearching = true;
       _errorMessage = null;
+      _hostError = null;
     });
 
-    final discovery = FritzBoxDiscovery();
-    final deviceInfo = await discovery.tryHost(host);
+    final deviceInfo = await _discovery.tryHost(host);
 
     if (mounted) {
       setState(() {
         _isSearching = false;
-        _deviceInfo = deviceInfo;
         if (deviceInfo != null) {
-          _hostController.text = deviceInfo.host;
+          _devices = [deviceInfo];
+          _manualEntry = false;
+          _selectDevice(deviceInfo);
         } else {
-          _errorMessage = AppLocalizations.of(context)!.fritzboxNotFound;
+          _errorMessage = l10n.fritzboxNotFound;
         }
       });
     }
@@ -214,7 +278,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
       AppLogger.instance.error('fritzbox-wizard', 'CardDAV configuration failed', e, stackTrace);
       if (mounted) {
         setState(() {
-          _errorMessage = insufficientRightsMessage(l10n, e) ??
+          _errorMessage = refusalMessage(l10n, e) ??
               '${l10n.fritzboxBlocklistConfigFailed}: $e';
           _isConfiguring = false;
         });
@@ -298,7 +362,9 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_isSearching) ...[
+        if (_hasLocalNetworkAccess == false)
+          LocalNetworkAccessPrompt(onGranted: _onLocalNetworkGranted)
+        else if (_isSearching || _hasLocalNetworkAccess == null) ...[
           const Center(
             child: Padding(
               padding: EdgeInsets.all(32),
@@ -315,72 +381,37 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
             textAlign: TextAlign.center,
             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
-        ] else if (_deviceInfo != null) ...[
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.router, size: 40, color: Colors.green),
-              title: Text(_deviceInfo!.modelName ?? l10n.fritzboxTitle),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(_deviceInfo!.host),
-                  if (_deviceInfo!.fritzosVersion != null)
-                    Text('FRITZ!OS ${_deviceInfo!.fritzosVersion}'),
-                ],
-              ),
+        ] else if (_devices.isEmpty || _manualEntry)
+          ..._buildManualEntry(context, l10n)
+        else ...[
+          if (_devices.length > 1) ...[
+            Text(
+              l10n.fritzboxChooseDevice,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
-          ),
+            const SizedBox(height: 8),
+          ],
+          for (final device in _devices) _buildDeviceCard(context, l10n, device),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: _proceedToLogin,
+                  onPressed: _deviceInfo == null ? null : _proceedToLogin,
                   child: Text(l10n.continue_),
                 ),
               ),
             ],
           ),
-        ] else ...[
-          Text(
-            l10n.fritzboxNotFoundDescription,
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _hostController,
-            decoration: InputDecoration(
-              labelText: l10n.fritzboxHostLabel,
-              hintText: 'fritz.box',
-              prefixIcon: const Icon(Icons.router),
-              border: const OutlineInputBorder(),
+          const SizedBox(height: 8),
+          Center(
+            child: TextButton(
+              onPressed: () => setState(() {
+                _manualEntry = true;
+                _errorMessage = null;
+              }),
+              child: Text(l10n.fritzboxEnterAddressManually),
             ),
-            keyboardType: TextInputType.url,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _tryHost(_hostController.text.trim()),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _startDiscovery,
-                  child: Text(l10n.fritzboxRetrySearch),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    final host = _hostController.text.trim();
-                    if (host.isNotEmpty) {
-                      _tryHost(host);
-                    }
-                  },
-                  child: Text(l10n.fritzboxManualConnect),
-                ),
-              ),
-            ],
           ),
         ],
         if (_errorMessage != null) ...[
@@ -392,6 +423,87 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
         ],
       ],
     );
+  }
+
+  Widget _buildDeviceCard(
+      BuildContext context, AppLocalizations l10n, FritzBoxDeviceInfo device) {
+    final selected = identical(device, _deviceInfo);
+    final choice = _devices.length > 1;
+    return Card(
+      shape: choice
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.transparent,
+                width: 2,
+              ),
+            )
+          : null,
+      child: ListTile(
+        leading: const Icon(Icons.router, size: 40, color: Colors.green),
+        title: Text(device.modelName ?? l10n.fritzboxTitle),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(device.host),
+            if (device.fritzosVersion != null)
+              Text('FRITZ!OS ${device.fritzosVersion}'),
+          ],
+        ),
+        trailing: choice && selected
+            ? Icon(Icons.check_circle,
+                color: Theme.of(context).colorScheme.primary)
+            : null,
+        onTap: choice ? () => setState(() => _selectDevice(device)) : null,
+      ),
+    );
+  }
+
+  List<Widget> _buildManualEntry(BuildContext context, AppLocalizations l10n) {
+    return [
+      if (_devices.isEmpty) ...[
+        Text(
+          l10n.fritzboxNotFoundDescription,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 16),
+      ],
+      TextField(
+        key: FritzBoxWizard.hostInputKey,
+        controller: _hostController,
+        decoration: InputDecoration(
+          labelText: l10n.fritzboxHostLabel,
+          hintText: 'fritz.box',
+          prefixIcon: const Icon(Icons.router),
+          border: const OutlineInputBorder(),
+          errorText: _hostError,
+        ),
+        keyboardType: TextInputType.url,
+        autocorrect: false,
+        textInputAction: TextInputAction.done,
+        onSubmitted: _tryHost,
+      ),
+      const SizedBox(height: 16),
+      Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _startDiscovery,
+              child: Text(l10n.fritzboxRetrySearch),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => _tryHost(_hostController.text),
+              child: Text(l10n.fritzboxManualConnect),
+            ),
+          ),
+        ],
+      ),
+    ];
   }
 
   Widget _buildLoginStep(BuildContext context, AppLocalizations l10n) {

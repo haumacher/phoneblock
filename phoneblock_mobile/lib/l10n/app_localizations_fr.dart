@@ -881,6 +881,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fritzboxManualConnect => 'Relier';
 
   @override
+  String get fritzboxEnterAddressManually => 'Saisir l\'adresse manuellement';
+
+  @override
+  String get fritzboxInvalidAddress =>
+      'Adresse non valide. Veuillez saisir une adresse IP ou un nom d\'hôte.';
+
+  @override
+  String get fritzboxChooseDevice =>
+      'Plusieurs appareils détectés. Veuillez sélectionner votre Fritz!Box.';
+
+  @override
+  String get localNetworkRationale =>
+      'Pour détecter la Fritz!Box et communiquer avec elle, PhoneBlock a besoin d\'accéder à votre réseau domestique.';
+
+  @override
+  String get localNetworkAllow => 'Autoriser l\'accès';
+
+  @override
+  String get localNetworkDenied => 'Accès au réseau domestique non autorisé';
+
+  @override
+  String get localNetworkOpenSettings => 'Ouvrir les paramètres';
+
+  @override
   String get fritzboxLoginDescription =>
       'Saisissez vos données d\'accès Fritz!Box. Vous les trouverez dans l\'interface utilisateur Fritz!Box sous Système > Utilisateurs Fritz!Box.';
 

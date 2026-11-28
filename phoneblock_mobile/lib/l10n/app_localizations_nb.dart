@@ -867,6 +867,31 @@ class AppLocalizationsNb extends AppLocalizations {
   String get fritzboxManualConnect => 'Koble til';
 
   @override
+  String get fritzboxEnterAddressManually => 'Angi adresse manuelt';
+
+  @override
+  String get fritzboxInvalidAddress =>
+      'Ugyldig adresse. Vennligst oppgi en IP-adresse eller et vertsnavn.';
+
+  @override
+  String get fritzboxChooseDevice =>
+      'Flere enheter funnet. Velg din Fritz!Box.';
+
+  @override
+  String get localNetworkRationale =>
+      'For å finne Fritz!Boxen og kommunisere med den, trenger PhoneBlock tilgang til hjemmenettverket ditt.';
+
+  @override
+  String get localNetworkAllow => 'Tillat tilgang';
+
+  @override
+  String get localNetworkDenied =>
+      'Tilgang til hjemmenettverket er ikke tillatt';
+
+  @override
+  String get localNetworkOpenSettings => 'Åpne innstillinger';
+
+  @override
   String get fritzboxLoginDescription =>
       'Skriv inn dine Fritz!Box-tilgangsdata. Du finner dem i Fritz!Box-brukergrensesnittet under System > Fritz!Box-bruker.';
 

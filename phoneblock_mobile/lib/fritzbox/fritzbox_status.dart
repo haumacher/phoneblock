@@ -44,6 +44,9 @@ enum FritzBoxStatus {
   /// Connecting to the Fritz!Box failed.
   error,
 
+  /// The app may not access the local network (issue #660).
+  noLocalNetworkAccess,
+
   /// Connected, but the PhoneBlock blocklist is not synced to the Fritz!Box.
   connected,
 
@@ -65,6 +68,8 @@ FritzBoxStatus fritzBoxStatus(
       return FritzBoxStatus.offline;
     case FritzBoxConnectionState.error:
       return FritzBoxStatus.error;
+    case FritzBoxConnectionState.noLocalNetworkAccess:
+      return FritzBoxStatus.noLocalNetworkAccess;
     case FritzBoxConnectionState.notConfigured:
       return FritzBoxStatus.notConfigured;
   }
@@ -81,6 +86,8 @@ String fritzBoxStatusText(AppLocalizations l10n, FritzBoxStatus status) {
       return l10n.fritzboxOffline;
     case FritzBoxStatus.error:
       return l10n.fritzboxError;
+    case FritzBoxStatus.noLocalNetworkAccess:
+      return l10n.localNetworkDenied;
     case FritzBoxStatus.notConfigured:
       return l10n.fritzboxNotConfiguredShort;
   }
@@ -98,6 +105,8 @@ Color? fritzBoxStatusColor(FritzBoxStatus status) {
       return Colors.orange;
     case FritzBoxStatus.error:
       return Colors.red;
+    case FritzBoxStatus.noLocalNetworkAccess:
+      return Colors.orange;
     case FritzBoxStatus.notConfigured:
       return Colors.grey;
   }

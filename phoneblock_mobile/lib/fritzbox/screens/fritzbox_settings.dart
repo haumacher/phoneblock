@@ -9,6 +9,7 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/call_list_filter_screen.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
+import 'package:phoneblock_mobile/fritzbox/screens/local_network_prompt.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_answerbot_setup.dart';
@@ -234,7 +235,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(insufficientRightsMessage(l10n, e) ??
+            content: Text(refusalMessage(l10n, e) ??
                 l10n.fritzboxBlocklistConfigFailed),
             backgroundColor: Colors.red,
           ),
@@ -275,7 +276,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       try {
         await FritzBoxService.instance.removeCardDav();
       } on FritzBoxInsufficientRightsException catch (e) {
-        refusal = insufficientRightsMessage(l10n, e);
+        refusal = refusalMessage(l10n, e);
       }
       if (context.mounted) {
         await _loadData();
@@ -311,6 +312,13 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       children: [
         // Connection status card
         _buildConnectionCard(context, l10n),
+
+        // Ask for the access to the local network (Android 17, #660)
+        if (_connectionState == FritzBoxConnectionState.noLocalNetworkAccess)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: LocalNetworkAccessPrompt(onGranted: _loadData),
+          ),
 
         // CardDAV/Blocklist section
         const Divider(),
@@ -400,6 +408,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       FritzBoxStatus.protected => Icons.shield,
       FritzBoxStatus.connected => Icons.link,
       FritzBoxStatus.error => Icons.error_outline,
+      FritzBoxStatus.noLocalNetworkAccess => Icons.lan,
       FritzBoxStatus.offline || FritzBoxStatus.notConfigured => Icons.cloud_off,
     };
 
@@ -843,7 +852,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       } on FritzBoxInsufficientRightsException catch (e) {
         // The bot is removed from PhoneBlock, but the SIP device is still
         // on the Fritz!Box.
-        refusal = insufficientRightsMessage(l10n, e);
+        refusal = refusalMessage(l10n, e);
       }
       if (context.mounted) {
         await _loadData();

@@ -863,6 +863,30 @@ class AppLocalizationsDa extends AppLocalizations {
   String get fritzboxManualConnect => 'Opret forbindelse';
 
   @override
+  String get fritzboxEnterAddressManually => 'Indtast adresse manuelt';
+
+  @override
+  String get fritzboxInvalidAddress =>
+      'Ugyldig adresse. Indtast venligst en IP-adresse eller et værtsnavn.';
+
+  @override
+  String get fritzboxChooseDevice =>
+      'Der er fundet flere enheder. Vælg venligst din Fritz!Box.';
+
+  @override
+  String get localNetworkRationale =>
+      'For at finde Fritz!Boxen og kommunikere med den skal PhoneBlock have adgang til dit hjemmenetværk.';
+
+  @override
+  String get localNetworkAllow => 'Tillad adgang';
+
+  @override
+  String get localNetworkDenied => 'Adgang til hjemmenetværket er ikke tilladt';
+
+  @override
+  String get localNetworkOpenSettings => 'Åbn indstillinger';
+
+  @override
   String get fritzboxLoginDescription =>
       'Indtast dine Fritz!Box-adgangsdata. Du kan finde dem i Fritz!Box-brugergrænsefladen under System > Fritz!Box-bruger.';
 

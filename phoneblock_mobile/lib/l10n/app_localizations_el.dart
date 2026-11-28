@@ -876,6 +876,31 @@ class AppLocalizationsEl extends AppLocalizations {
   String get fritzboxManualConnect => 'Συνδέστε το';
 
   @override
+  String get fritzboxEnterAddressManually => 'Μη αυτόματη εισαγωγή διεύθυνσης';
+
+  @override
+  String get fritzboxInvalidAddress =>
+      'Μη έγκυρη διεύθυνση. Παρακαλώ εισάγετε μια διεύθυνση IP ή ένα όνομα κεντρικού υπολογιστή.';
+
+  @override
+  String get fritzboxChooseDevice =>
+      'Εντοπίστηκαν πολλές συσκευές. Παρακαλώ επιλέξτε το Fritz!Box σας.';
+
+  @override
+  String get localNetworkRationale =>
+      'Για να εντοπίσει το Fritz!Box και να επικοινωνήσει μαζί του, το PhoneBlock χρειάζεται πρόσβαση στο οικιακό σας δίκτυο.';
+
+  @override
+  String get localNetworkAllow => 'Να επιτραπεί η πρόσβαση';
+
+  @override
+  String get localNetworkDenied =>
+      'Δεν επιτρέπεται η πρόσβαση στο οικιακό δίκτυο';
+
+  @override
+  String get localNetworkOpenSettings => 'Άνοιγμα ρυθμίσεων';
+
+  @override
   String get fritzboxLoginDescription =>
       'Εισάγετε τα δεδομένα πρόσβασης του Fritz!Box. Μπορείτε να τα βρείτε στο περιβάλλον εργασίας χρήστη του Fritz!Box στην ενότητα Σύστημα > Fritz!Box user.';
 
