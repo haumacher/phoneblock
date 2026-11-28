@@ -900,6 +900,10 @@ class AppLocalizationsDa extends AppLocalizations {
       'Blokeringslisten kunne ikke oprettes.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'Til dette har Fritz!Box-brugeren brug for rettigheden „FRITZ!Box-indstillinger“.';
+
+  @override
   String get fritzboxCardDavStatus => 'CardDAV-status';
 
   @override

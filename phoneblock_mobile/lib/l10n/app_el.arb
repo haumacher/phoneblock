@@ -339,5 +339,6 @@
   "searchCountry": "Αναζήτηση χώρας ή κωδικού χώρας",
   "countrySharedCallingCode": "Ισχύει επίσης για {countries}",
   "countryFilterKeepOne": "Πρέπει να παραμείνει τουλάχιστον μία επιτρεπόμενη χώρα.",
-  "countryFilterBlocked": "Φίλτρο χωρών"
+  "countryFilterBlocked": "Φίλτρο χωρών",
+  "fritzboxNeedsSettingsRight": "Για αυτό, ο χρήστης του Fritz!Box χρειάζεται το δικαίωμα «Ρυθμίσεις Fritz!Box»."
 }

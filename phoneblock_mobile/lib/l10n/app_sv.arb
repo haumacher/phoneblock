@@ -339,5 +339,6 @@
   "searchCountry": "Sök land eller riktnummer",
   "countrySharedCallingCode": "Gäller även för {countries}",
   "countryFilterKeepOne": "Minst ett land måste förbli tillåtet.",
-  "countryFilterBlocked": "Landsfilter"
+  "countryFilterBlocked": "Landsfilter",
+  "fritzboxNeedsSettingsRight": "För detta behöver Fritz!Box-användaren behörigheten ”FRITZ!Box-inställningar”."
 }

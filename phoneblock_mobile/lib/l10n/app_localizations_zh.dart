@@ -818,6 +818,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxBlocklistConfigFailed => '无法设置拦截列表。';
 
   @override
+  String get fritzboxNeedsSettingsRight => '为此，Fritz!Box 用户需要“FRITZ!Box 设置”权限。';
+
+  @override
   String get fritzboxCardDavStatus => 'CardDAV 状态';
 
   @override

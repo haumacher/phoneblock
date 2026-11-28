@@ -914,6 +914,10 @@ class AppLocalizationsPl extends AppLocalizations {
       'Nie można skonfigurować listy bloków.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'W tym celu użytkownik Fritz!Box musi posiadać uprawnienie „Ustawienia Fritz!Box”.';
+
+  @override
   String get fritzboxCardDavStatus => 'Status CardDAV';
 
   @override
