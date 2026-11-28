@@ -1,6 +1,6 @@
 Version 1.3.2:
 * Mailbox help for blocked callers: the dialer opens with the codes to switch busy forwarding off and on (#549)
 * A number ending in * creates a range rule; invalid input is explained (#481)
-* The add button no longer hides the last list entry (#487)
+* The add button no longer hides the last list entry; range rules from the website block without opening the app (#487)
 * Fritz!Box page and menu show the same protection status (#544)
 * A reinstall no longer restores an outdated call list (#484)
