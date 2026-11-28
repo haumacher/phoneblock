@@ -79,3 +79,33 @@ jobs:
           name: ${{ steps.changelog.outputs.name }}
           body_path: ${{ steps.changelog.outputs.body_path }}
           files: phoneblock_mobile/build/app/outputs/flutter-apk/app-release.apk
+
+      # Google Play accepts only app bundles. The upload goes to the internal
+      # testing track; promotion to production happens by hand in the Play Console.
+      - name: Build release app bundle
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: phoneblock_mobile
+        run: flutter build appbundle
+
+      - name: Prepare Play release notes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir -p play-whatsnew
+          if [ -n "${{ steps.changelog.outputs.body_path }}" ]; then
+            if [ "$(wc -c < "${{ steps.changelog.outputs.body_path }}")" -gt 500 ]; then
+              echo "::error::${{ steps.changelog.outputs.body_path }} exceeds the 500-character Play Store limit"
+              exit 1
+            fi
+            cp "${{ steps.changelog.outputs.body_path }}" play-whatsnew/whatsnew-en-US
+          fi
+
+      - name: Upload to Google Play (internal testing)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: de.haumacher.phoneblock_mobile
+          releaseFiles: phoneblock_mobile/build/app/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
+          whatsNewDirectory: play-whatsnew
