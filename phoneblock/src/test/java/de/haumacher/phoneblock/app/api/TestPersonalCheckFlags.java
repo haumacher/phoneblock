@@ -80,6 +80,32 @@ class TestPersonalCheckFlags {
 	}
 
 	@Test
+	void personalBlockOverridesCommunityWhitelist() throws Exception {
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(NUMBER, "+49");
+		try (Connection connection = _dataSource.getConnection();
+				Statement statement = connection.createStatement()) {
+			statement.execute("INSERT INTO WHITELIST (PHONE) VALUES ('" + NumberAnalyzer.getPhoneId(number) + "')");
+		}
+
+		PhoneInfo info = check("blocker", Boolean.TRUE);
+		assertTrue(info.isBlackListed());
+		assertFalse(info.isWhiteListed(), "a personal block must not be reported as whitelisted");
+	}
+
+	@Test
+	void communityWhitelistWithoutPersonalizationIsWhiteListed() throws Exception {
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(NUMBER, "+49");
+		try (Connection connection = _dataSource.getConnection();
+				Statement statement = connection.createStatement()) {
+			statement.execute("INSERT INTO WHITELIST (PHONE) VALUES ('" + NumberAnalyzer.getPhoneId(number) + "')");
+		}
+
+		PhoneInfo info = check("plain", null);
+		assertTrue(info.isWhiteListed());
+		assertFalse(info.isBlackListed());
+	}
+
+	@Test
 	void noPersonalizationSetsNeither() {
 		PhoneInfo info = check("plain", null);
 		assertFalse(info.isBlackListed());
