@@ -1,4 +1,4 @@
-Version 1.3.2:
+Version 1.4.0:
 * Country filter (#709)
 * Call list filter (#294)
 * Android 17: Fritz!Box via mDNS or manual address (#660, #819)
