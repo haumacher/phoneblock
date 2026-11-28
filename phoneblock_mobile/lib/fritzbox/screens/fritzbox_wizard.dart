@@ -3,6 +3,7 @@ import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_discovery.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 import 'package:phoneblock_mobile/main.dart'
     show newCallIds, getAuthToken, fetchAccountSettings;
@@ -213,7 +214,8 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
       AppLogger.instance.error('fritzbox-wizard', 'CardDAV configuration failed', e, stackTrace);
       if (mounted) {
         setState(() {
-          _errorMessage = '${l10n.fritzboxBlocklistConfigFailed}: $e';
+          _errorMessage = insufficientRightsMessage(l10n, e) ??
+              '${l10n.fritzboxBlocklistConfigFailed}: $e';
           _isConfiguring = false;
         });
       }

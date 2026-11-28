@@ -7,7 +7,9 @@ import 'package:fritz_tr064/fritz_tr064.dart';
 import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/call_list_import.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_login.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
@@ -39,6 +41,13 @@ class FritzBoxService {
   FritzBoxConnectionState _connectionState = FritzBoxConnectionState.notConfigured;
 
   FritzBoxService._init();
+
+  /// Creates a service talking to the given, already connected [client]
+  /// without stored credentials or configuration.
+  @visibleForTesting
+  FritzBoxService.forTest(Tr64Client client)
+      : _client = client,
+        _connectionState = FritzBoxConnectionState.connected;
 
   /// Current connection state.
   FritzBoxConnectionState get connectionState => _connectionState;
@@ -107,26 +116,12 @@ class FritzBoxService {
       // Connect to fetch device description
       await _client!.connect();
 
-      // Test connection by getting device info
-      final deviceInfo = await getDeviceInfo();
-      if (deviceInfo == null || (deviceInfo.modelName?.isEmpty ?? true)) {
-        AppLogger.instance.error('fritzbox', 'Fritz!Box auth failed: no device info returned');
+      // Verify the login and read model and FRITZ!OS version. Works for a
+      // Fritz!Box user that only has the call list right (issue #268).
+      final deviceInfo = await verifyLogin(_client!);
+      if (deviceInfo == null) {
         _connectionState = FritzBoxConnectionState.error;
         return false;
-      }
-
-      // Verify authentication by making a call that requires auth
-      // Getting the call list URL requires authentication
-      final onTelService = _client!.onTel();
-      if (onTelService != null) {
-        try {
-          // This call will fail with SoapFaultException if auth is invalid
-          await onTelService.getCallList();
-        } catch (e, s) {
-          AppLogger.instance.error('fritzbox', 'Fritz!Box auth verification failed', e, s);
-          _connectionState = FritzBoxConnectionState.error;
-          return false;
-        }
       }
 
       _connectionState = FritzBoxConnectionState.connected;
@@ -170,16 +165,23 @@ class FritzBoxService {
   ///
   /// If [action] throws (e.g. due to an HTTP 503 from a stale session),
   /// re-establishes the TR-064 connection and retries the action once.
+  ///
+  /// A refusal because the Fritz!Box user lacks the right "FRITZ!Box
+  /// Einstellungen" is thrown as [FritzBoxInsufficientRightsException]
+  /// without reconnecting - a new connection would be refused the same way.
   Future<T> _withReconnect<T>(Future<T> Function() action) async {
     try {
-      return await action();
+      return await guardRights(action);
+    } on FritzBoxInsufficientRightsException catch (e) {
+      AppLogger.instance.warn('fritzbox', '_withReconnect: Refused, $e');
+      rethrow;
     } catch (e, s) {
       AppLogger.instance.error('fritzbox', '_withReconnect: Action failed, attempting reconnect', e, s);
       final credentials = await FritzBoxStorage.instance.getCredentials();
       if (credentials == null) rethrow;
       final success = await _connect(credentials);
       if (!success) rethrow;
-      return await action();
+      return await guardRights(action);
     }
   }
 
@@ -224,23 +226,14 @@ class FritzBoxService {
     }
   }
 
-  /// Gets device information from Fritz!Box.
+  /// Gets device information from Fritz!Box (see [readDeviceInfo]).
+  ///
+  /// Returns null if the Fritz!Box could not be queried.
   Future<FritzBoxDeviceInfo?> getDeviceInfo() async {
     if (_client == null) return null;
 
     try {
-      final deviceInfoService = _client!.deviceInfo();
-      if (deviceInfoService == null) {
-        AppLogger.instance.warn('fritzbox', 'DeviceInfo service not available');
-        return null;
-      }
-      final info = await deviceInfoService.getInfo();
-      return FritzBoxDeviceInfo(
-        host: _client!.host,
-        modelName: info.modelName,
-        fritzosVersion: info.softwareVersion,
-        serialNumber: info.serialNumber,
-      );
+      return await readDeviceInfo(_client!);
     } catch (e, s) {
       AppLogger.instance.error('fritzbox', 'Error getting device info', e, s);
       return null;
@@ -421,29 +414,11 @@ class FritzBoxService {
 
   // -- CardDAV Configuration Methods --
 
-  /// Minimum FRITZ!OS version required for CardDAV support.
-  static const String _minCardDavVersion = '7.20';
-
   /// Checks if the connected Fritz!Box supports CardDAV (FRITZ!OS 7.20+).
   Future<bool> supportsCardDav() async {
     final config = await FritzBoxStorage.instance.getConfig();
     if (config?.fritzosVersion == null) return false;
-    return _compareVersion(config!.fritzosVersion!, _minCardDavVersion) >= 0;
-  }
-
-  /// Compares two version strings (e.g., "7.50" vs "7.20").
-  ///
-  /// Returns negative if v1 < v2, 0 if equal, positive if v1 > v2.
-  int _compareVersion(String v1, String v2) {
-    final parts1 = v1.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final parts2 = v2.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-
-    for (int i = 0; i < max(parts1.length, parts2.length); i++) {
-      final p1 = i < parts1.length ? parts1[i] : 0;
-      final p2 = i < parts2.length ? parts2[i] : 0;
-      if (p1 != p2) return p1 - p2;
-    }
-    return 0;
+    return supportsCardDavVersion(config!.fritzosVersion!);
   }
 
   /// Gets all configured online phonebooks from Fritz!Box.
@@ -579,6 +554,10 @@ class FritzBoxService {
   }
 
   /// Removes CardDAV configuration from Fritz!Box.
+  ///
+  /// Throws [FritzBoxInsufficientRightsException] if the Fritz!Box refuses
+  /// to delete the phonebook; the local configuration is kept then, since
+  /// the phonebook is still on the Fritz!Box.
   Future<void> removeCardDav() async {
     final config = await FritzBoxStorage.instance.getConfig();
     if (config?.blocklistMode != BlocklistMode.cardDav) {
@@ -605,6 +584,8 @@ class FritzBoxService {
             AppLogger.instance.info('fritzbox', 'PhoneBlock phonebook not found, nothing to delete');
           }
         });
+      } on FritzBoxInsufficientRightsException {
+        rethrow;
       } catch (e, s) {
         AppLogger.instance.error('fritzbox', 'Error removing CardDAV config', e, s);
         // Continue anyway to clear local config
@@ -895,6 +876,12 @@ class FritzBoxService {
 
       String? internalNumber;
       try {
+        // Creating a SIP device needs the right "FRITZ!Box Einstellungen",
+        // which the web session lists (issue #268).
+        final session = await webClient.httpClient.get(Uri.parse(
+            'http://${credentials.host}/login_sid.lua?version=2&sid=${webClient.sid}'));
+        checkWebSessionRights(session.body);
+
         final ipPhone = IpPhoneService(webClient);
         final twoFactor = WebTwoFactor(webClient);
 
@@ -1068,6 +1055,9 @@ class FritzBoxService {
   }
 
   /// Removes the PhoneBlock answer bot from Fritz!Box and the server.
+  ///
+  /// Throws [FritzBoxInsufficientRightsException] after the cleanup if the
+  /// Fritz!Box refused to delete the SIP device.
   Future<void> removeAnswerBot() async {
     final config = await FritzBoxStorage.instance.getConfig();
     final botId = config?.answerbotId;
@@ -1088,21 +1078,12 @@ class FritzBoxService {
 
     // Remove SIP device from Fritz!Box
     final sipUsername = config?.sipUsername;
+    FritzBoxInsufficientRightsException? refused;
     if (isConnected && _client != null && sipUsername != null) {
       try {
-        await _withReconnect(() async {
-          final voipService = _client!.voip();
-          if (voipService == null) return;
-          final numberOfClients = await voipService.getNumberOfClients();
-          for (int i = 0; i < numberOfClients; i++) {
-            final client = await voipService.getClient3(i);
-            if (client.clientUsername == sipUsername) {
-              await voipService.deleteClient(i);
-              AppLogger.instance.info('fritzbox', 'removeAnswerBot: Removed SIP device at index $i (username: $sipUsername)');
-              break;
-            }
-          }
-        });
+        await deleteSipClient(sipUsername);
+      } on FritzBoxInsufficientRightsException catch (e) {
+        refused = e;
       } catch (e, s) {
         AppLogger.instance.error('fritzbox', 'removeAnswerBot: Error removing SIP device', e, s);
       }
@@ -1134,6 +1115,29 @@ class FritzBoxService {
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ));
     }
+
+    if (refused != null) throw refused;
+  }
+
+  /// Deletes the SIP device with the given user name from the Fritz!Box.
+  ///
+  /// Throws [FritzBoxInsufficientRightsException] if the Fritz!Box user may
+  /// not change the telephony configuration.
+  @visibleForTesting
+  Future<void> deleteSipClient(String sipUsername) async {
+    await _withReconnect(() async {
+      final voipService = _client!.voip();
+      if (voipService == null) return;
+      final numberOfClients = await voipService.getNumberOfClients();
+      for (int i = 0; i < numberOfClients; i++) {
+        final client = await voipService.getClient3(i);
+        if (client.clientUsername == sipUsername) {
+          await voipService.deleteClient(i);
+          AppLogger.instance.info('fritzbox', 'removeAnswerBot: Removed SIP device at index $i (username: $sipUsername)');
+          break;
+        }
+      }
+    });
   }
 }
 

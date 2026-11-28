@@ -339,5 +339,6 @@
   "searchCountry": "Wyszukaj kraj lub numer kierunkowy",
   "countrySharedCallingCode": "Dotyczy to również {countries}",
   "countryFilterKeepOne": "Co najmniej jeden kraj musi pozostać dozwolony.",
-  "countryFilterBlocked": "Filtr krajów"
+  "countryFilterBlocked": "Filtr krajów",
+  "fritzboxNeedsSettingsRight": "W tym celu użytkownik Fritz!Box musi posiadać uprawnienie „Ustawienia Fritz!Box”."
 }

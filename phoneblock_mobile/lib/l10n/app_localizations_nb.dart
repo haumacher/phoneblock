@@ -904,6 +904,10 @@ class AppLocalizationsNb extends AppLocalizations {
       'Blokkliste kunne ikke settes opp.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'For dette trenger Fritz!Box-brukeren rettigheten «FRITZ!Box-innstillinger».';
+
+  @override
   String get fritzboxCardDavStatus => 'CardDAV-status';
 
   @override

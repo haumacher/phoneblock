@@ -913,6 +913,10 @@ class AppLocalizationsEl extends AppLocalizations {
       'Η λίστα αποκλεισμού δεν μπόρεσε να δημιουργηθεί.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'Για αυτό, ο χρήστης του Fritz!Box χρειάζεται το δικαίωμα «Ρυθμίσεις Fritz!Box».';
+
+  @override
   String get fritzboxCardDavStatus => 'Κατάσταση CardDAV';
 
   @override

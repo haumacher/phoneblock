@@ -339,5 +339,6 @@
   "searchCountry": "搜索国家或区号",
   "countrySharedCallingCode": "也适用于 {countries}",
   "countryFilterKeepOne": "必须至少保留一个允许的国家。",
-  "countryFilterBlocked": "国家过滤器"
+  "countryFilterBlocked": "国家过滤器",
+  "fritzboxNeedsSettingsRight": "为此，Fritz!Box 用户需要“FRITZ!Box 设置”权限。"
 }

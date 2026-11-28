@@ -339,5 +339,6 @@
   "searchCountry": "Пошук країни або телефонного коду",
   "countrySharedCallingCode": "Це також стосується {countries}",
   "countryFilterKeepOne": "Принаймні одна країна має залишатися дозволеною.",
-  "countryFilterBlocked": "Фільтр за країною"
+  "countryFilterBlocked": "Фільтр за країною",
+  "fritzboxNeedsSettingsRight": "Для цього користувачеві Fritz!Box необхідний дозвіл «Налаштування Fritz!Box»."
 }

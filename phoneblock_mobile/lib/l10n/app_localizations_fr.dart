@@ -918,6 +918,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'La liste de blocage n\'a pas pu être configurée';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'Pour cela, l\'utilisateur de la Fritz!Box doit disposer du droit « Paramètres de la Fritz!Box ».';
+
+  @override
   String get fritzboxCardDavStatus => 'Statut CardDAV';
 
   @override

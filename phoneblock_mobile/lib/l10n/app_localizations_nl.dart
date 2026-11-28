@@ -906,6 +906,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Blokkadelijst kon niet worden ingesteld.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'Hiervoor heeft de Fritz!Box-gebruiker het recht „FRITZ!Box-instellingen“ nodig.';
+
+  @override
   String get fritzboxCardDavStatus => 'CardDAV status';
 
   @override

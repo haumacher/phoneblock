@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:fritz_tr064/fritz_tr064.dart' show AuthMethod, AuthMethodButton, AuthMethodDtmf;
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 
 /// Status of a single setup step.
@@ -80,7 +81,9 @@ class _FritzBoxAnswerbotSetupScreenState
           for (final step in _steps) {
             if (step.status == _StepStatus.inProgress) {
               step.status = _StepStatus.failed;
-              step.errorMessage = e.toString();
+              step.errorMessage = insufficientRightsMessage(
+                      AppLocalizations.of(context)!, e) ??
+                  e.toString();
               break;
             }
           }

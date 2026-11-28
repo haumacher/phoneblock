@@ -7,6 +7,7 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_wizard.dart';
+import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 import 'package:phoneblock_mobile/fritzbox/screens/fritzbox_answerbot_setup.dart';
 import 'package:phoneblock_mobile/main.dart'
@@ -231,7 +232,8 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.fritzboxBlocklistConfigFailed),
+            content: Text(insufficientRightsMessage(l10n, e) ??
+                l10n.fritzboxBlocklistConfigFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -267,13 +269,18 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     );
 
     if (confirmed == true) {
-      await FritzBoxService.instance.removeCardDav();
+      String? refusal;
+      try {
+        await FritzBoxService.instance.removeCardDav();
+      } on FritzBoxInsufficientRightsException catch (e) {
+        refusal = insufficientRightsMessage(l10n, e);
+      }
       if (context.mounted) {
         await _loadData();
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.fritzboxCardDavDisabled)),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(refusal != null
+              ? SnackBar(content: Text(refusal), backgroundColor: Colors.red)
+              : SnackBar(content: Text(l10n.fritzboxCardDavDisabled)));
         }
       }
     }
@@ -827,13 +834,20 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
     );
 
     if (confirmed == true) {
-      await FritzBoxService.instance.removeAnswerBot();
+      String? refusal;
+      try {
+        await FritzBoxService.instance.removeAnswerBot();
+      } on FritzBoxInsufficientRightsException catch (e) {
+        // The bot is removed from PhoneBlock, but the SIP device is still
+        // on the Fritz!Box.
+        refusal = insufficientRightsMessage(l10n, e);
+      }
       if (context.mounted) {
         await _loadData();
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.fritzboxAnswerbotDisabled)),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(refusal != null
+              ? SnackBar(content: Text(refusal), backgroundColor: Colors.red)
+              : SnackBar(content: Text(l10n.fritzboxAnswerbotDisabled)));
         }
       }
     }
