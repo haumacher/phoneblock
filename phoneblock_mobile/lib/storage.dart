@@ -751,19 +751,11 @@ class ScreenedCallsDatabase {
     await db.delete('blocklist');
   }
 
-  /// Resets the blocklist for a full resync.
-  ///
-  /// Clears all cached entries and resets version and syncCount to 0,
-  /// so the next sync fetches the complete blocklist from the server.
-  Future<void> resetForFullSync() async {
+  /// Restarts the count towards the next full resync (after a failed one), keeping the cached
+  /// blocklist and its version.
+  Future<void> resetBlocklistSyncCount() async {
     final db = await database;
-    await db.transaction((txn) async {
-      await txn.delete('blocklist');
-      await txn.update('blocklist_sync', {
-        'version': 0,
-        'syncCount': 0,
-      }, where: 'id = 1');
-    });
+    await db.update('blocklist_sync', {'syncCount': 0}, where: 'id = 1');
   }
 
   /// Returns the current blocklist sync metadata.
@@ -797,17 +789,25 @@ class ScreenedCallsDatabase {
   ///
   /// Entries with `votes > 0` are upserted, entries with `votes == 0` are
   /// deleted. The sync metadata is updated atomically with the data changes.
+  ///
+  /// With [replace] (full resync), the cache is cleared first and the sync counter restarts,
+  /// in the same transaction - a failed full fetch never reaches this point and leaves the
+  /// old cache and version in place.
   Future<void> applyBlocklistUpdates(
     List<api.BlockListEntry> entries,
     String Function(api.BlockListEntry) ratingToString,
     void Function(int upserted, int deleted) onComplete,
-    int newVersion,
-  ) async {
+    int newVersion, {
+    bool replace = false,
+  }) async {
     final db = await database;
     int upserted = 0;
     int deleted = 0;
 
     await db.transaction((txn) async {
+      if (replace) {
+        await txn.delete('blocklist');
+      }
       for (final entry in entries) {
         if (entry.votes > 0) {
           await txn.insert('blocklist', {
@@ -824,8 +824,11 @@ class ScreenedCallsDatabase {
         }
       }
 
+      // A full resync counts as the first sync of the next cycle.
       await txn.rawUpdate(
-        'UPDATE blocklist_sync SET version = ?, lastSyncTime = ?, syncCount = syncCount + 1 WHERE id = 1',
+        replace
+            ? 'UPDATE blocklist_sync SET version = ?, lastSyncTime = ?, syncCount = 1 WHERE id = 1'
+            : 'UPDATE blocklist_sync SET version = ?, lastSyncTime = ?, syncCount = syncCount + 1 WHERE id = 1',
         [newVersion, DateTime.now().millisecondsSinceEpoch],
       );
     });

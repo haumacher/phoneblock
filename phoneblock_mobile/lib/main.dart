@@ -22,6 +22,7 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:phoneblock_mobile/blocklist_sync_service.dart';
+import 'package:phoneblock_mobile/sync_catch_up.dart';
 import 'package:phoneblock_mobile/wildcard_sync_service.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/logging/crash_handler.dart';
@@ -564,8 +565,12 @@ void callbackDispatcher() {
         // Syncs the community blocklist and the personal wildcard rules. Always report success:
         // false maps to Result.retry, and WorkManager's backoff then re-runs the expensive
         // `?since=` query again and again (#388). The next periodic run retries anyway.
-        if (!await BlocklistSyncService.instance.sync()) {
-          AppLogger.instance.warn('app', 'workmanager task=$task: sync failed, retrying with the next periodic run');
+        final success = await BlocklistSyncService.instance.sync();
+        final version = (await ScreenedCallsDatabase.instance.getBlocklistSyncInfo())['version'];
+        if (success) {
+          AppLogger.instance.info('app', 'workmanager task=$task finished: success, version=$version');
+        } else {
+          AppLogger.instance.warn('app', 'workmanager task=$task finished: sync failed, version=$version, retrying with the next periodic run');
         }
         return true;
       }
@@ -654,9 +659,16 @@ class PhoneBlockApp extends StatefulWidget {
 class _PhoneBlockAppState extends State<PhoneBlockApp> {
   ThemeMode _themeMode = ThemeMode.system;
 
+  /// Catches up on the blocklist sync when the app returns to the foreground (#503); the cold
+  /// start is handled by [AppLauncher].
+  late final AppLifecycleListener _lifecycleListener;
+
   @override
   void initState() {
     super.initState();
+    _lifecycleListener = AppLifecycleListener(
+      onResume: () => SyncCatchUp.instance.check('resume'),
+    );
     _loadThemeMode();
     _initSharingIntent();
   }
@@ -681,6 +693,7 @@ class _PhoneBlockAppState extends State<PhoneBlockApp> {
 
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _sharingIntentSubscription?.cancel();
     super.dispose();
   }
@@ -866,9 +879,13 @@ class _AppLauncherState extends State<AppLauncher> {
         BlocklistSyncService.instance.sync();
         registerBlocklistSync();
       } else {
-        // Bring the personal wildcard rules up to date, so a rule created on the website or
-        // on another device blocks without opening the blacklist screen (#487).
-        WildcardSyncService.instance.sync();
+        // Catch up if Android has not run the daily WorkManager task for a while (#503); the
+        // catch-up includes the wildcard rules. Otherwise bring just the personal wildcard
+        // rules up to date, so a rule created on the website or on another device blocks
+        // without opening the blacklist screen (#487).
+        SyncCatchUp.instance.check('app start').then((started) {
+          if (!started) WildcardSyncService.instance.sync();
+        });
       }
     }
 
@@ -3163,15 +3180,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _blocklistLastSync = 0;
   bool _isSyncing = false;
 
+  /// Refreshes the sync date/version when a sync completes in the background (#503).
+  StreamSubscription<void>? _syncedSubscription;
+
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _syncedSubscription = BlocklistSyncService.instance.onSynced.listen((_) => _reloadSyncInfo());
   }
 
   @override
   void dispose() {
+    _syncedSubscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> _reloadSyncInfo() async {
+    final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
+    final blocklistCount = await ScreenedCallsDatabase.instance.getBlocklistCount();
+    if (!mounted) return;
+    setState(() {
+      _blocklistCount = blocklistCount;
+      _blocklistVersion = syncInfo['version'] as int;
+      _blocklistLastSync = syncInfo['lastSyncTime'] as int;
+    });
   }
 
   /// Load settings from SharedPreferences.
