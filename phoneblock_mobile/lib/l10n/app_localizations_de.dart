@@ -1316,4 +1316,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Länderfilter';
+
+  @override
+  String get blockHiddenNumbers => 'Anrufe mit unterdrückter Nummer blockieren';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Anrufe ohne übermittelte Rufnummer werden abgewiesen.';
+
+  @override
+  String get hiddenNumber => 'Unterdrückte Nummer';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonym';
 }

@@ -1310,4 +1310,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Country filter';
+
+  @override
+  String get blockHiddenNumbers => 'Block calls with a withheld number';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Calls with a withheld number are rejected.';
+
+  @override
+  String get hiddenNumber => 'Withheld number';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonymous';
 }

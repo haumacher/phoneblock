@@ -1332,4 +1332,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Filtre par pays';
+
+  @override
+  String get blockHiddenNumbers =>
+      'Bloquer les appels dont le numéro est masqué';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Les appels dont le numéro n\'est pas transmis sont rejetés.';
+
+  @override
+  String get hiddenNumber => 'Numéro masqué';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonyme';
 }

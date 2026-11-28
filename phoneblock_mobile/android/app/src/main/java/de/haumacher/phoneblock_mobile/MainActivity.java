@@ -96,7 +96,10 @@ public class MainActivity extends FlutterActivity {
 
                 // Use label from API if available, otherwise format locally
                 String displayNumber = call.optString("label", null);
-                if (displayNumber == null || displayNumber.isEmpty()) {
+                if (CallChecker.HIDDEN_RATING.equals(call.optString("rating", null))) {
+                    // A call without a number (#806).
+                    displayNumber = context.getString(R.string.notification_hidden_number);
+                } else if (displayNumber == null || displayNumber.isEmpty()) {
                     displayNumber = android.telephony.PhoneNumberUtils.formatNumber(
                         phoneNumber, java.util.Locale.getDefault().getCountry());
                     if (displayNumber == null) {
@@ -367,6 +370,18 @@ public class MainActivity extends FlutterActivity {
                 result.success(null);
                 break;
             }
+
+            case "getBlockHiddenNumbers":
+                result.success(getPreferences(this).getBoolean(CallChecker.KEY_BLOCK_HIDDEN, false));
+                break;
+
+            case "setBlockHiddenNumbers":
+                getPreferences(this).edit()
+                    .putBoolean(CallChecker.KEY_BLOCK_HIDDEN, Boolean.TRUE.equals(methodCall.arguments))
+                    .apply();
+                Log.d(MainActivity.class.getName(), "setBlockHiddenNumbers: " + methodCall.arguments);
+                result.success(null);
+                break;
 
             case "getCountries":
                 result.success(CountryFilter.countries((String) methodCall.arguments));

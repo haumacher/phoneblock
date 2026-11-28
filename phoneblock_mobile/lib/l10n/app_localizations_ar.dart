@@ -1303,4 +1303,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'مرشح البلدان';
+
+  @override
+  String get blockHiddenNumbers => 'حظر المكالمات ذات الأرقام المخفية';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'يتم رفض المكالمات التي لا يتم إرسال رقم المتصل فيها.';
+
+  @override
+  String get hiddenNumber => 'رقم محجوب';
+
+  @override
+  String get hiddenNumberBlocked => 'مجهول';
 }

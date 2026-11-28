@@ -5,6 +5,7 @@
     <string name="notification_channel_description">Benachrichtigungen für blockierte und verdächtige Anrufe</string>
     <string name="notification_blocked_prefix">Blockiert:</string>
     <string name="notification_suspicious_prefix">Verdächtig:</string>
+    <string name="notification_hidden_number">Unterdrückte Nummer</string>
     <plurals name="notification_title">
         <item quantity="one">PhoneBlock: 1 gefilterter Anruf</item>
         <item quantity="other">PhoneBlock: %d gefilterte Anrufe</item>

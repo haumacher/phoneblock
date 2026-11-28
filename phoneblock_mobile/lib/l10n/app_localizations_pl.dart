@@ -1328,4 +1328,17 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Filtr krajów';
+
+  @override
+  String get blockHiddenNumbers => 'Blokuj połączenia z ukrytym numerem';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Połączenia bez przekazanego numeru telefonu są odrzucane.';
+
+  @override
+  String get hiddenNumber => 'Numer ukryty';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonimowy';
 }

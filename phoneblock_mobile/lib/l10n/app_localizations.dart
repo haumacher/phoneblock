@@ -2293,6 +2293,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Länderfilter'**
   String get countryFilterBlocked;
+
+  /// Settings switch: reject calls whose caller number is withheld or missing
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufe mit unterdrückter Nummer blockieren'**
+  String get blockHiddenNumbers;
+
+  /// Subtitle of the switch that blocks calls with a withheld number
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufe ohne übermittelte Rufnummer werden abgewiesen.'**
+  String get blockHiddenNumbersDescription;
+
+  /// Call list title of a call that came without a caller number
+  ///
+  /// In de, this message translates to:
+  /// **'Unterdrückte Nummer'**
+  String get hiddenNumber;
+
+  /// Short call list label (badge) for a call blocked because its number was withheld
+  ///
+  /// In de, this message translates to:
+  /// **'Anonym'**
+  String get hiddenNumberBlocked;
 }
 
 class _AppLocalizationsDelegate

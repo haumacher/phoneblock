@@ -1202,4 +1202,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => '国家过滤器';
+
+  @override
+  String get blockHiddenNumbers => '拦截隐藏号码的来电';
+
+  @override
+  String get blockHiddenNumbersDescription => '未显示来电号码的电话将被拒接。';
+
+  @override
+  String get hiddenNumber => '隐藏号码';
+
+  @override
+  String get hiddenNumberBlocked => '匿名';
 }

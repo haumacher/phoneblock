@@ -1336,4 +1336,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Filtro per paese';
+
+  @override
+  String get blockHiddenNumbers => 'Blocca le chiamate con numero nascosto';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Le chiamate senza numero di telefono visualizzato vengono respinte.';
+
+  @override
+  String get hiddenNumber => 'Numero nascosto';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonimo';
 }

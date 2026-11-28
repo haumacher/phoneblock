@@ -1315,4 +1315,17 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get countryFilterBlocked => 'Landfilter';
+
+  @override
+  String get blockHiddenNumbers => 'Blokker anrop med skjult nummer';
+
+  @override
+  String get blockHiddenNumbersDescription =>
+      'Anrop uten oppgitt nummer avvises.';
+
+  @override
+  String get hiddenNumber => 'Skjult nummer';
+
+  @override
+  String get hiddenNumberBlocked => 'Anonym';
 }

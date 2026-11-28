@@ -45,6 +45,15 @@ public class CallChecker extends CallScreeningService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CallChecker.class);
 
+    /** Setting (#806): block calls with a withheld or missing number. Off by default. */
+    static final String KEY_BLOCK_HIDDEN = "block_hidden_numbers";
+
+    /**
+     * The rating reported to the call list for a call blocked because its number is withheld
+     * (#806), like {@code WILDCARD} and {@code COUNTRY}. The reported number is empty.
+     */
+    static final String HIDDEN_RATING = "HIDDEN";
+
     ScheduledExecutorService _pool;
 
     @Override
@@ -78,13 +87,26 @@ public class CallChecker extends CallScreeningService {
         Uri handle = callDetails.getHandle();
         Log.d(CallChecker.class.getName(), "onScreenCall: " + handle);
 
-        if (handle == null) {
-            Log.d(CallChecker.class.getName(), "onScreenCall: No handle (e.g. withheld number), accepting.");
-            acceptCall(callDetails);
+        SharedPreferences prefs = MainActivity.getPreferences(this);
+
+        // First rule (#806): a call without a number (or with a withheld one) is decided here,
+        // without any lookup. A missing handle must never fail (crash fix of 1.3.1).
+        String handleNumber = handle != null ? handle.getSchemeSpecificPart() : null;
+        ScreeningDecision hidden = ScreeningDecision.decideHidden(handleNumber,
+            callDetails.getHandlePresentation(), prefs.getBoolean(KEY_BLOCK_HIDDEN, false));
+        if (hidden != null) {
+            if (hidden.block) {
+                LOG.info("decision=block reason=HIDDEN");
+                blockCall(callDetails);
+                // Nothing to report to PhoneBlock: there is no number. Only the local call list.
+                MainActivity.reportScreenedCall(this, "", true, 0, 0, HIDDEN_RATING, null, null, null, false);
+            } else {
+                Log.d(CallChecker.class.getName(), "onScreenCall: No number (e.g. withheld), accepting.");
+                acceptCall(callDetails);
+            }
             return;
         }
 
-        SharedPreferences prefs = MainActivity.getPreferences(this);
         String authToken = prefs.getString("auth_token", null);
         int minVotes = prefs.getInt("min_votes", 4);
         boolean blockRanges = prefs.getBoolean("block_ranges", true);
@@ -207,12 +229,7 @@ public class CallChecker extends CallScreeningService {
                 + " (votes=" + votes + ", rangeVotes=" + votesWildcard
                 + (matchedPrefix != null ? ", wildcard=*" : "")
                 + (countryBlocked ? ", country filter" : "") + ")");
-            respondToCall(callDetails, new CallResponse.Builder()
-                .setDisallowCall(true)
-                .setRejectCall(true)
-                .setSkipCallLog(true)
-                .setSkipNotification(true)
-                .build());
+            blockCall(callDetails);
         } else {
             Log.d(CallChecker.class.getName(), "onScreenCall: Accepting: " + LogSanitizer.hashPhone(number)
                 + " (votes=" + votes + ", rangeVotes=" + votesWildcard + ")");
@@ -276,6 +293,16 @@ public class CallChecker extends CallScreeningService {
             throw e;
         }
         return result.toString();
+    }
+
+    /** Rejects the call, the same way for every blocking rule. */
+    private void blockCall(@NonNull Call.Details callDetails) {
+        respondToCall(callDetails, new CallResponse.Builder()
+            .setDisallowCall(true)
+            .setRejectCall(true)
+            .setSkipCallLog(true)
+            .setSkipNotification(true)
+            .build());
     }
 
     private void acceptCall(@NonNull Call.Details callDetails) {

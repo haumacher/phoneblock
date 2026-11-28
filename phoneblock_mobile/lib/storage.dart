@@ -21,6 +21,7 @@ class ScreenedCall {
   final bool isWildcardBlocked; // true if blocked by a local wildcard prefix rule
   final String? matchedWildcard; // The wildcard prefix that matched (e.g., "+4930"), null if not wildcard-blocked
   final bool isCountryBlocked; // true if blocked by the country filter (#709)
+  final bool isHiddenNumber; // true if the call came without a number (#806); phoneNumber is empty
   final bool isPersonallyBlocked; // true if blocked by user's personal blocklist
 
   // Unified source tracking
@@ -50,6 +51,7 @@ class ScreenedCall {
     this.isWildcardBlocked = false,
     this.matchedWildcard,
     this.isCountryBlocked = false,
+    this.isHiddenNumber = false,
     this.isPersonallyBlocked = false,
     this.source = CallSource.mobile,
     this.duration,
@@ -65,6 +67,17 @@ class ScreenedCall {
   /// The rating `CallChecker` reports for a call blocked by the country filter (#709).
   static const countryRating = 'COUNTRY';
 
+  /// The rating `CallChecker` reports for a call blocked because its number is withheld (#806).
+  /// Such a call has an empty [phoneNumber].
+  static const hiddenRating = 'HIDDEN';
+
+  /// Whether the call has a number to look up, report, copy or show on PhoneBlock.
+  bool get hasNumber => !isHiddenNumber && phoneNumber.isNotEmpty;
+
+  /// Whether [ratingStr] names a local rule rather than a PhoneBlock rating.
+  static bool _isLocalRule(String? ratingStr) =>
+      ratingStr == wildcardRating || ratingStr == countryRating || ratingStr == hiddenRating;
+
   /// Returns true if this call has spam indicators.
   bool get hasSpamIndicators => votes > 0 || votesWildcard > 0;
 
@@ -77,7 +90,8 @@ class ScreenedCall {
     final ratingStr = map['rating'] as String?;
     final isWildcard = ratingStr == wildcardRating;
     final isCountry = ratingStr == countryRating;
-    if (ratingStr != null && !isWildcard && !isCountry) {
+    final isHidden = ratingStr == hiddenRating;
+    if (ratingStr != null && !_isLocalRule(ratingStr)) {
       rating = parseApiRating(ratingStr);
     }
 
@@ -105,6 +119,7 @@ class ScreenedCall {
       isWildcardBlocked: isWildcard,
       matchedWildcard: map['matchedWildcard'] as String?,
       isCountryBlocked: isCountry,
+      isHiddenNumber: isHidden,
       isPersonallyBlocked: (map['isPersonallyBlocked'] as int?) == 1,
       source: source,
       duration: map['duration'] as int?,
@@ -128,7 +143,9 @@ class ScreenedCall {
           ? wildcardRating
           : isCountryBlocked
               ? countryRating
-              : (rating != null ? _ratingToString(rating!) : null),
+              : isHiddenNumber
+                  ? hiddenRating
+                  : (rating != null ? _ratingToString(rating!) : null),
       'label': label,
       'location': location,
       'matchedWildcard': matchedWildcard,
@@ -187,9 +204,10 @@ class ScreenedCall {
     final ratingStr = data['rating'] as String?;
     final isWildcard = ratingStr == wildcardRating;
     final isCountry = ratingStr == countryRating;
+    final isHidden = ratingStr == hiddenRating;
 
     Rating? rating;
-    if (ratingStr != null && !isWildcard && !isCountry) {
+    if (ratingStr != null && !_isLocalRule(ratingStr)) {
       rating = parseApiRating(ratingStr);
     }
 
@@ -206,6 +224,7 @@ class ScreenedCall {
       isWildcardBlocked: isWildcard,
       matchedWildcard: data['matchedWildcard'] as String?,
       isCountryBlocked: isCountry,
+      isHiddenNumber: isHidden,
       isPersonallyBlocked: data['blackListed'] == true,
       source: source,
       duration: duration,
@@ -557,6 +576,7 @@ class ScreenedCallsDatabase {
       isWildcardBlocked: call.isWildcardBlocked,
       matchedWildcard: call.matchedWildcard,
       isCountryBlocked: call.isCountryBlocked,
+      isHiddenNumber: call.isHiddenNumber,
       isPersonallyBlocked: call.isPersonallyBlocked,
       source: call.source,
       duration: call.duration,

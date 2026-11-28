@@ -13,6 +13,8 @@ final class ScreeningDecision {
 
     /** The rule that decided the call. */
     enum Reason {
+        /** The call has no number, or the caller withheld it (#806). */
+        HIDDEN,
         /** The number is whitelisted (personal or global). */
         WHITELIST,
         /** The number is on the user's personal blacklist. */
@@ -53,6 +55,72 @@ final class ScreeningDecision {
 
     private static ScreeningDecision allow(Reason reason) {
         return new ScreeningDecision(false, reason, null);
+    }
+
+    /**
+     * Presentation values of {@code android.telecom.TelecomManager}. Copied, so that this class stays
+     * free of Android APIs (the constants are part of the public API and never change).
+     */
+    static final int PRESENTATION_ALLOWED = 1;
+    static final int PRESENTATION_RESTRICTED = 2;
+    static final int PRESENTATION_UNKNOWN = 3;
+    static final int PRESENTATION_PAYPHONE = 4;
+    static final int PRESENTATION_UNAVAILABLE = 5;
+
+    /**
+     * The first screening rule (#806), applied before any lookup: decides calls whose caller number
+     * is withheld or missing.
+     *
+     * <p>A call counts as hidden, if it has no number (no handle, an empty handle, or one without a
+     * single digit such as {@code anonymous}), or if the network marks its number as not to be
+     * shown: restricted (withheld by the caller), unknown, unavailable, or payphone. A payphone
+     * delivers no callable number either, so it falls under the same setting as any other call
+     * that cannot be identified.</p>
+     *
+     * @param number The scheme specific part of the call's handle, {@code null} if the call has no
+     *        handle.
+     * @param presentation The handle presentation of the call ({@code PRESENTATION_*}).
+     * @param blockHidden Whether the user blocks calls with a withheld number.
+     * @return The decision for a hidden call, {@code null} if the call has a number to look up. A
+     *         call without a number is allowed with reason {@link Reason#HIDDEN} if the option is
+     *         off, because no other rule can apply to it. A withheld call that still carries a
+     *         number is only decided here if the option is on, otherwise it is screened by its
+     *         number as before.
+     */
+    static ScreeningDecision decideHidden(String number, int presentation, boolean blockHidden) {
+        boolean noNumber = !hasDigit(number);
+        if (blockHidden && (noNumber || isWithheld(presentation))) {
+            return block(Reason.HIDDEN);
+        }
+        if (noNumber) {
+            return allow(Reason.HIDDEN);
+        }
+        return null;
+    }
+
+    private static boolean isWithheld(int presentation) {
+        switch (presentation) {
+            case PRESENTATION_RESTRICTED:
+            case PRESENTATION_UNKNOWN:
+            case PRESENTATION_PAYPHONE:
+            case PRESENTATION_UNAVAILABLE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean hasDigit(String text) {
+        if (text == null) {
+            return false;
+        }
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c >= '0' && c <= '9') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Decision without the country filter. */

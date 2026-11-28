@@ -1974,5 +1974,25 @@
   "@countryFilterBlocked": {
     "description": "Call list label for a call blocked by the country filter",
     "x-translated": "ad86d8f0"
+  },
+  "blockHiddenNumbers": "Anrufe mit unterdrückter Nummer blockieren",
+  "@blockHiddenNumbers": {
+    "description": "Settings switch: reject calls whose caller number is withheld or missing",
+    "x-translated": "236a0b9c"
+  },
+  "blockHiddenNumbersDescription": "Anrufe ohne übermittelte Rufnummer werden abgewiesen.",
+  "@blockHiddenNumbersDescription": {
+    "description": "Subtitle of the switch that blocks calls with a withheld number",
+    "x-translated": "40634b27"
+  },
+  "hiddenNumber": "Unterdrückte Nummer",
+  "@hiddenNumber": {
+    "description": "Call list title of a call that came without a caller number",
+    "x-translated": "303dcf1a"
+  },
+  "hiddenNumberBlocked": "Anonym",
+  "@hiddenNumberBlocked": {
+    "description": "Short call list label (badge) for a call blocked because its number was withheld",
+    "x-translated": "bf366f63"
   }
 }
