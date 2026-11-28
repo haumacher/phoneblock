@@ -4,10 +4,12 @@ import 'package:fritz_tr064/fritz_tr064.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_login.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
+import 'package:phoneblock_mobile/fritzbox/local_network_access.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations_de.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 
 import 'support/fake_fritzbox.dart';
+import 'support/fake_local_network.dart';
 
 /// Issue #268: the app must work with a Fritz!Box user that only has the
 /// right "Sprachnachrichten, Faxnachrichten, FRITZ!App Fon und Anrufliste",
@@ -34,6 +36,7 @@ void main() {
     messenger.setMockMethodCallHandler(secureStorageChannel, (call) async => null);
     AppLogger.resetForTest();
     await AppLogger.instance.init();
+    LocalNetworkAccess.instance = FakeLocalNetworkAccess();
   });
 
   List<Map<Object?, Object?>> errorLogs() =>

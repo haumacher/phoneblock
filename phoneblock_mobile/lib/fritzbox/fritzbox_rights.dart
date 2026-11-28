@@ -1,4 +1,5 @@
 import 'package:fritz_tr064/fritz_tr064.dart';
+import 'package:phoneblock_mobile/fritzbox/local_network_access.dart';
 import 'package:phoneblock_mobile/l10n/app_localizations.dart';
 
 /// UPnP error code with which the Fritz!Box refuses an action the logged-in
@@ -85,3 +86,10 @@ void checkWebSessionRights(String loginSidXml) {
 /// otherwise.
 String? insufficientRightsMessage(AppLocalizations l10n, Object error) =>
     isInsufficientRights(error) ? l10n.fritzboxNeedsSettingsRight : null;
+
+/// The message for [error] if the Fritz!Box could not be asked or refused
+/// the action: no access to the local network (issue #660) or missing
+/// rights of the Fritz!Box user (issue #268); `null` otherwise.
+String? refusalMessage(AppLocalizations l10n, Object error) =>
+    localNetworkDeniedMessage(l10n, error) ??
+    insufficientRightsMessage(l10n, error);

@@ -785,6 +785,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fritzboxManualConnect => '连接';
 
   @override
+  String get fritzboxEnterAddressManually => '手动输入地址';
+
+  @override
+  String get fritzboxInvalidAddress => '地址无效。请输入 IP 地址或主机名。';
+
+  @override
+  String get fritzboxChooseDevice => '已检测到多台设备。请选择您的 Fritz!Box。';
+
+  @override
+  String get localNetworkRationale =>
+      '为了查找 Fritz!Box 并与之通信，PhoneBlock 需要访问您的家庭网络。';
+
+  @override
+  String get localNetworkAllow => '允许访问';
+
+  @override
+  String get localNetworkDenied => '不允许访问家庭网络';
+
+  @override
+  String get localNetworkOpenSettings => '打开设置';
+
+  @override
   String get fritzboxLoginDescription =>
       '输入您的 Fritz!Box 访问数据。您可以在 Fritz!Box 用户界面的系统 > Fritz!Box 用户下找到它们。';
 

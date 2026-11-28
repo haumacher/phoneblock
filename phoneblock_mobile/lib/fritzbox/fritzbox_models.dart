@@ -56,6 +56,10 @@ enum FritzBoxConnectionState {
 
   /// Connection error.
   error,
+
+  /// Configured, but the app may not access the local network (Android 17,
+  /// permission `ACCESS_LOCAL_NETWORK` missing, issue #660).
+  noLocalNetworkAccess,
 }
 
 /// Blocklist sync mode for Fritz!Box integration.

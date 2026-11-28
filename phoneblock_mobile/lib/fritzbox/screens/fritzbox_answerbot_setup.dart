@@ -81,7 +81,7 @@ class _FritzBoxAnswerbotSetupScreenState
           for (final step in _steps) {
             if (step.status == _StepStatus.inProgress) {
               step.status = _StepStatus.failed;
-              step.errorMessage = insufficientRightsMessage(
+              step.errorMessage = refusalMessage(
                       AppLocalizations.of(context)!, e) ??
                   e.toString();
               break;

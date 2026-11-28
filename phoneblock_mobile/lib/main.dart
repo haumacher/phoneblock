@@ -1380,7 +1380,8 @@ class _MainScreenState extends State<MainScreen> {
             : Column(
                 children: [
                   // Fritz!Box offline banner
-                  if (_fritzboxState == FritzBoxConnectionState.offline)
+                  if (_fritzboxState == FritzBoxConnectionState.offline ||
+                      _fritzboxState == FritzBoxConnectionState.noLocalNetworkAccess)
                     _buildFritzBoxOfflineBanner(context),
                   if (_callFilter.isActive) _buildFilterIndicator(context),
                   // Calls list
@@ -1402,8 +1403,10 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  /// Builds the Fritz!Box offline banner.
+  /// Builds the Fritz!Box offline banner, naming a missing access to the
+  /// local network (issue #660) as the reason if so.
   Widget _buildFritzBoxOfflineBanner(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1414,7 +1417,9 @@ class _MainScreenState extends State<MainScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              AppLocalizations.of(context)!.fritzboxOfflineBanner,
+              _fritzboxState == FritzBoxConnectionState.noLocalNetworkAccess
+                  ? l10n.localNetworkDenied
+                  : l10n.fritzboxOfflineBanner,
               style: const TextStyle(fontSize: 12, color: Colors.orange),
             ),
           ),

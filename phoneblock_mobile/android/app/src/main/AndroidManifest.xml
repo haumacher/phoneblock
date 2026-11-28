@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <!-- Android 17 (API 37): required to reach the Fritz!Box on the LAN; runtime request follows in #660. -->
+    <!-- Android 17 (API 37): required to reach the Fritz!Box on the LAN; requested at runtime when setting up the Fritz!Box (#660). -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
 
     <application

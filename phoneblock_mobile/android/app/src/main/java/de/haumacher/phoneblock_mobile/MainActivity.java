@@ -7,7 +7,10 @@ import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
@@ -281,6 +284,25 @@ public class MainActivity extends FlutterActivity {
             case "checkPermission":
                 result.success(checkPermission());
                 break;
+
+            case "checkLocalNetworkPermission":
+                result.success(checkLocalNetworkPermission());
+                break;
+
+            case "requestLocalNetworkPermission":
+                requestLocalNetworkPermission(result);
+                break;
+
+            case "openAppSettings":
+                openAppSettings();
+                result.success(null);
+                break;
+
+            case "discoverFritzBoxes": {
+                Integer timeoutMs = methodCall.argument("timeoutMs");
+                FritzBoxNsdBrowser.search(this, timeoutMs == null ? 3000 : timeoutMs, result::success);
+                break;
+            }
 
             case "setAuthToken":
                 setAuthToken((String) methodCall.arguments);
@@ -704,6 +726,61 @@ public class MainActivity extends FlutterActivity {
         } else {
             result.success(Boolean.TRUE);
         }
+    }
+
+    /** API level of Android 17, from which on {@link #LOCAL_NETWORK_PERMISSION} is enforced. */
+    private static final int ANDROID_17 = 37;
+
+    private static final String LOCAL_NETWORK_PERMISSION = "android.permission.ACCESS_LOCAL_NETWORK";
+
+    private static final int REQUEST_LOCAL_NETWORK_ID = 2;
+    private MethodChannel.Result _localNetworkResult;
+
+    /**
+     * Whether the app may talk to devices in the local network (the Fritz!Box). Before Android 17
+     * the access is granted implicitly (issue #660).
+     */
+    private boolean checkLocalNetworkPermission() {
+        if (Build.VERSION.SDK_INT < ANDROID_17) {
+            return true;
+        }
+        return checkSelfPermission(LOCAL_NETWORK_PERMISSION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * Asks the user for access to the local network; reports whether it is granted.
+     */
+    private void requestLocalNetworkPermission(MethodChannel.Result result) {
+        if (checkLocalNetworkPermission()) {
+            result.success(Boolean.TRUE);
+            return;
+        }
+        if (_localNetworkResult != null) {
+            // A request is already showing; a second dialog is not possible.
+            result.success(Boolean.FALSE);
+            return;
+        }
+        _localNetworkResult = result;
+        requestPermissions(new String[] { LOCAL_NETWORK_PERMISSION }, REQUEST_LOCAL_NETWORK_ID);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_LOCAL_NETWORK_ID && _localNetworkResult != null) {
+            boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            Log.d(MainActivity.class.getName(), "Local network access " + (granted ? "granted." : "denied."));
+            _localNetworkResult.success(granted);
+            _localNetworkResult = null;
+        }
+    }
+
+    /** Opens the system settings page of this app, where permissions can be granted. */
+    private void openAppSettings() {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", getPackageName(), null));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     @Override

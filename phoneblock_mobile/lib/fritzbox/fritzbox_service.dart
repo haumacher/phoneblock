@@ -13,6 +13,7 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_rights.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/local_network_access.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/storage.dart';
@@ -102,8 +103,25 @@ class FritzBoxService {
     return success;
   }
 
+  /// Whether the app may access the local network; if not, the connection
+  /// state becomes [FritzBoxConnectionState.noLocalNetworkAccess] and an
+  /// existing client is dropped.
+  ///
+  /// The central check before connecting to the Fritz!Box (issue #660):
+  /// without the access, every LAN call would run into a timeout.
+  Future<bool> _checkLocalNetworkAccess() async {
+    if (await LocalNetworkAccess.instance.isGranted()) return true;
+    AppLogger.instance.info('fritzbox',
+        'No access to the local network, not connecting to the Fritz!Box');
+    _client?.close();
+    _client = null;
+    _connectionState = FritzBoxConnectionState.noLocalNetworkAccess;
+    return false;
+  }
+
   /// Internal connect method.
   Future<bool> _connect(FritzBoxCredentials credentials) async {
+    if (!await _checkLocalNetworkAccess()) return false;
     try {
       // Close existing client if any
       _client?.close();
@@ -171,6 +189,7 @@ class FritzBoxService {
   /// Einstellungen" is thrown as [FritzBoxInsufficientRightsException]
   /// without reconnecting - a new connection would be refused the same way.
   Future<T> _withReconnect<T>(Future<T> Function() action) async {
+    await LocalNetworkAccess.instance.ensureGranted();
     try {
       return await guardRights(action);
     } on FritzBoxInsufficientRightsException catch (e) {
@@ -203,6 +222,7 @@ class FritzBoxService {
   /// LANConfigSecurity service for the default login username.
   /// Returns null if the username cannot be determined.
   Future<String?> getDefaultUsername(String host) async {
+    if (!await LocalNetworkAccess.instance.isGranted()) return null;
     final anonClient = Tr64Client(
       host: host,
       username: '',
@@ -269,6 +289,11 @@ class FritzBoxService {
   ///
   /// Returns the list of newly inserted call IDs.
   Future<List<int>> syncCallList() async {
+    if (_connectionState == FritzBoxConnectionState.noLocalNetworkAccess) {
+      AppLogger.instance.info('fritzbox',
+          'Call list sync skipped: no access to the local network');
+      return [];
+    }
     if (!isConnected) return [];
 
     final retentionDays = await getRetentionDays();
@@ -406,6 +431,8 @@ class FritzBoxService {
       _connectionState = FritzBoxConnectionState.notConfigured;
       return false;
     }
+
+    if (!await _checkLocalNetworkAccess()) return false;
 
     if (_client != null) {
       try {
