@@ -1221,4 +1221,35 @@ class AppLocalizationsEl extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Προστέθηκε: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Αποκλεισμός κλήσεων από το εξωτερικό';
+
+  @override
+  String get countryFilterDescription =>
+      'Διέρχονται μόνο οι κλήσεις από τις επιτρεπόμενες χώρες.';
+
+  @override
+  String get countryFilterOff => 'Απενεργοποιημένο';
+
+  @override
+  String get allowedCountries => 'Επιτρεπόμενες χώρες';
+
+  @override
+  String get addCountry => 'Προσθήκη χώρας';
+
+  @override
+  String get searchCountry => 'Αναζήτηση χώρας ή κωδικού χώρας';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Ισχύει επίσης για $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'Πρέπει να παραμείνει τουλάχιστον μία επιτρεπόμενη χώρα.';
+
+  @override
+  String get countryFilterBlocked => 'Φίλτρο χωρών';
 }

@@ -1814,5 +1814,55 @@
       }
     },
     "x-translated": "bc4b1251"
+  },
+  "countryFilterTitle": "Anrufe aus dem Ausland blockieren",
+  "@countryFilterTitle": {
+    "description": "Settings entry and switch of the country filter that blocks calls from countries not on the allowed list",
+    "x-translated": "bae6642a"
+  },
+  "countryFilterDescription": "Nur Anrufe aus den erlaubten Ländern kommen durch.",
+  "@countryFilterDescription": {
+    "description": "Subtitle of the country filter switch",
+    "x-translated": "fa94b5fd"
+  },
+  "countryFilterOff": "Aus",
+  "@countryFilterOff": {
+    "description": "Settings subtitle when the country filter is switched off",
+    "x-translated": "155d93d0"
+  },
+  "allowedCountries": "Erlaubte Länder",
+  "@allowedCountries": {
+    "description": "Heading of the list of countries the country filter lets through",
+    "x-translated": "64ac6a66"
+  },
+  "addCountry": "Land hinzufügen",
+  "@addCountry": {
+    "description": "Button that opens the country picker of the country filter",
+    "x-translated": "73fb0a6"
+  },
+  "searchCountry": "Land oder Vorwahl suchen",
+  "@searchCountry": {
+    "description": "Hint of the search field in the country picker",
+    "x-translated": "ca2b8a0e"
+  },
+  "countrySharedCallingCode": "Gilt auch für {countries}",
+  "@countrySharedCallingCode": {
+    "description": "Picker hint for a calling code that several countries share (e.g. +1): allowing one country allows all of them",
+    "placeholders": {
+      "countries": {
+        "type": "String"
+      }
+    },
+    "x-translated": "87ac9171"
+  },
+  "countryFilterKeepOne": "Mindestens ein Land muss erlaubt bleiben.",
+  "@countryFilterKeepOne": {
+    "description": "Message when the user tries to remove the last allowed country",
+    "x-translated": "392ac3a7"
+  },
+  "countryFilterBlocked": "Länderfilter",
+  "@countryFilterBlocked": {
+    "description": "Call list label for a call blocked by the country filter",
+    "x-translated": "ad86d8f0"
   }
 }

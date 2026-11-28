@@ -1204,4 +1204,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Added: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Block calls from abroad';
+
+  @override
+  String get countryFilterDescription =>
+      'Only calls from the allowed countries will go through.';
+
+  @override
+  String get countryFilterOff => 'Off';
+
+  @override
+  String get allowedCountries => 'Allowed Countries';
+
+  @override
+  String get addCountry => 'Add Country';
+
+  @override
+  String get searchCountry => 'Search for a country or area code';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Also applies to $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'At least one country must remain allowed.';
+
+  @override
+  String get countryFilterBlocked => 'Country filter';
 }

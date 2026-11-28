@@ -1211,4 +1211,35 @@ class AppLocalizationsDe extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Hinzugefügt: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Anrufe aus dem Ausland blockieren';
+
+  @override
+  String get countryFilterDescription =>
+      'Nur Anrufe aus den erlaubten Ländern kommen durch.';
+
+  @override
+  String get countryFilterOff => 'Aus';
+
+  @override
+  String get allowedCountries => 'Erlaubte Länder';
+
+  @override
+  String get addCountry => 'Land hinzufügen';
+
+  @override
+  String get searchCountry => 'Land oder Vorwahl suchen';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Gilt auch für $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'Mindestens ein Land muss erlaubt bleiben.';
+
+  @override
+  String get countryFilterBlocked => 'Länderfilter';
 }

@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "Οι αποθηκευμένες κλήσεις και τα δεδομένα πρόσβασης διαγράφονται.",
   "fritzboxSyncNow": "Συγχρονισμός τώρα",
   "fritzboxSyncDescription": "Ανάκτηση της λίστας κλήσεων από το Fritz!",
+  "fritzboxLogKnownCallers": "Καταγραφή γνωστών καλούντων",
+  "fritzboxLogKnownCallersDescription": "Εμφάνιση κλήσεων από αριθμούς του τηλεφωνικού καταλόγου του Fritz!Box στη λίστα κλήσεων",
   "fritzboxSyncComplete": "{count, plural, =0{Δεν υπάρχουν νέες κλήσεις} =1{1 νέα συγχρονισμένη κλήση} other{{count} συγχρονισμένων νέων κλήσεων}}",
   "fritzboxSyncError": "Σφάλμα κατά τον συγχρονισμό",
   "fritzboxVersion": "Έκδοση FRITZ!OS",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
   "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
   "personalizedAddedDate": "Προστέθηκε: {date}",
-  "fritzboxLogKnownCallers": "Καταγραφή γνωστών καλούντων",
-  "fritzboxLogKnownCallersDescription": "Εμφάνιση κλήσεων από αριθμούς του τηλεφωνικού καταλόγου του Fritz!Box στη λίστα κλήσεων"
+  "countryFilterTitle": "Αποκλεισμός κλήσεων από το εξωτερικό",
+  "countryFilterDescription": "Διέρχονται μόνο οι κλήσεις από τις επιτρεπόμενες χώρες.",
+  "countryFilterOff": "Απενεργοποιημένο",
+  "allowedCountries": "Επιτρεπόμενες χώρες",
+  "addCountry": "Προσθήκη χώρας",
+  "searchCountry": "Αναζήτηση χώρας ή κωδικού χώρας",
+  "countrySharedCallingCode": "Ισχύει επίσης για {countries}",
+  "countryFilterKeepOne": "Πρέπει να παραμείνει τουλάχιστον μία επιτρεπόμενη χώρα.",
+  "countryFilterBlocked": "Φίλτρο χωρών"
 }

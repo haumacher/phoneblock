@@ -332,6 +332,24 @@ public class MainActivity extends FlutterActivity {
                 result.success(null);
                 break;
 
+            case "getCountryFilter":
+                result.success(getCountryFilter());
+                break;
+
+            case "setCountryFilter": {
+                Boolean enabled = methodCall.argument("enabled");
+                java.util.List<String> countries = methodCall.argument("countries");
+                CountryFilter.store(getPreferences(this), Boolean.TRUE.equals(enabled),
+                    countries != null ? countries : java.util.Collections.emptyList());
+                Log.d(MainActivity.class.getName(), "setCountryFilter: " + enabled + " " + countries);
+                result.success(null);
+                break;
+            }
+
+            case "getCountries":
+                result.success(CountryFilter.countries((String) methodCall.arguments));
+                break;
+
             case "getRetentionDays":
                 result.success(getRetentionDays());
                 break;
@@ -435,6 +453,9 @@ public class MainActivity extends FlutterActivity {
                 if (callJson.has("location")) {
                     data.put("location", callJson.getString("location"));
                 }
+                if (callJson.has("matchedWildcard")) {
+                    data.put("matchedWildcard", callJson.getString("matchedWildcard"));
+                }
                 if (callJson.optBoolean("blackListed", false)) {
                     data.put("blackListed", true);
                 }
@@ -474,6 +495,20 @@ public class MainActivity extends FlutterActivity {
         SharedPreferences prefs = getPreferences(this);
         prefs.edit().putString("query_url", queryUrl).apply();
         Log.d(MainActivity.class.getName(), "setQueryUrl: " + queryUrl);
+    }
+
+    /**
+     * The country filter settings (#709): {@code enabled}, the allowed {@code countries} (ISO
+     * region codes, the home country if none are stored yet) and the {@code home} country.
+     */
+    private java.util.Map<String, Object> getCountryFilter() {
+        SharedPreferences prefs = getPreferences(this);
+        String home = CountryFilter.homeCountry(this);
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("enabled", prefs.getBoolean(CountryFilter.KEY_ENABLED, false));
+        data.put("countries", CountryFilter.allowedCountries(prefs, home));
+        data.put("home", home);
+        return data;
     }
 
     private int getMinVotes() {

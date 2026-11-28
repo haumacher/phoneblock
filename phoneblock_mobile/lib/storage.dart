@@ -19,6 +19,7 @@ class ScreenedCall {
   final String? location; // City or region where the call originated (e.g., "Berlin")
   final bool isWildcardBlocked; // true if blocked by a local wildcard prefix rule
   final String? matchedWildcard; // The wildcard prefix that matched (e.g., "+4930"), null if not wildcard-blocked
+  final bool isCountryBlocked; // true if blocked by the country filter (#709)
   final bool isPersonallyBlocked; // true if blocked by user's personal blocklist
 
   // Unified source tracking
@@ -42,6 +43,7 @@ class ScreenedCall {
     this.location,
     this.isWildcardBlocked = false,
     this.matchedWildcard,
+    this.isCountryBlocked = false,
     this.isPersonallyBlocked = false,
     this.source = CallSource.mobile,
     this.duration,
@@ -49,6 +51,12 @@ class ScreenedCall {
     this.fritzboxId,
     this.callType,
   });
+
+  /// The rating `CallChecker` reports for a call blocked by a personal wildcard rule.
+  static const wildcardRating = 'WILDCARD';
+
+  /// The rating `CallChecker` reports for a call blocked by the country filter (#709).
+  static const countryRating = 'COUNTRY';
 
   /// Returns true if this call has spam indicators.
   bool get hasSpamIndicators => votes > 0 || votesWildcard > 0;
@@ -60,8 +68,9 @@ class ScreenedCall {
   factory ScreenedCall.fromMap(Map<String, dynamic> map) {
     Rating? rating;
     final ratingStr = map['rating'] as String?;
-    final isWildcard = ratingStr == 'WILDCARD';
-    if (ratingStr != null && !isWildcard) {
+    final isWildcard = ratingStr == wildcardRating;
+    final isCountry = ratingStr == countryRating;
+    if (ratingStr != null && !isWildcard && !isCountry) {
       rating = parseApiRating(ratingStr);
     }
 
@@ -88,6 +97,7 @@ class ScreenedCall {
       location: map['location'] as String?,
       isWildcardBlocked: isWildcard,
       matchedWildcard: map['matchedWildcard'] as String?,
+      isCountryBlocked: isCountry,
       isPersonallyBlocked: (map['isPersonallyBlocked'] as int?) == 1,
       source: source,
       duration: map['duration'] as int?,
@@ -106,7 +116,11 @@ class ScreenedCall {
       'wasBlocked': wasBlocked ? 1 : 0,
       'votes': votes,
       'votesWildcard': votesWildcard,
-      'rating': isWildcardBlocked ? 'WILDCARD' : (rating != null ? _ratingToString(rating!) : null),
+      'rating': isWildcardBlocked
+          ? wildcardRating
+          : isCountryBlocked
+              ? countryRating
+              : (rating != null ? _ratingToString(rating!) : null),
       'label': label,
       'location': location,
       'matchedWildcard': matchedWildcard,
@@ -162,10 +176,11 @@ class ScreenedCall {
   /// into this call's data.
   ScreenedCall copyWithApiResponse(Map<dynamic, dynamic> data) {
     final ratingStr = data['rating'] as String?;
-    final isWildcard = ratingStr == 'WILDCARD';
+    final isWildcard = ratingStr == wildcardRating;
+    final isCountry = ratingStr == countryRating;
 
     Rating? rating;
-    if (ratingStr != null && !isWildcard) {
+    if (ratingStr != null && !isWildcard && !isCountry) {
       rating = parseApiRating(ratingStr);
     }
 
@@ -181,6 +196,7 @@ class ScreenedCall {
       location: data['location'] as String?,
       isWildcardBlocked: isWildcard,
       matchedWildcard: data['matchedWildcard'] as String?,
+      isCountryBlocked: isCountry,
       isPersonallyBlocked: data['blackListed'] == true,
       source: source,
       duration: duration,
@@ -522,6 +538,7 @@ class ScreenedCallsDatabase {
       location: call.location,
       isWildcardBlocked: call.isWildcardBlocked,
       matchedWildcard: call.matchedWildcard,
+      isCountryBlocked: call.isCountryBlocked,
       isPersonallyBlocked: call.isPersonallyBlocked,
       source: call.source,
       duration: call.duration,

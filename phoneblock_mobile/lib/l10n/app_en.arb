@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "The saved calls and access data are deleted.",
   "fritzboxSyncNow": "Synchronize now",
   "fritzboxSyncDescription": "Retrieving the call list from the Fritz!",
+  "fritzboxLogKnownCallers": "Log known callers",
+  "fritzboxLogKnownCallersDescription": "Also display calls from numbers in the Fritz!Box phonebook in the call list",
   "fritzboxSyncComplete": "{count, plural, =0{No new calls} =1{1 new call synchronized} other{{count} new calls synchronized}}",
   "fritzboxSyncError": "Error during synchronization",
   "fritzboxVersion": "FRITZ!OS version",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
   "personalizedAddedDate": "Added: {date}",
-  "fritzboxLogKnownCallers": "Log known callers",
-  "fritzboxLogKnownCallersDescription": "Also display calls from numbers in the Fritz!Box phonebook in the call list"
+  "countryFilterTitle": "Block calls from abroad",
+  "countryFilterDescription": "Only calls from the allowed countries will go through.",
+  "countryFilterOff": "Off",
+  "allowedCountries": "Allowed Countries",
+  "addCountry": "Add Country",
+  "searchCountry": "Search for a country or area code",
+  "countrySharedCallingCode": "Also applies to {countries}",
+  "countryFilterKeepOne": "At least one country must remain allowed.",
+  "countryFilterBlocked": "Country filter"
 }

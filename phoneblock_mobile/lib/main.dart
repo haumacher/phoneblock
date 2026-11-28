@@ -28,6 +28,7 @@ import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/logging/crash_handler.dart';
 import 'package:phoneblock_mobile/logging/log_viewer_screen.dart';
 import 'package:phoneblock_mobile/mailbox_forwarding_screen.dart';
+import 'package:phoneblock_mobile/country_filter.dart';
 import 'package:phoneblock_mobile/number_input.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
@@ -1480,6 +1481,8 @@ class _MainScreenState extends State<MainScreen> {
   /// Builds a single call list item.
   Widget _buildCallListItem(ScreenedCall call) {
     final wasBlocked = call.wasBlocked;
+    // A call blocked by the country filter offers "legitimate" like a server-blocked one: that
+    // whitelists the number, which lets it through the country filter next time (#709).
     final serverBlocked = wasBlocked && !call.isWildcardBlocked;
     final source = call.source;
 
@@ -1511,16 +1514,15 @@ class _MainScreenState extends State<MainScreen> {
       displayRating = Rating.aLEGITIMATE;
     }
 
-    final color = call.isWildcardBlocked ? Colors.orange : bgColor(displayRating);
+    final isLocalRule = call.isWildcardBlocked || call.isCountryBlocked;
+    final color = isLocalRule ? Colors.orange : bgColor(displayRating);
     final String ratingText = labelText(context, displayRating);
 
     // Build the display text
     final String displayText;
-    if (call.isWildcardBlocked) {
-      final prefix = call.matchedWildcard;
-      displayText = (prefix != null && prefix.isNotEmpty)
-          ? context.l10n.matchedWildcardFilter('$prefix*')
-          : context.l10n.wildcardBlocked;
+    final localRule = localRuleBadgeText(context.l10n, call);
+    if (localRule != null) {
+      displayText = localRule;
     } else if (shouldBeBlocked) {
       // Show the rating for calls that meet the user's blocking criteria
       displayText = ratingText;
@@ -1613,10 +1615,11 @@ class _MainScreenState extends State<MainScreen> {
             leading: Stack(
               clipBehavior: Clip.none,
               children: [
-                call.isWildcardBlocked
+                isLocalRule
                     ? CircleAvatar(
                         backgroundColor: Colors.orange.withValues(alpha: 0.1),
-                        child: const Icon(Icons.filter_alt, color: Colors.orange),
+                        child: Icon(call.isCountryBlocked ? Icons.public_off : Icons.filter_alt,
+                            color: Colors.orange),
                       )
                     : buildRatingAvatar(displayRating),
                 if (isNew)
@@ -2980,6 +2983,21 @@ Rating _convertApiRating(api.Rating rating) {
 }
 
 /// Creates a CircleAvatar with rating-specific icon and colors.
+/// The call list label of a call blocked by a local rule (wildcard prefix or country filter), or
+/// `null` if the call was decided by the PhoneBlock data.
+String? localRuleBadgeText(AppLocalizations l10n, ScreenedCall call) {
+  if (call.isCountryBlocked) {
+    return l10n.countryFilterBlocked;
+  }
+  if (call.isWildcardBlocked) {
+    final prefix = call.matchedWildcard;
+    return (prefix != null && prefix.isNotEmpty)
+        ? l10n.matchedWildcardFilter('$prefix*')
+        : l10n.wildcardBlocked;
+  }
+  return null;
+}
+
 Widget buildRatingAvatar(Rating rating) {
   final color = bgColor(rating);
   return CircleAvatar(
@@ -3180,6 +3198,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _blocklistLastSync = 0;
   bool _isSyncing = false;
 
+  /// Summary of the country filter (#709): the allowed countries, or `null` if it is off.
+  String? _countryFilterSummary;
+
   /// Refreshes the sync date/version when a sync completes in the background (#503).
   StreamSubscription<void>? _syncedSubscription;
 
@@ -3187,6 +3208,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadSettings();
+    _loadCountryFilterSummary();
     _syncedSubscription = BlocklistSyncService.instance.onSynced.listen((_) => _reloadSyncInfo());
   }
 
@@ -3246,6 +3268,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadCountryFilterSummary() async {
+    try {
+      final settings = await loadCountryFilter();
+      String? summary;
+      if (settings.enabled && mounted) {
+        final countries = await loadCountries(Localizations.localeOf(context).toLanguageTag());
+        summary = countryLabels(settings.countries, countries).join(', ');
+      }
+      if (!mounted) return;
+      setState(() => _countryFilterSummary = summary);
+    } catch (e, s) {
+      AppLogger.instance.error('settings', 'Error loading country filter', e, s);
     }
   }
 
@@ -3589,6 +3626,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                   ),
+                const Divider(),
+                ListTile(
+                  title: Text(context.l10n.countryFilterTitle),
+                  subtitle: Text(_countryFilterSummary ?? context.l10n.countryFilterOff),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CountryFilterScreen()),
+                    );
+                    _loadCountryFilterSummary();
+                  },
+                ),
                 const Divider(),
                 ListTile(
                   title: Text(context.l10n.mailboxForwardingTitle),

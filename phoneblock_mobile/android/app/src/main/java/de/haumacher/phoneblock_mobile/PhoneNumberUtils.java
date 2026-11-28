@@ -43,6 +43,29 @@ public class PhoneNumberUtils {
     }
 
     /**
+     * Whether a phone number carries an explicit country code (a leading {@code +} or the
+     * international dialling prefix of the given region, e.g. {@code 0043...} in Germany).
+     *
+     * <p>A number in national format or a short code has no country of its own; normalization
+     * only assigns it the country of the network.</p>
+     *
+     * @param rawNumber Phone number in any format
+     * @param countryCode ISO country code (e.g., "DE", "US") for parsing context
+     */
+    public static boolean hasExplicitCountryCode(String rawNumber, String countryCode) {
+        try {
+            String region = (countryCode != null && !countryCode.isEmpty()) ? countryCode : "DE";
+            Phonenumber.PhoneNumber phoneNumber =
+                PhoneNumberUtil.getInstance().parseAndKeepRawInput(rawNumber, region.toUpperCase());
+            Phonenumber.PhoneNumber.CountryCodeSource source = phoneNumber.getCountryCodeSource();
+            return source == Phonenumber.PhoneNumber.CountryCodeSource.FROM_NUMBER_WITH_PLUS_SIGN
+                || source == Phonenumber.PhoneNumber.CountryCodeSource.FROM_NUMBER_WITH_IDD;
+        } catch (NumberParseException e) {
+            return false;
+        }
+    }
+
+    /**
      * Computes the SHA1 hash of a phone number in international format.
      * This preserves user privacy by not transmitting the actual phone number.
      *

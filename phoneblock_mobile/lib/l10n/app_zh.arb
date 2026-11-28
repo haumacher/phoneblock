@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "保存的通话和访问数据将被删除。",
   "fritzboxSyncNow": "立即同步",
   "fritzboxSyncDescription": "从 Fritz 读取通话清单！",
+  "fritzboxLogKnownCallers": "记录已知来电者",
+  "fritzboxLogKnownCallersDescription": "在通话记录中也显示来自Fritz!Box通讯录的号码的来电",
   "fritzboxSyncComplete": "<x1>计数</x1",
   "fritzboxSyncError": "同步过程中出现错误",
   "fritzboxVersion": "FRITZ！OS 版本",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
   "personalizedAddedDate": "已添加：<x1>日期</x1",
-  "fritzboxLogKnownCallers": "记录已知来电者",
-  "fritzboxLogKnownCallersDescription": "在通话记录中也显示来自Fritz!Box通讯录的号码的来电"
+  "countryFilterTitle": "拦截来自国外的来电",
+  "countryFilterDescription": "仅允许来自允许国家的来电接通。",
+  "countryFilterOff": "关闭",
+  "allowedCountries": "允许的国家",
+  "addCountry": "添加国家",
+  "searchCountry": "搜索国家或区号",
+  "countrySharedCallingCode": "也适用于 {countries}",
+  "countryFilterKeepOne": "必须至少保留一个允许的国家。",
+  "countryFilterBlocked": "国家过滤器"
 }

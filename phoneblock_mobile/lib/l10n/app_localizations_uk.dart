@@ -1187,4 +1187,35 @@ class AppLocalizationsUk extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return 'Додано: $date';
   }
+
+  @override
+  String get countryFilterTitle => 'Блокування дзвінків з-за кордону';
+
+  @override
+  String get countryFilterDescription =>
+      'Пропускаються лише дзвінки з дозволених країн.';
+
+  @override
+  String get countryFilterOff => 'Вимкнено';
+
+  @override
+  String get allowedCountries => 'Дозволені країни';
+
+  @override
+  String get addCountry => 'Додати країну';
+
+  @override
+  String get searchCountry => 'Пошук країни або телефонного коду';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return 'Це також стосується $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne =>
+      'Принаймні одна країна має залишатися дозволеною.';
+
+  @override
+  String get countryFilterBlocked => 'Фільтр за країною';
 }

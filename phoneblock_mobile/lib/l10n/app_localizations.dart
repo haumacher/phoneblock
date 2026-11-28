@@ -2107,6 +2107,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Hinzugefügt: {date}'**
   String personalizedAddedDate(String date);
+
+  /// Settings entry and switch of the country filter that blocks calls from countries not on the allowed list
+  ///
+  /// In de, this message translates to:
+  /// **'Anrufe aus dem Ausland blockieren'**
+  String get countryFilterTitle;
+
+  /// Subtitle of the country filter switch
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Anrufe aus den erlaubten Ländern kommen durch.'**
+  String get countryFilterDescription;
+
+  /// Settings subtitle when the country filter is switched off
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get countryFilterOff;
+
+  /// Heading of the list of countries the country filter lets through
+  ///
+  /// In de, this message translates to:
+  /// **'Erlaubte Länder'**
+  String get allowedCountries;
+
+  /// Button that opens the country picker of the country filter
+  ///
+  /// In de, this message translates to:
+  /// **'Land hinzufügen'**
+  String get addCountry;
+
+  /// Hint of the search field in the country picker
+  ///
+  /// In de, this message translates to:
+  /// **'Land oder Vorwahl suchen'**
+  String get searchCountry;
+
+  /// Picker hint for a calling code that several countries share (e.g. +1): allowing one country allows all of them
+  ///
+  /// In de, this message translates to:
+  /// **'Gilt auch für {countries}'**
+  String countrySharedCallingCode(String countries);
+
+  /// Message when the user tries to remove the last allowed country
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens ein Land muss erlaubt bleiben.'**
+  String get countryFilterKeepOne;
+
+  /// Call list label for a call blocked by the country filter
+  ///
+  /// In de, this message translates to:
+  /// **'Länderfilter'**
+  String get countryFilterBlocked;
 }
 
 class _AppLocalizationsDelegate

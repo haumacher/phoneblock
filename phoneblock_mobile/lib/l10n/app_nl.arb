@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "De opgeslagen gesprekken en toegangsgegevens worden verwijderd.",
   "fritzboxSyncNow": "Nu synchroniseren",
   "fritzboxSyncDescription": "De bellijst ophalen uit de Fritz!",
+  "fritzboxLogKnownCallers": "Bekende bellers registreren",
+  "fritzboxLogKnownCallersDescription": "Ook oproepen van nummers uit het Fritz!Box-telefoonboek in de oproepenlijst weergeven",
   "fritzboxSyncComplete": "{count, plural, =0{Geen nieuwe oproepen} =1{1 nieuwe oproep gesynchroniseerd} other{{count} nieuwe gesynchroniseerde oproepen}}",
   "fritzboxSyncError": "Fout tijdens synchronisatie",
   "fritzboxVersion": "FRITZ!OS-versie",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
   "personalizedAddedDate": "Toegevoegd: {date}",
-  "fritzboxLogKnownCallers": "Bekende bellers registreren",
-  "fritzboxLogKnownCallersDescription": "Ook oproepen van nummers uit het Fritz!Box-telefoonboek in de oproepenlijst weergeven"
+  "countryFilterTitle": "Oproepen uit het buitenland blokkeren",
+  "countryFilterDescription": "Alleen oproepen uit de toegestane landen worden doorgelaten.",
+  "countryFilterOff": "Uit",
+  "allowedCountries": "Toegestane landen",
+  "addCountry": "Land toevoegen",
+  "searchCountry": "Land of netnummer zoeken",
+  "countrySharedCallingCode": "Geldt ook voor {countries}",
+  "countryFilterKeepOne": "Er moet ten minste één land toegestaan blijven.",
+  "countryFilterBlocked": "Landfilter"
 }

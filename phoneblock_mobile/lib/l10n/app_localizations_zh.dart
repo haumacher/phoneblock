@@ -1106,4 +1106,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String personalizedAddedDate(String date) {
     return '已添加：<x1>日期</x1';
   }
+
+  @override
+  String get countryFilterTitle => '拦截来自国外的来电';
+
+  @override
+  String get countryFilterDescription => '仅允许来自允许国家的来电接通。';
+
+  @override
+  String get countryFilterOff => '关闭';
+
+  @override
+  String get allowedCountries => '允许的国家';
+
+  @override
+  String get addCountry => '添加国家';
+
+  @override
+  String get searchCountry => '搜索国家或区号';
+
+  @override
+  String countrySharedCallingCode(String countries) {
+    return '也适用于 $countries';
+  }
+
+  @override
+  String get countryFilterKeepOne => '必须至少保留一个允许的国家。';
+
+  @override
+  String get countryFilterBlocked => '国家过滤器';
 }

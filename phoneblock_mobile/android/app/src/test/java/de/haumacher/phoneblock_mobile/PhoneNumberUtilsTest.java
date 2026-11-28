@@ -249,4 +249,14 @@ public class PhoneNumberUtilsTest {
         String result = PhoneNumberUtils.normalizeToInternationalFormat("+49 (176) 506-426-02", "DE");
         assertEquals("+4917650642602", result);
     }
+
+    @Test
+    public void testExplicitCountryCode() {
+        assertTrue(PhoneNumberUtils.hasExplicitCountryCode("+43 123 456789", "DE"));
+        assertTrue(PhoneNumberUtils.hasExplicitCountryCode("0043123456789", "DE"));
+        assertTrue(PhoneNumberUtils.hasExplicitCountryCode("011442071234567", "US"));
+        assertFalse(PhoneNumberUtils.hasExplicitCountryCode("030123456", "DE"));
+        assertFalse(PhoneNumberUtils.hasExplicitCountryCode("112", "DE"));
+        assertFalse(PhoneNumberUtils.hasExplicitCountryCode("", "DE"));
+    }
 }

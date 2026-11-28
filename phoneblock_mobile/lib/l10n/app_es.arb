@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "Se borran las llamadas guardadas y los datos de acceso.",
   "fritzboxSyncNow": "Sincronizar ahora",
   "fritzboxSyncDescription": "¡Recuperar la lista de llamadas del Fritz!",
+  "fritzboxLogKnownCallers": "Registrar las llamadas de contactos conocidos",
+  "fritzboxLogKnownCallersDescription": "Mostrar también en la lista de llamadas las llamadas procedentes de números de la agenda de la Fritz!Box",
   "fritzboxSyncComplete": "{count, plural, =0{No hay nuevas llamadas} =1{1 nueva llamada sincronizada} other{{count} nuevas llamadas sincronizadas.}}",
   "fritzboxSyncError": "Error durante la sincronización",
   "fritzboxVersion": "Versión FRITZ OS",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Sincronización correcta de la lista de bloqueo",
   "blocklistSyncFailed": "Error de sincronización de la lista de bloqueo",
   "personalizedAddedDate": "Añadido: {date}",
-  "fritzboxLogKnownCallers": "Registrar las llamadas de contactos conocidos",
-  "fritzboxLogKnownCallersDescription": "Mostrar también en la lista de llamadas las llamadas procedentes de números de la agenda de la Fritz!Box"
+  "countryFilterTitle": "Bloquear llamadas desde el extranjero",
+  "countryFilterDescription": "Solo se permiten las llamadas procedentes de los países autorizados.",
+  "countryFilterOff": "Desactivado",
+  "allowedCountries": "Países permitidos",
+  "addCountry": "Añadir país",
+  "searchCountry": "Buscar país o prefijo telefónico",
+  "countrySharedCallingCode": "También se aplica a {countries}",
+  "countryFilterKeepOne": "Debe quedar al menos un país permitido.",
+  "countryFilterBlocked": "Filtro por país"
 }

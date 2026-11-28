@@ -204,6 +204,8 @@
   "fritzboxDisconnectMessage": "Lagrede anrop og tilgangsdata slettes.",
   "fritzboxSyncNow": "Synkroniser nå",
   "fritzboxSyncDescription": "Hente samtalelisten fra Fritz!",
+  "fritzboxLogKnownCallers": "Registrer kjente innringere",
+  "fritzboxLogKnownCallersDescription": "Vis også samtaler fra numre i Fritz!Box-telefonboken i samtalelisten",
   "fritzboxSyncComplete": "{count, plural, =0{Ingen nye samtaler} =1{1 ny samtale synkronisert} other{{count} nye anrop synkronisert}}",
   "fritzboxSyncError": "Feil under synkronisering",
   "fritzboxVersion": "FRITZ!OS-versjon",
@@ -329,6 +331,13 @@
   "blocklistSyncSuccess": "Synkronisering av blokkliste vellykket",
   "blocklistSyncFailed": "Synkronisering av blokkeringslisten mislyktes",
   "personalizedAddedDate": "Lagt til: {date}",
-  "fritzboxLogKnownCallers": "Registrer kjente innringere",
-  "fritzboxLogKnownCallersDescription": "Vis også samtaler fra numre i Fritz!Box-telefonboken i samtalelisten"
+  "countryFilterTitle": "Blokkere samtaler fra utlandet",
+  "countryFilterDescription": "Bare samtaler fra de tillatte landene slippes gjennom.",
+  "countryFilterOff": "Av",
+  "allowedCountries": "Tillatte land",
+  "addCountry": "Legg til land",
+  "searchCountry": "Søk etter land eller retningsnummer",
+  "countrySharedCallingCode": "Gjelder også for {countries}",
+  "countryFilterKeepOne": "Minst ett land må forbli tillatt.",
+  "countryFilterBlocked": "Landfilter"
 }
