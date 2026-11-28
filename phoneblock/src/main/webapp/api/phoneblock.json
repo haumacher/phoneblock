@@ -1675,7 +1675,7 @@
 					},
 					"whiteListed": {
 						"type": "boolean",
-						"description": "Whether this number is on the global white list and therefore cannot receive votes."
+						"description": "Whether this number is allowed: it is on the global white list (and therefore cannot receive votes), or, for an authenticated request, on the requesting user's personal white list. Only an explicit personal block (blackListed) overrides it."
 					},
 					"blackListed": {
 						"type": "boolean",
