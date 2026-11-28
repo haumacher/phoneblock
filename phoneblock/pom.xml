@@ -50,6 +50,10 @@
 		<swagger-ui.version>5.32.1</swagger-ui.version>
 		
 		<jetty.version>12.1.7</jetty.version>
+
+		<!-- auto-translate-maven-plugin (with-deepl profile) and its core library used by
+			 TestTranslationsInSync must have the same version. -->
+		<auto-translate.version>1.1.5</auto-translate.version>
 		
 		<phoneblock.server.deployUrl>http://localhost:8080/manager/text</phoneblock.server.deployUrl>
 		<phoneblock.server.id>phoneblock</phoneblock.server.id>
@@ -303,6 +307,22 @@
 		    <groupId>org.junit.jupiter</groupId>
 		    <artifactId>junit-jupiter</artifactId>
 		    <scope>test</scope>
+		</dependency>
+
+		<!-- Core library of the auto-translate-maven-plugin (see the with-deepl profile). Used
+			 by TestTranslationsInSync to compute the data-tx checksums exactly as the plugin
+			 does. The DeepL client is not needed for the analysis. -->
+		<dependency>
+			<groupId>de.haumacher</groupId>
+			<artifactId>auto-translate</artifactId>
+			<version>${auto-translate.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.deepl.api</groupId>
+					<artifactId>deepl-java</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
@@ -700,7 +720,7 @@ The answerbot UI is missing or incomplete. Build it before packaging the WAR:
 					<plugin>
 						<groupId>de.haumacher</groupId>
 						<artifactId>auto-translate-maven-plugin</artifactId>
-						<version>1.1.5</version>
+						<version>${auto-translate.version}</version>
 
 						<executions>
 							<execution>
