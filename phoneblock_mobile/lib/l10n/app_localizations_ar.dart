@@ -726,6 +726,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxSyncDescription => 'استرداد قائمة المكالمات من فريتز!';
 
   @override
+  String get fritzboxLogKnownCallers => 'تسجيل المتصلين المعروفين';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'عرض المكالمات الواردة من الأرقام الموجودة في دفتر هاتف Fritz!Box في قائمة المكالمات';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

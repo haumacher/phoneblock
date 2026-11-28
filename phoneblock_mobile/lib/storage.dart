@@ -256,7 +256,7 @@ class ScreenedCallsDatabase {
     AppLogger.instance.info('db', 'opening database at $path');
     return await openDatabase(
       path,
-      version: 14,
+      version: 15,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -316,6 +316,8 @@ class ScreenedCallsDatabase {
         country_code TEXT DEFAULT '49',
         intl_prefix TEXT DEFAULT '00',
         trunk_prefix TEXT DEFAULT '0',
+        last_call_id INTEGER,
+        log_known_callers INTEGER DEFAULT 1,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       )
@@ -495,6 +497,12 @@ class ScreenedCallsDatabase {
       await db.execute("ALTER TABLE fritzbox_config ADD COLUMN country_code TEXT DEFAULT '49'");
       await db.execute("ALTER TABLE fritzbox_config ADD COLUMN intl_prefix TEXT DEFAULT '00'");
       await db.execute("ALTER TABLE fritzbox_config ADD COLUMN trunk_prefix TEXT DEFAULT '0'");
+    }
+    if (oldVersion < 15) {
+      // Issue #361: call list sync by Fritz!Box call ID instead of time. No
+      // value is set on upgrade, so the first sync dedupes by fritzboxId.
+      await db.execute('ALTER TABLE fritzbox_config ADD COLUMN last_call_id INTEGER');
+      await db.execute('ALTER TABLE fritzbox_config ADD COLUMN log_known_callers INTEGER DEFAULT 1');
     }
   }
 

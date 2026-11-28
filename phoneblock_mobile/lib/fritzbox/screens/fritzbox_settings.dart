@@ -322,11 +322,11 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
             },
           ),
 
-        // Sync section
-        if (_connectionState == FritzBoxConnectionState.connected) ...[
-          const Divider(),
+        // Call list section
+        const Divider(),
+        if (_connectionState == FritzBoxConnectionState.connected)
           _buildSyncSection(context, l10n),
-        ],
+        _buildLogKnownCallersSwitch(l10n),
 
         // Disconnect option
         const Divider(),
@@ -851,6 +851,26 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       title: Text(l10n.fritzboxSyncNow),
       subtitle: Text(l10n.fritzboxSyncDescription),
       onTap: _isSyncing ? null : _syncNow,
+    );
+  }
+
+  /// Whether calls from callers with a Fritz!Box phonebook name are imported
+  /// into the call list (see [FritzBoxConfig.logKnownCallers]).
+  Widget _buildLogKnownCallersSwitch(AppLocalizations l10n) {
+    return SwitchListTile(
+      secondary: const Icon(Icons.contacts),
+      title: Text(l10n.fritzboxLogKnownCallers),
+      subtitle: Text(l10n.fritzboxLogKnownCallersDescription),
+      value: _config?.logKnownCallers ?? true,
+      onChanged: (value) async {
+        await FritzBoxStorage.instance.updateConfig(logKnownCallers: value);
+        final config = await FritzBoxStorage.instance.getConfig();
+        if (mounted) {
+          setState(() {
+            _config = config;
+          });
+        }
+      },
     );
   }
 

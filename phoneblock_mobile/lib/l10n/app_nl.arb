@@ -191,6 +191,7 @@
   "blockedCallsCount": "Geblokkeerde oproepen",
   "suspiciousCallsCount": "Verdachte telefoontjes",
   "fritzboxTitle": "Fritz!Box",
+  "fritzboxConnected": "Verbonden en beschermd",
   "fritzboxConnectedPlain": "Verbonden",
   "fritzboxOffline": "Niet beschikbaar",
   "fritzboxError": "Fout bij verbinding",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
   "personalizedAddedDate": "Toegevoegd: {date}",
-  "fritzboxConnected": "Verbonden en beschermd"
+  "fritzboxLogKnownCallers": "Bekende bellers registreren",
+  "fritzboxLogKnownCallersDescription": "Ook oproepen van nummers uit het Fritz!Box-telefoonboek in de oproepenlijst weergeven"
 }

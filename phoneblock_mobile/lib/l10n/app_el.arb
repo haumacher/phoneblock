@@ -191,6 +191,7 @@
   "blockedCallsCount": "Αποκλεισμένες κλήσεις",
   "suspiciousCallsCount": "Ύποπτες κλήσεις",
   "fritzboxTitle": "Fritz!Box",
+  "fritzboxConnected": "Συνδεδεμένο και προστατευμένο",
   "fritzboxConnectedPlain": "Συνδεδεμένο",
   "fritzboxOffline": "Δεν είναι διαθέσιμο",
   "fritzboxError": "Σφάλμα σύνδεσης",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
   "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
   "personalizedAddedDate": "Προστέθηκε: {date}",
-  "fritzboxConnected": "Συνδεδεμένο και προστατευμένο"
+  "fritzboxLogKnownCallers": "Καταγραφή γνωστών καλούντων",
+  "fritzboxLogKnownCallersDescription": "Εμφάνιση κλήσεων από αριθμούς του τηλεφωνικού καταλόγου του Fritz!Box στη λίστα κλήσεων"
 }

@@ -191,6 +191,7 @@
   "blockedCallsCount": "المكالمات المحظورة",
   "suspiciousCallsCount": "المكالمات المشبوهة",
   "fritzboxTitle": "فريتز!بوكس",
+  "fritzboxConnected": "متصل ومحمي",
   "fritzboxConnectedPlain": "متصل",
   "fritzboxOffline": "غير متوفر",
   "fritzboxError": "خطأ في الاتصال",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
   "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
   "personalizedAddedDate": "تمت الإضافة: {date}",
-  "fritzboxConnected": "متصل ومحمي"
+  "fritzboxLogKnownCallers": "تسجيل المتصلين المعروفين",
+  "fritzboxLogKnownCallersDescription": "عرض المكالمات الواردة من الأرقام الموجودة في دفتر هاتف Fritz!Box في قائمة المكالمات"
 }

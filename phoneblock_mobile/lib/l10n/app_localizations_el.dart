@@ -736,6 +736,13 @@ class AppLocalizationsEl extends AppLocalizations {
       'Ανάκτηση της λίστας κλήσεων από το Fritz!';
 
   @override
+  String get fritzboxLogKnownCallers => 'Καταγραφή γνωστών καλούντων';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'Εμφάνιση κλήσεων από αριθμούς του τηλεφωνικού καταλόγου του Fritz!Box στη λίστα κλήσεων';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

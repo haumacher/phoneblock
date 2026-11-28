@@ -1346,6 +1346,18 @@ abstract class AppLocalizations {
   /// **'Anrufliste von der Fritz!Box abrufen'**
   String get fritzboxSyncDescription;
 
+  /// Switch on the Fritz!Box settings screen: also import calls from callers with a name in the Fritz!Box phonebook into the call list (same wording as the dongle UI)
+  ///
+  /// In de, this message translates to:
+  /// **'Bekannte Anrufer protokollieren'**
+  String get fritzboxLogKnownCallers;
+
+  /// Subtitle of the switch that also imports calls from known callers (Fritz!Box phonebook) into the call list
+  ///
+  /// In de, this message translates to:
+  /// **'Auch Anrufe von Nummern aus dem Fritz!Box-Telefonbuch in der Anrufliste anzeigen'**
+  String get fritzboxLogKnownCallersDescription;
+
   /// Sync complete message
   ///
   /// In de, this message translates to:

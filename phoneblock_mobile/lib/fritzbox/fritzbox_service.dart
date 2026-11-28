@@ -6,11 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:fritz_tr064/fritz_tr064.dart';
 import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
+import 'package:phoneblock_mobile/fritzbox/call_list_import.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_status.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/logging/app_logger.dart';
-import 'package:phoneblock_mobile/fritzbox/phone_number_utils.dart' as phone_utils;
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/storage.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart' hide getAuthToken;
@@ -247,254 +247,94 @@ class FritzBoxService {
     }
   }
 
-  /// Gets the call list from Fritz!Box.
+  /// Fetches the parsed call list from the Fritz!Box, limited to the last
+  /// [days] days (all entries if null).
   ///
-  /// Filters calls according to spec:
-  /// - Include calls with no name (unknown caller)
-  /// - Include calls with name starting with "SPAM: " (CardDAV blocklist)
-  /// - Exclude other named contacts
-  Future<List<ScreenedCall>> getCallList({DateTime? since, int? days}) async {
-    if (_client == null) return [];
+  /// Returns null if the list could not be fetched.
+  Future<List<CallListEntry>?> _fetchCallListEntries({int? days}) async {
+    if (_client == null) return null;
 
     try {
-      // Get call list entries using the onTel service
       final onTelService = _client!.onTel();
       if (onTelService == null) {
         AppLogger.instance.warn('fritzbox', 'OnTel service not available');
-        return [];
+        return null;
       }
-
-      // Get call list entries (already parsed), limited by days if specified
-      final entries = await onTelService.getCallListEntries(days: days);
-      if (entries.isEmpty) {
-        AppLogger.instance.info('fritzbox', 'No call list entries returned');
-        return [];
-      }
-
-      // Convert to ScreenedCall objects
-      final calls = _convertCallListEntries(entries, since);
-
-      return calls;
+      return await onTelService.getCallListEntries(days: days);
     } catch (e, s) {
       AppLogger.instance.error('fritzbox', 'Error getting call list', e, s);
-      return [];
-    }
-  }
-
-  /// Converts CallListEntry objects to ScreenedCall objects with filtering.
-  List<ScreenedCall> _convertCallListEntries(List<CallListEntry> entries, DateTime? since) {
-    final calls = <ScreenedCall>[];
-
-    for (final entry in entries) {
-      // Determine call type
-      final callType = _convertCallType(entry.type);
-
-      // Skip outgoing calls - they cannot be spam
-      if (callType == FritzBoxCallType.outgoing ||
-          callType == FritzBoxCallType.activeOutgoing) {
-        continue;
-      }
-
-      // Get caller phone number (incoming calls only at this point)
-      final phoneNumber = entry.caller;
-
-      // Skip if no phone number
-      if (phoneNumber.isEmpty) continue;
-
-      // Apply filtering rules per spec:
-      // - No name -> Include (unknown caller)
-      // - Name starts with "SPAM: " -> Include (CardDAV blocklist entry)
-      // - Other name -> Exclude (known contact)
-      final name = entry.name;
-      if (name.isNotEmpty && !name.startsWith('SPAM: ')) {
-        continue;
-      }
-
-      // Parse date (format: DD.MM.YY HH:MM)
-      final timestamp = _parseGermanDate(entry.date);
-      if (timestamp == null) continue;
-
-      // Filter by since date if provided
-      if (since != null && timestamp.isBefore(since)) continue;
-
-      // Parse duration (format: H:MM or M:SS)
-      final duration = _parseDuration(entry.duration);
-
-      // Determine if call was blocked (only rejected calls are actually blocked)
-      // missed = not answered, rejected = refused by call barring
-      final wasBlocked = callType == FritzBoxCallType.rejected;
-
-      calls.add(ScreenedCall(
-        phoneNumber: phoneNumber,
-        timestamp: timestamp,
-        wasBlocked: wasBlocked,
-        votes: 0, // Will be enriched later
-        source: CallSource.fritzbox,
-        duration: duration,
-        device: entry.device.isEmpty ? null : entry.device,
-        fritzboxId: entry.id.toString(),
-        callType: callType,
-        label: null,
-      ));
-    }
-
-    return calls;
-  }
-
-  /// Converts fritz_tr064 CallType to FritzBoxCallType.
-  FritzBoxCallType _convertCallType(CallType? type) {
-    if (type == null) return FritzBoxCallType.missed;
-    switch (type) {
-      case CallType.incoming:
-        return FritzBoxCallType.incoming;
-      case CallType.missed:
-        return FritzBoxCallType.missed;
-      case CallType.outgoing:
-        return FritzBoxCallType.outgoing;
-      case CallType.activeIncoming:
-        return FritzBoxCallType.activeIncoming;
-      case CallType.rejected:
-        return FritzBoxCallType.rejected;
-      case CallType.activeOutgoing:
-        return FritzBoxCallType.activeOutgoing;
-    }
-  }
-
-  /// Parses German date format (DD.MM.YY HH:MM).
-  DateTime? _parseGermanDate(String dateStr) {
-    try {
-      // Format: DD.MM.YY HH:MM
-      final parts = dateStr.split(' ');
-      if (parts.length != 2) return null;
-
-      final dateParts = parts[0].split('.');
-      if (dateParts.length != 3) return null;
-
-      final timeParts = parts[1].split(':');
-      if (timeParts.length != 2) return null;
-
-      final day = int.parse(dateParts[0]);
-      final month = int.parse(dateParts[1]);
-      var year = int.parse(dateParts[2]);
-
-      // Convert 2-digit year to 4-digit
-      if (year < 100) {
-        year += 2000;
-      }
-
-      final hour = int.parse(timeParts[0]);
-      final minute = int.parse(timeParts[1]);
-
-      return DateTime(year, month, day, hour, minute);
-    } catch (e) {
       return null;
-    }
-  }
-
-  /// Parses duration string (H:MM or M:SS) to seconds.
-  int _parseDuration(String durationStr) {
-    try {
-      final parts = durationStr.split(':');
-      if (parts.length != 2) return 0;
-
-      final first = int.parse(parts[0]);
-      final second = int.parse(parts[1]);
-
-      // Fritz!Box uses H:MM format for longer calls, M:SS for shorter
-      // We'll assume M:SS format (minutes:seconds)
-      return first * 60 + second;
-    } catch (e) {
-      return 0;
     }
   }
 
   /// Syncs call list from Fritz!Box with spam enrichment from PhoneBlock API.
   ///
+  /// New calls are recognized by their Fritz!Box call ID (see
+  /// [planCallListImport]), not by time: a call still running during a sync
+  /// and minute-rounded start times must not get lost (issue #361).
+  ///
   /// Returns the list of newly inserted call IDs.
   Future<List<int>> syncCallList() async {
     if (!isConnected) return [];
 
-    // Get retention days setting
     final retentionDays = await getRetentionDays();
 
-    // Get last sync timestamp
     final config = await FritzBoxStorage.instance.getConfig();
     final countryCode = config?.countryCode ?? '49';
     final intlPrefix = config?.intlPrefix ?? '00';
     final trunkPrefix = config?.trunkPrefix ?? '0';
-    final lastFetch = config?.lastFetchTimestamp;
-    DateTime? since;
-    if (lastFetch != null) {
-      since = DateTime.fromMillisecondsSinceEpoch(lastFetch);
-    }
+    final watermark = config?.lastCallId;
+    final logKnownCallers = config?.logKnownCallers ?? true;
 
     // Fetch calls from Fritz!Box, limited by retention period
     // Use null for days if retention is infinite
     final days = retentionDays == retentionInfinite ? null : retentionDays;
-    final calls = await getCallList(since: since, days: days);
-    if (calls.isEmpty) return [];
+    final entries = await _fetchCallListEntries(days: days);
+    if (entries == null) return [];
 
-    // Get auth token for PhoneBlock API
-    final authToken = await getAuthToken();
+    final plan = planCallListImport(
+      entries,
+      watermark: watermark,
+      logKnownCallers: logKnownCallers,
+      importedFritzboxIds:
+          await _existingFritzboxIds(entries.map((e) => e.id.toString())),
+      countryCode: countryCode,
+      intlPrefix: intlPrefix,
+      trunkPrefix: trunkPrefix,
+    );
 
-    // Get database instance
-    final db = ScreenedCallsDatabase.instance;
-
-    // Enrich calls with spam info from PhoneBlock
-    final enrichedCalls = <ScreenedCall>[];
-    for (final call in calls) {
-      // Check if call already exists by fritzboxId
-      final exists = await _callExistsByFritzboxId(call.fritzboxId!);
-      if (exists) continue;
-
-      // Normalize phone number to international format for API lookup
-      final normalizedNumber = phone_utils.toInternationalForm(
-        call.phoneNumber, countryCode, intlPrefix, trunkPrefix,
-      );
-      if (normalizedNumber == null) {
-        // If normalization fails, skip this call (invalid number)
-        AppLogger.instance.warn('fritzbox', 'Skipping call with invalid phone number: ${call.phoneNumber}');
-        continue;
-      }
-
-      // Create call with normalized phone number, keeping original as display label
-      final originalNumber = call.phoneNumber;
-      final normalizedCall = ScreenedCall(
-        id: call.id,
-        phoneNumber: normalizedNumber,
-        timestamp: call.timestamp,
-        wasBlocked: call.wasBlocked,
-        votes: call.votes,
-        votesWildcard: call.votesWildcard,
-        rating: call.rating,
-        label: originalNumber != normalizedNumber ? originalNumber : null,
-        location: call.location,
-        source: call.source,
-        duration: call.duration,
-        device: call.device,
-        fritzboxId: call.fritzboxId,
-        callType: call.callType,
-      );
-
-      // Enrich with spam info using normalized number
-      final enriched = await _enrichCallWithSpamInfo(normalizedCall, authToken);
-      enrichedCalls.add(enriched);
+    final log = AppLogger.instance;
+    if (plan.listReset) {
+      log.info('fritzbox', 'Call list on the Fritz!Box was reset '
+          '(all IDs below last handled ID $watermark), importing anew');
+    } else if (watermark == null && entries.isNotEmpty) {
+      log.info('fritzbox', 'No call ID watermark yet, '
+          'deduplicating ${entries.length} entries by Fritz!Box ID');
+    }
+    log.info('fritzbox', 'Call list: ${entries.length} entries, '
+        '${plan.belowWatermark} already handled, '
+        '${plan.toImport.length} to import, ${plan.skipped.length} skipped');
+    for (final skipped in plan.skipped) {
+      log.info('fritzbox', 'Skipping $skipped');
     }
 
-    if (enrichedCalls.isEmpty) return [];
+    final authToken = await getAuthToken();
+    final db = ScreenedCallsDatabase.instance;
 
-    // Store calls in database and collect inserted IDs
     final insertedIds = <int>[];
-    for (final call in enrichedCalls) {
+    for (final item in plan.toImport) {
+      final call = item.lookup
+          ? await _enrichCallWithSpamInfo(item.call, authToken)
+          : item.call;
       final insertedCall = await db.insertScreenedCall(call);
       if (insertedCall.id != null) {
         insertedIds.add(insertedCall.id!);
       }
     }
 
-    // Update last fetch timestamp
     await FritzBoxStorage.instance.updateConfig(
       lastFetchTimestamp: DateTime.now().millisecondsSinceEpoch,
+      lastCallId: plan.watermark,
     );
 
     // Clean up old calls based on retention period
@@ -503,16 +343,27 @@ class FritzBoxService {
     return insertedIds;
   }
 
-  /// Checks if a call with the given Fritz!Box ID already exists.
-  Future<bool> _callExistsByFritzboxId(String fritzboxId) async {
+  /// Returns those of the given Fritz!Box call IDs that are already stored.
+  Future<Set<String>> _existingFritzboxIds(Iterable<String> fritzboxIds) async {
+    final ids = fritzboxIds.toList();
+    if (ids.isEmpty) return {};
     final db = await ScreenedCallsDatabase.instance.database;
-    final result = await db.query(
-      'screened_calls',
-      columns: ['id'],
-      where: 'fritzboxId = ?',
-      whereArgs: [fritzboxId],
-    );
-    return result.isNotEmpty;
+    final result = <String>{};
+    // Stay below SQLite's limit of bound parameters per statement.
+    const chunkSize = 500;
+    for (var i = 0; i < ids.length; i += chunkSize) {
+      final chunk = ids.sublist(i, min(i + chunkSize, ids.length));
+      final rows = await db.query(
+        'screened_calls',
+        columns: ['fritzboxId'],
+        where: 'fritzboxId IN (${List.filled(chunk.length, '?').join(',')})',
+        whereArgs: chunk,
+      );
+      for (final row in rows) {
+        result.add(row['fritzboxId'] as String);
+      }
+    }
+    return result;
   }
 
   /// Enriches a call with spam information from PhoneBlock API.
@@ -1270,10 +1121,15 @@ class FritzBoxService {
         answerbotEnabled: false,
         answerbotId: null,
         lastFetchTimestamp: existing.lastFetchTimestamp,
+        lastCallId: existing.lastCallId,
+        logKnownCallers: existing.logKnownCallers,
         blocklistVersion: existing.blocklistVersion,
         phonebookId: existing.phonebookId,
         sipDeviceId: null,
         sipUsername: null,
+        countryCode: existing.countryCode,
+        intlPrefix: existing.intlPrefix,
+        trunkPrefix: existing.trunkPrefix,
         createdAt: existing.createdAt,
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ));

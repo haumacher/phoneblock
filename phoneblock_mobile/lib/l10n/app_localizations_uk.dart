@@ -730,6 +730,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxSyncDescription => 'Отримання списку викликів з Fritz!';
 
   @override
+  String get fritzboxLogKnownCallers => 'Реєструвати відомих абонентів';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'Також відображати у списку дзвінків дзвінки з номерів із телефонної книги Fritz!Box';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

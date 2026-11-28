@@ -191,6 +191,7 @@
   "blockedCallsCount": "Chiamate bloccate",
   "suspiciousCallsCount": "Chiamate sospette",
   "fritzboxTitle": "Fritz!Box",
+  "fritzboxConnected": "Connesso e protetto",
   "fritzboxConnectedPlain": "Connesso",
   "fritzboxOffline": "Non disponibile",
   "fritzboxError": "Errore di connessione",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Sincronizzazione della lista di blocco riuscita",
   "blocklistSyncFailed": "Sincronizzazione della lista di blocco fallita",
   "personalizedAddedDate": "Aggiunto: {date}",
-  "fritzboxConnected": "Connesso e protetto"
+  "fritzboxLogKnownCallers": "Registra i chiamanti conosciuti",
+  "fritzboxLogKnownCallersDescription": "Visualizza nell'elenco delle chiamate anche le chiamate provenienti da numeri presenti nella rubrica del Fritz!Box"
 }

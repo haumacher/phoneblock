@@ -191,6 +191,7 @@
   "blockedCallsCount": "Blocked calls",
   "suspiciousCallsCount": "Suspicious calls",
   "fritzboxTitle": "Fritz!Box",
+  "fritzboxConnected": "Connected and protected",
   "fritzboxConnectedPlain": "Connected",
   "fritzboxOffline": "Not available",
   "fritzboxError": "Connection error",
@@ -328,5 +329,6 @@
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
   "personalizedAddedDate": "Added: {date}",
-  "fritzboxConnected": "Connected and protected"
+  "fritzboxLogKnownCallers": "Log known callers",
+  "fritzboxLogKnownCallersDescription": "Also display calls from numbers in the Fritz!Box phonebook in the call list"
 }

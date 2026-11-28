@@ -729,6 +729,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get fritzboxSyncDescription => 'De bellijst ophalen uit de Fritz!';
 
   @override
+  String get fritzboxLogKnownCallers => 'Bekende bellers registreren';
+
+  @override
+  String get fritzboxLogKnownCallersDescription =>
+      'Ook oproepen van nummers uit het Fritz!Box-telefoonboek in de oproepenlijst weergeven';
+
+  @override
   String fritzboxSyncComplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
