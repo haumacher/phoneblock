@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Kontrollera status",
   "mailboxDisableBusy": "Inaktivera vid upptagen",
   "mailboxEnableBusy": "Aktivera igen (återgå)",
+  "mailboxFallbackTitle": "Om vidarebefordringen inte går att återaktivera",
   "mailboxNumberHint": "Postlådenummer från ”Kontrollera status”",
   "mailboxNumberInvalid": "Ange endast siffror och eventuellt ett inledande +.",
   "mailboxEnableWithNumber": "Aktivera med röstbrevlådanummer",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Blockerade samtal",
   "suspiciousCallsCount": "Misstänkta samtal",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Ansluten",
-  "fritzboxConnectedNotProtected": "Ansluten, men inte skyddad",
+  "fritzboxConnectedPlain": "Ansluten",
   "fritzboxOffline": "Ej tillgänglig",
   "fritzboxError": "Fel i anslutningen",
   "fritzboxNotConfiguredShort": "Inte konfigurerad",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Synkroniseringen av blocklistan lyckades",
   "blocklistSyncFailed": "Synkroniseringen av blocklistan misslyckades",
   "personalizedAddedDate": "Tillagd: {date}",
-  "mailboxFallbackTitle": "Om vidarebefordringen inte går att återaktivera"
+  "fritzboxConnected": "Ansluten och skyddad"
 }

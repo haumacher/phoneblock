@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Kontroller status",
   "mailboxDisableBusy": "Deaktiver viderestilling ved optaget",
   "mailboxEnableBusy": "Aktivér igen (fortryd)",
+  "mailboxFallbackTitle": "Hvis videresendelsen ikke kan genaktiveres",
   "mailboxNumberHint": "Postkassenummer fra „Kontroller status“",
   "mailboxNumberInvalid": "Indtast kun cifre og eventuelt et foranstillet +.",
   "mailboxEnableWithNumber": "Aktivér med postkassenummer",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Blokerede opkald",
   "suspiciousCallsCount": "Mistænkelige opkald",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Forbundet",
-  "fritzboxConnectedNotProtected": "Forbundet, ikke beskyttet",
+  "fritzboxConnectedPlain": "Tilsluttet",
   "fritzboxOffline": "Ikke tilgængelig",
   "fritzboxError": "Forbindelsesfejl",
   "fritzboxNotConfiguredShort": "Ikke sat op",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
   "personalizedAddedDate": "Tilføjet: {date}.",
-  "mailboxFallbackTitle": "Hvis videresendelsen ikke kan genaktiveres"
+  "fritzboxConnected": "Tilsluttet og beskyttet"
 }

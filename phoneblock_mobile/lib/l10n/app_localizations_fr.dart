@@ -698,10 +698,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fritzboxTitle => 'Fritz!Box';
 
   @override
-  String get fritzboxConnected => 'Connecté';
+  String get fritzboxConnected => 'Connectée et protégée';
 
   @override
-  String get fritzboxConnectedNotProtected => 'Connecté, non protégé';
+  String get fritzboxConnectedPlain => 'Connecté';
 
   @override
   String get fritzboxOffline => 'Pas disponible';

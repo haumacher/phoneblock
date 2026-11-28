@@ -689,10 +689,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fritzboxTitle => 'Фріц! Коробка!';
 
   @override
-  String get fritzboxConnected => 'Підключено';
+  String get fritzboxConnected => 'Підключено та захищено';
 
   @override
-  String get fritzboxConnectedNotProtected => 'Підключено, але не захищено';
+  String get fritzboxConnectedPlain => 'Підключено';
 
   @override
   String get fritzboxOffline => 'Немає в наявності';

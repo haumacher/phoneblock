@@ -688,10 +688,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get fritzboxTitle => 'Fritz!Box';
 
   @override
-  String get fritzboxConnected => 'Ansluten';
+  String get fritzboxConnected => 'Ansluten och skyddad';
 
   @override
-  String get fritzboxConnectedNotProtected => 'Ansluten, men inte skyddad';
+  String get fritzboxConnectedPlain => 'Ansluten';
 
   @override
   String get fritzboxOffline => 'Ej tillgänglig';

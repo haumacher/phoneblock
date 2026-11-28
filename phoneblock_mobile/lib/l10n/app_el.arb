@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Έλεγχος κατάστασης",
   "mailboxDisableBusy": "Απενεργοποίηση του γραμματοκιβωτίου όταν η γραμμή είναι κατειλημμένη",
   "mailboxEnableBusy": "Επανενεργοποίηση (αναίρεση)",
+  "mailboxFallbackTitle": "Σε περίπτωση που δεν είναι δυνατή η επανενεργοποίηση της προώθησης",
   "mailboxNumberHint": "Αριθμός γραμματοκιβωτίου από την επιλογή «Έλεγχος κατάστασης»",
   "mailboxNumberInvalid": "Εισάγετε μόνο αριθμούς και, προαιρετικά, ένα αρχικό σύμβολο +.",
   "mailboxEnableWithNumber": "Ενεργοποίηση με αριθμό τηλεφωνικής θυρίδας",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Αποκλεισμένες κλήσεις",
   "suspiciousCallsCount": "Ύποπτες κλήσεις",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Συνδεδεμένο",
-  "fritzboxConnectedNotProtected": "Συνδεδεμένο, όχι προστατευμένο",
+  "fritzboxConnectedPlain": "Συνδεδεμένο",
   "fritzboxOffline": "Δεν είναι διαθέσιμο",
   "fritzboxError": "Σφάλμα σύνδεσης",
   "fritzboxNotConfiguredShort": "Δεν έχει ρυθμιστεί",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
   "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
   "personalizedAddedDate": "Προστέθηκε: {date}",
-  "mailboxFallbackTitle": "Σε περίπτωση που δεν είναι δυνατή η επανενεργοποίηση της προώθησης"
+  "fritzboxConnected": "Συνδεδεμένο και προστατευμένο"
 }

@@ -8,6 +8,7 @@
   "mailboxCheckStatus": "Vérifier l'état",
   "mailboxDisableBusy": "Désactiver la boîte vocale lorsque la ligne est occupée",
   "mailboxEnableBusy": "Réactiver (annuler)",
+  "mailboxFallbackTitle": "Si le transfert ne peut pas être réactivé",
   "mailboxNumberHint": "Numéro de boîte aux lettres issu de « Vérifier le statut »",
   "mailboxNumberInvalid": "Saisissez uniquement des chiffres et, éventuellement, un signe « + » en début de numéro.",
   "mailboxEnableWithNumber": "Activer avec le numéro de boîte vocale",
@@ -190,8 +191,7 @@
   "blockedCallsCount": "Appels bloqués",
   "suspiciousCallsCount": "Appels suspects",
   "fritzboxTitle": "Fritz!Box",
-  "fritzboxConnected": "Connecté",
-  "fritzboxConnectedNotProtected": "Connecté, non protégé",
+  "fritzboxConnectedPlain": "Connecté",
   "fritzboxOffline": "Pas disponible",
   "fritzboxError": "Erreur de connexion",
   "fritzboxNotConfiguredShort": "Non aménagé",
@@ -328,5 +328,5 @@
   "blocklistSyncSuccess": "Synchronisation des listes de blocage réussie",
   "blocklistSyncFailed": "Échec de la synchronisation de la liste de blocage",
   "personalizedAddedDate": "Ajouté à la liste : {date}",
-  "mailboxFallbackTitle": "Si le transfert ne peut pas être réactivé"
+  "fritzboxConnected": "Connectée et protégée"
 }
