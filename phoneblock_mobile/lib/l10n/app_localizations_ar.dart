@@ -900,6 +900,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fritzboxBlocklistConfigFailed => 'تعذر إعداد قائمة الحظر.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'ولذلك، يحتاج مستخدم جهاز Fritz!Box إلى حق «إعدادات Fritz!Box».';
+
+  @override
   String get fritzboxCardDavStatus => 'حالة CardDAV';
 
   @override

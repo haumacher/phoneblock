@@ -901,6 +901,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fritzboxBlocklistConfigFailed => 'Block list could not be set up.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'To do this, the Fritz!Box user needs the “FRITZ!Box Settings” permission.';
+
+  @override
   String get fritzboxCardDavStatus => 'CardDAV status';
 
   @override

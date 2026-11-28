@@ -907,6 +907,10 @@ class AppLocalizationsUk extends AppLocalizations {
       'Не вдалося налаштувати список блокування.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'Для цього користувачеві Fritz!Box необхідний дозвіл «Налаштування Fritz!Box».';
+
+  @override
   String get fritzboxCardDavStatus => 'Статус CardDAV';
 
   @override

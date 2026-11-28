@@ -917,6 +917,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Non è stato possibile impostare un elenco di blocco.';
 
   @override
+  String get fritzboxNeedsSettingsRight =>
+      'A tal fine, l’utente del Fritz!Box deve disporre del diritto «Impostazioni Fritz!Box».';
+
+  @override
   String get fritzboxCardDavStatus => 'Stato di CardDAV';
 
   @override

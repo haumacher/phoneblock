@@ -339,5 +339,6 @@
   "searchCountry": "Search for a country or area code",
   "countrySharedCallingCode": "Also applies to {countries}",
   "countryFilterKeepOne": "At least one country must remain allowed.",
-  "countryFilterBlocked": "Country filter"
+  "countryFilterBlocked": "Country filter",
+  "fritzboxNeedsSettingsRight": "To do this, the Fritz!Box user needs the “FRITZ!Box Settings” permission."
 }

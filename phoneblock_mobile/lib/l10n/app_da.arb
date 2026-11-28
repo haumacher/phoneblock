@@ -339,5 +339,6 @@
   "searchCountry": "Søg efter land eller landekode",
   "countrySharedCallingCode": "Gælder også for {countries}",
   "countryFilterKeepOne": "Der skal mindst være ét land tilbage på listen over tilladte lande.",
-  "countryFilterBlocked": "Landfilter"
+  "countryFilterBlocked": "Landfilter",
+  "fritzboxNeedsSettingsRight": "Til dette har Fritz!Box-brugeren brug for rettigheden „FRITZ!Box-indstillinger“."
 }

@@ -339,5 +339,6 @@
   "searchCountry": "Rechercher un pays ou un indicatif téléphonique",
   "countrySharedCallingCode": "S'applique également à {countries}",
   "countryFilterKeepOne": "Au moins un pays doit rester autorisé.",
-  "countryFilterBlocked": "Filtre par pays"
+  "countryFilterBlocked": "Filtre par pays",
+  "fritzboxNeedsSettingsRight": "Pour cela, l'utilisateur de la Fritz!Box doit disposer du droit « Paramètres de la Fritz!Box »."
 }

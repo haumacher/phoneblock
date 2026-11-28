@@ -1622,6 +1622,12 @@ abstract class AppLocalizations {
   /// **'Blockliste konnte nicht eingerichtet werden.'**
   String get fritzboxBlocklistConfigFailed;
 
+  /// Shown when the Fritz!Box refuses a change (blocklist phonebook, answer bot, DynDNS) because the Fritz!Box user lacks the right 'FRITZ!Box Einstellungen' (keep that right's name as shown in the Fritz!Box user interface)
+  ///
+  /// In de, this message translates to:
+  /// **'Dafür braucht der Fritz!Box-Benutzer das Recht „FRITZ!Box Einstellungen“.'**
+  String get fritzboxNeedsSettingsRight;
+
   /// CardDAV status label in settings
   ///
   /// In de, this message translates to:

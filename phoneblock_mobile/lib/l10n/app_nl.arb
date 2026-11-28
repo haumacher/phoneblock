@@ -339,5 +339,6 @@
   "searchCountry": "Land of netnummer zoeken",
   "countrySharedCallingCode": "Geldt ook voor {countries}",
   "countryFilterKeepOne": "Er moet ten minste één land toegestaan blijven.",
-  "countryFilterBlocked": "Landfilter"
+  "countryFilterBlocked": "Landfilter",
+  "fritzboxNeedsSettingsRight": "Hiervoor heeft de Fritz!Box-gebruiker het recht „FRITZ!Box-instellingen“ nodig."
 }

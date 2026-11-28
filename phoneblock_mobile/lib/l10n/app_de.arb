@@ -1354,6 +1354,11 @@
     "description": "Error when blocklist configuration fails",
     "x-translated": "cfac5abc"
   },
+  "fritzboxNeedsSettingsRight": "Dafür braucht der Fritz!Box-Benutzer das Recht „FRITZ!Box Einstellungen“.",
+  "@fritzboxNeedsSettingsRight": {
+    "description": "Shown when the Fritz!Box refuses a change (blocklist phonebook, answer bot, DynDNS) because the Fritz!Box user lacks the right 'FRITZ!Box Einstellungen' (keep that right's name as shown in the Fritz!Box user interface)",
+    "x-translated": "ea3cc8f2"
+  },
   "fritzboxCardDavStatus": "CardDAV-Status",
   "@fritzboxCardDavStatus": {
     "description": "CardDAV status label in settings",
